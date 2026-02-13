@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>家族回忆记录册 | Family Memories Record</title>
-
+    
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-
+    
     <style>
         :root {
             --imperial-red: #C8102E;
@@ -27,9 +27,9 @@
             --spring-red: #E60012;
             --spring-gold: #FFD700;
         }
-
+        
         * { box-sizing: border-box; }
-
+        
         body {
             margin: 0;
             padding: 0;
@@ -40,7 +40,8 @@
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
-
+        
+        /* 返回首页按钮 - 确保在最上层 */
         .back-to-home {
             position: fixed;
             top: 20px;
@@ -61,14 +62,14 @@
             font-family: inherit;
             font-weight: 600;
         }
-
+        
         .back-to-home:hover {
             background: var(--imperial-red);
             color: white;
             border-color: var(--imperial-red);
             transform: translateX(-3px) scale(1.05);
         }
-
+        
         .lang-switcher {
             position: absolute;
             top: 20px;
@@ -77,7 +78,7 @@
             gap: 10px;
             z-index: 1001;
         }
-
+        
         .lang-btn {
             background: rgba(255,255,255,0.9);
             border: 1px solid var(--gold);
@@ -88,17 +89,17 @@
             transition: all 0.3s;
             font-family: inherit;
         }
-
+        
         .lang-btn.active {
             background: var(--imperial-red);
             color: white;
             border-color: var(--imperial-red);
         }
-
+        
         .lang-btn:hover:not(.active) {
             background: var(--light-gold);
         }
-
+        
         .developer-info {
             position: absolute;
             bottom: 20px;
@@ -110,13 +111,13 @@
             font-family: 'Playfair Display', serif;
             letter-spacing: 1px;
         }
-
+        
         .developer-info .trademark {
             font-size: 0.6em;
             vertical-align: super;
             margin-left: 2px;
         }
-
+        
         .premium-section {
             background: var(--premium-bg);
             color: var(--gold);
@@ -124,7 +125,7 @@
             position: relative;
             overflow: hidden;
         }
-
+        
         .premium-section::before {
             content: '★ PREMIUM ★';
             position: absolute;
@@ -138,13 +139,13 @@
             font-weight: bold;
             letter-spacing: 2px;
         }
-
+        
         .premium-lock {
             font-size: 3rem;
             margin-bottom: 1rem;
             opacity: 0.8;
         }
-
+        
         #plumCanvas {
             position: fixed;
             top: 0;
@@ -154,7 +155,7 @@
             pointer-events: none;
             z-index: 9999;
         }
-
+        
         .welcome-screen {
             position: fixed;
             top: 0;
@@ -169,7 +170,7 @@
             z-index: 1000;
             transition: opacity 0.6s ease;
         }
-
+        
         .welcome-title {
             font-size: 2.5rem;
             color: var(--imperial-red);
@@ -177,21 +178,21 @@
             text-shadow: 2px 2px 4px var(--shadow);
             letter-spacing: 0.2em;
         }
-
+        
         .welcome-subtitle {
             font-size: 1.1rem;
             color: var(--dark-brown);
             margin-bottom: 3rem;
             opacity: 0.8;
         }
-
+        
         .welcome-buttons {
             display: flex;
             gap: 1.5rem;
             flex-wrap: wrap;
             justify-content: center;
         }
-
+        
         .btn-primary {
             background: var(--imperial-red);
             color: white;
@@ -204,13 +205,13 @@
             box-shadow: 0 4px 6px var(--shadow);
             transition: all 0.3s ease;
         }
-
+        
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px var(--shadow);
             background: #B01026;
         }
-
+        
         .btn-secondary {
             background: transparent;
             color: var(--dark-brown);
@@ -222,12 +223,12 @@
             font-family: inherit;
             transition: all 0.3s ease;
         }
-
+        
         .btn-secondary:hover {
             background: var(--gold);
             color: white;
         }
-
+        
         .btn-premium {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: var(--gold);
@@ -241,12 +242,12 @@
             overflow: hidden;
             transition: all 0.3s;
         }
-
+        
         .btn-premium:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
         }
-
+        
         .btn-gift {
             background: linear-gradient(135deg, var(--spring-red) 0%, #FF4444 100%);
             color: var(--spring-gold);
@@ -261,16 +262,16 @@
             animation: glow 2s ease-in-out infinite;
             font-weight: bold;
         }
-
+        
         @keyframes glow {
             0%, 100% { box-shadow: 0 0 5px var(--spring-gold); }
             50% { box-shadow: 0 0 20px var(--spring-gold), 0 0 40px var(--spring-red); }
         }
-
+        
         .btn-gift:hover {
             transform: scale(1.05);
         }
-
+        
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -284,14 +285,14 @@
             align-items: center;
             z-index: 999;
         }
-
+        
         .lattice-loader {
             width: 80px;
             height: 80px;
             position: relative;
             animation: rotate 3s linear infinite;
         }
-
+        
         .lattice-cell {
             position: absolute;
             width: 35%;
@@ -300,7 +301,7 @@
             opacity: 0.8;
             border-radius: 2px;
         }
-
+        
         .lattice-cell:nth-child(1) { top: 0; left: 0; animation: pulse 1.5s ease-in-out infinite; }
         .lattice-cell:nth-child(2) { top: 0; right: 0; animation: pulse 1.5s ease-in-out 0.2s infinite; }
         .lattice-cell:nth-child(3) { bottom: 0; left: 0; animation: pulse 1.5s ease-in-out 0.4s infinite; }
@@ -310,31 +311,31 @@
             background: var(--gold);
             animation: pulse 1.5s ease-in-out 0.3s infinite;
         }
-
+        
         @keyframes rotate {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); opacity: 0.8; }
             50% { transform: scale(0.8); opacity: 0.4; }
         }
-
+        
         .loading-text {
             margin-top: 2rem;
             color: var(--imperial-red);
             font-size: 1.2rem;
             letter-spacing: 0.3em;
         }
-
+        
         .app-container {
             max-width: 100%;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
-
+        
         .header {
             background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(245,245,220,0.95));
             border-bottom: 2px solid var(--gold);
@@ -344,7 +345,7 @@
             z-index: 100;
             box-shadow: 0 2px 10px var(--shadow);
         }
-
+        
         .header-content {
             max-width: 1200px;
             margin: 0 auto;
@@ -354,7 +355,7 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
-
+        
         .header-title {
             font-size: 1.5rem;
             color: var(--imperial-red);
@@ -363,7 +364,7 @@
             align-items: center;
             gap: 0.5rem;
         }
-
+        
         .view-tabs {
             display: flex;
             gap: 0.5rem;
@@ -372,7 +373,7 @@
             border-radius: 20px;
             border: 1px solid var(--gold);
         }
-
+        
         .tab-btn {
             padding: 0.4rem 1rem;
             border: none;
@@ -384,17 +385,17 @@
             font-size: 0.9rem;
             transition: all 0.3s;
         }
-
+        
         .tab-btn.active {
             background: var(--imperial-red);
             color: white;
         }
-
+        
         .header-actions {
             display: flex;
             gap: 0.8rem;
         }
-
+        
         .icon-btn {
             width: 40px;
             height: 40px;
@@ -409,18 +410,24 @@
             transition: all 0.3s;
             color: var(--dark-brown);
         }
-
+        
         .icon-btn:hover {
             background: var(--imperial-red);
             color: white;
             border-color: var(--imperial-red);
             transform: scale(1.1);
         }
-
+        
+        .icon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 修复：照片计数器移至左侧 */
         .photo-counter {
             position: absolute;
             top: 80px;
-            right: 20px;
+            left: 20px;
             background: white;
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -429,18 +436,18 @@
             z-index: 99;
             box-shadow: 0 2px 8px var(--shadow);
         }
-
+        
         .photo-counter.warning {
             border-color: var(--imperial-red);
             color: var(--imperial-red);
             animation: pulse-border 2s infinite;
         }
-
+        
         @keyframes pulse-border {
             0%, 100% { border-color: var(--imperial-red); }
             50% { border-color: var(--gold); }
         }
-
+        
         .timeline-container {
             background: white;
             border-bottom: 1px solid var(--gold);
@@ -450,20 +457,20 @@
             scrollbar-width: thin;
             scrollbar-color: var(--imperial-red) var(--rice-paper);
         }
-
+        
         .timeline-container::-webkit-scrollbar {
             height: 6px;
         }
-
+        
         .timeline-container::-webkit-scrollbar-track {
             background: var(--rice-paper);
         }
-
+        
         .timeline-container::-webkit-scrollbar-thumb {
             background: var(--imperial-red);
             border-radius: 3px;
         }
-
+        
         .timeline {
             display: flex;
             gap: 0.5rem;
@@ -472,7 +479,7 @@
             align-items: center;
             justify-content: center;
         }
-
+        
         .year-item {
             flex-shrink: 0;
             padding: 0.8rem 2rem;
@@ -488,14 +495,14 @@
             align-items: center;
             color: var(--imperial-red);
         }
-
+        
         .year-item:hover {
             background: var(--imperial-red);
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px var(--shadow);
         }
-
+        
         .year-item.active {
             background: var(--imperial-red);
             color: white;
@@ -503,7 +510,7 @@
             font-weight: bold;
             box-shadow: 0 4px 8px var(--shadow);
         }
-
+        
         .year-item.has-memory::after {
             content: '';
             position: absolute;
@@ -515,7 +522,7 @@
             border-radius: 50%;
             border: 2px solid white;
         }
-
+        
         .main-content {
             flex: 1;
             padding: 2rem 1rem;
@@ -523,8 +530,9 @@
             margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
+            margin-top: 20px; /* 为左侧计数器留出空间 */
         }
-
+        
         .family-tree-container {
             background: white;
             border: 1px solid var(--gold);
@@ -534,7 +542,7 @@
             position: relative;
             overflow: hidden;
         }
-
+        
         .tree-controls {
             position: absolute;
             top: 1rem;
@@ -547,7 +555,7 @@
             border-radius: 4px;
             border: 1px solid var(--gold);
         }
-
+        
         .tree-legend {
             position: absolute;
             bottom: 1rem;
@@ -558,43 +566,43 @@
             border: 1px solid var(--gold);
             font-size: 0.9rem;
         }
-
+        
         .legend-item {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             margin-bottom: 0.3rem;
         }
-
+        
         .legend-color {
             width: 12px;
             height: 12px;
             border-radius: 50%;
         }
-
+        
         #familyTreeSvg {
             width: 100%;
             height: 600px;
             cursor: grab;
         }
-
+        
         #familyTreeSvg:active {
             cursor: grabbing;
         }
-
+        
         .node circle {
             stroke: #fff;
             stroke-width: 2px;
             cursor: pointer;
             transition: all 0.3s;
         }
-
+        
         .node circle:hover {
             stroke: var(--imperial-red);
             stroke-width: 3px;
             filter: drop-shadow(0 0 8px var(--gold));
         }
-
+        
         .node text {
             font-family: 'Noto Serif SC', serif;
             font-size: 12px;
@@ -603,13 +611,13 @@
             fill: var(--dark-brown);
             font-weight: 600;
         }
-
+        
         .link {
             stroke: #999;
             stroke-opacity: 0.6;
             stroke-width: 1.5px;
         }
-
+        
         .memory-detail {
             background: white;
             border: 1px solid var(--gold);
@@ -620,7 +628,7 @@
             position: relative;
             overflow: hidden;
         }
-
+        
         .memory-detail::before {
             content: '';
             position: absolute;
@@ -630,7 +638,7 @@
             height: 4px;
             background: linear-gradient(to right, var(--imperial-red), var(--gold), var(--imperial-red));
         }
-
+        
         .detail-header {
             display: flex;
             justify-content: space-between;
@@ -639,19 +647,19 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
-
+        
         .detail-year {
             font-size: 2rem;
             color: var(--imperial-red);
             margin: 0;
             font-weight: 700;
         }
-
+        
         .detail-actions {
             display: flex;
             gap: 0.5rem;
         }
-
+        
         .btn-text {
             background: none;
             border: 1px solid var(--gold);
@@ -663,31 +671,31 @@
             transition: all 0.3s;
             font-size: 0.9rem;
         }
-
+        
         .btn-text:hover {
             background: var(--gold);
             color: white;
         }
-
+        
         .btn-text:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-
+        
         .photo-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
-
+        
         @media (max-width: 768px) {
             .photo-gallery {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
                 gap: 1rem;
             }
         }
-
+        
         .photo-card {
             position: relative;
             background: white;
@@ -699,12 +707,12 @@
             aspect-ratio: 3/4;
             overflow: hidden;
         }
-
+        
         .photo-card:hover {
             transform: translateY(-5px) rotate(1deg);
             box-shadow: 0 8px 16px var(--shadow);
         }
-
+        
         .photo-wrapper {
             width: 100%;
             height: 70%;
@@ -712,22 +720,22 @@
             background: #f0f0f0;
             position: relative;
         }
-
+        
         .photo-wrapper img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: filter 0.3s;
         }
-
+        
         .photo-wrapper img.sepia {
             filter: sepia(0.6) contrast(1.1) brightness(0.9);
         }
-
+        
         .photo-info {
             padding: 0.8rem 0.4rem;
         }
-
+        
         .photo-text {
             font-size: 0.9rem;
             line-height: 1.5;
@@ -738,14 +746,14 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-
+        
         .photo-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 0.3rem;
             margin-top: 0.3rem;
         }
-
+        
         .tag {
             font-size: 0.7rem;
             background: var(--light-gold);
@@ -754,25 +762,25 @@
             border-radius: 10px;
             border: 1px solid var(--gold);
         }
-
+        
         .photo-date {
             font-size: 0.8rem;
             color: var(--gold);
             margin-top: 0.3rem;
         }
-
+        
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
             color: var(--dark-brown);
             opacity: 0.6;
         }
-
+        
         .empty-icon {
             font-size: 4rem;
             margin-bottom: 1rem;
         }
-
+        
         .upload-zone {
             border: 2px dashed var(--gold);
             border-radius: 8px;
@@ -783,36 +791,36 @@
             cursor: pointer;
             margin-bottom: 2rem;
         }
-
+        
         .upload-zone:hover, .upload-zone.dragover {
             background: rgba(212, 175, 55, 0.15);
             border-color: var(--imperial-red);
             transform: scale(1.02);
         }
-
+        
         .upload-zone.disabled {
             opacity: 0.5;
             cursor: not-allowed;
             border-color: #999;
         }
-
+        
         .upload-icon {
             font-size: 3rem;
             color: var(--gold);
             margin-bottom: 1rem;
         }
-
+        
         .upload-text {
             font-size: 1.1rem;
             color: var(--dark-brown);
             margin-bottom: 0.5rem;
         }
-
+        
         .upload-hint {
             font-size: 0.9rem;
             color: #999;
         }
-
+        
         .limit-warning {
             background: rgba(200, 16, 46, 0.1);
             border: 1px solid var(--imperial-red);
@@ -822,7 +830,7 @@
             margin-bottom: 1rem;
             text-align: center;
         }
-
+        
         .modal {
             position: fixed;
             top: 0;
@@ -837,7 +845,7 @@
             padding: 1rem;
             box-sizing: border-box;
         }
-
+        
         .modal-content {
             background: var(--rice-paper);
             border-radius: 8px;
@@ -849,7 +857,7 @@
             border: 2px solid var(--gold);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-
+        
         .modal-header {
             background: var(--imperial-red);
             color: white;
@@ -858,12 +866,12 @@
             justify-content: space-between;
             align-items: center;
         }
-
+        
         .modal-title {
             margin: 0;
             font-size: 1.2rem;
         }
-
+        
         .modal-close {
             background: none;
             border: none;
@@ -877,22 +885,22 @@
             align-items: center;
             justify-content: center;
         }
-
+        
         .modal-body {
             padding: 1.5rem;
         }
-
+        
         .form-group {
             margin-bottom: 1.5rem;
         }
-
+        
         .form-label {
             display: block;
             margin-bottom: 0.5rem;
             color: var(--dark-brown);
             font-weight: 600;
         }
-
+        
         .form-input, .form-textarea {
             width: 100%;
             padding: 0.8rem;
@@ -903,23 +911,23 @@
             box-sizing: border-box;
             background: white;
         }
-
+        
         .form-textarea {
             resize: vertical;
             min-height: 100px;
         }
-
+        
         .char-count {
             text-align: right;
             font-size: 0.8rem;
             color: #999;
             margin-top: 0.3rem;
         }
-
+        
         .char-count.warning {
             color: var(--imperial-red);
         }
-
+        
         .tags-input {
             display: flex;
             flex-wrap: wrap;
@@ -931,7 +939,7 @@
             min-height: 46px;
             align-items: center;
         }
-
+        
         .tag-item {
             background: var(--imperial-red);
             color: white;
@@ -942,12 +950,12 @@
             align-items: center;
             gap: 0.3rem;
         }
-
+        
         .tag-remove {
             cursor: pointer;
             font-weight: bold;
         }
-
+        
         .tag-input-field {
             border: none;
             outline: none;
@@ -957,7 +965,7 @@
             font-size: 1rem;
             padding: 0.3rem;
         }
-
+        
         .voice-input-btn {
             display: inline-flex;
             align-items: center;
@@ -972,36 +980,36 @@
             margin-top: 0.5rem;
             transition: all 0.3s;
         }
-
+        
         .voice-input-btn:hover {
             background: var(--imperial-red);
             color: white;
         }
-
+        
         .voice-input-btn.recording {
             background: var(--imperial-red);
             color: white;
             animation: pulse 1.5s infinite;
         }
-
+        
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             margin-top: 0.5rem;
         }
-
+        
         .checkbox-group input[type="checkbox"] {
             width: 18px;
             height: 18px;
             accent-color: var(--imperial-red);
         }
-
+        
         .collab-panel {
             text-align: center;
             padding: 1rem;
         }
-
+        
         .room-code {
             font-size: 2rem;
             font-weight: bold;
@@ -1014,7 +1022,7 @@
             border-radius: 8px;
             font-family: monospace;
         }
-
+        
         #qrcode {
             margin: 1rem auto;
             padding: 1rem;
@@ -1022,7 +1030,7 @@
             display: inline-block;
             border: 1px solid var(--gold);
         }
-
+        
         .collab-status {
             margin-top: 1rem;
             padding: 0.8rem;
@@ -1031,14 +1039,14 @@
             font-size: 0.9rem;
             color: var(--dark-brown);
         }
-
+        
         .collab-users {
             display: flex;
             justify-content: center;
             gap: 0.5rem;
             margin-top: 0.5rem;
         }
-
+        
         .user-avatar {
             width: 32px;
             height: 32px;
@@ -1051,7 +1059,8 @@
             font-size: 0.9rem;
             border: 2px solid var(--gold);
         }
-
+        
+        /* 春节主题相册视图 */
         .album-view {
             position: fixed;
             top: 0;
@@ -1066,7 +1075,7 @@
             perspective: 1500px;
             overflow: hidden;
         }
-
+        
         .album-view::before {
             content: '';
             position: absolute;
@@ -1079,7 +1088,7 @@
                 radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
             pointer-events: none;
         }
-
+        
         .book-container {
             width: 80%;
             max-width: 800px;
@@ -1087,7 +1096,7 @@
             position: relative;
             transform-style: preserve-3d;
         }
-
+        
         .book-page {
             position: absolute;
             width: 100%;
@@ -1104,7 +1113,7 @@
             flex-direction: column;
             overflow: hidden;
         }
-
+        
         .book-page::before {
             content: '福';
             position: absolute;
@@ -1115,11 +1124,11 @@
             font-family: 'Noto Serif SC', serif;
             pointer-events: none;
         }
-
+        
         .book-page.flipped {
             transform: rotateY(-180deg);
         }
-
+        
         .page-content {
             flex: 1;
             display: flex;
@@ -1127,7 +1136,7 @@
             padding: 2rem;
             overflow-y: auto;
         }
-
+        
         .page-number {
             text-align: center;
             padding: 1rem;
@@ -1137,7 +1146,7 @@
             font-weight: bold;
             background: rgba(255, 215, 0, 0.1);
         }
-
+        
         .page-photo {
             width: 100%;
             flex: 1;
@@ -1148,7 +1157,7 @@
             border: 2px solid var(--spring-gold);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-
+        
         .page-text {
             font-size: 1.1rem;
             line-height: 1.8;
@@ -1156,7 +1165,7 @@
             text-align: justify;
             font-family: 'Noto Serif SC', serif;
         }
-
+        
         .page-year {
             font-size: 1.8rem;
             color: var(--spring-red);
@@ -1167,7 +1176,7 @@
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
-
+        
         .album-nav {
             position: absolute;
             bottom: 2rem;
@@ -1177,7 +1186,7 @@
             gap: 2rem;
             z-index: 10;
         }
-
+        
         .nav-btn {
             background: var(--spring-gold);
             border: 3px solid var(--spring-red);
@@ -1191,14 +1200,14 @@
             transition: all 0.3s;
             font-weight: bold;
         }
-
+        
         .nav-btn:hover {
             transform: scale(1.1);
             background: var(--spring-red);
             color: var(--spring-gold);
             border-color: var(--spring-gold);
         }
-
+        
         .close-album {
             position: absolute;
             top: 20px;
@@ -1214,7 +1223,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             color: var(--spring-red);
         }
-
+        
         .music-control {
             position: absolute;
             top: 20px;
@@ -1235,11 +1244,11 @@
             animation: rotate 3s linear infinite;
             animation-play-state: paused;
         }
-
+        
         .music-control.playing {
             animation-play-state: running;
         }
-
+        
         .play-memories-btn {
             position: fixed;
             bottom: 2rem;
@@ -1259,12 +1268,12 @@
             align-items: center;
             justify-content: center;
         }
-
+        
         .play-memories-btn:hover {
             transform: scale(1.1) rotate(15deg);
             background: #B01026;
         }
-
+        
         .gift-btn {
             position: fixed;
             bottom: 2rem;
@@ -1285,11 +1294,11 @@
             justify-content: center;
             animation: glow 2s ease-in-out infinite;
         }
-
+        
         .gift-btn:hover {
             transform: scale(1.15);
         }
-
+        
         .slideshow-view {
             position: fixed;
             top: 0;
@@ -1302,7 +1311,7 @@
             justify-content: center;
             align-items: center;
         }
-
+        
         .slideshow-image {
             max-width: 90%;
             max-height: 80vh;
@@ -1310,11 +1319,11 @@
             opacity: 0;
             transition: opacity 1s ease-in-out;
         }
-
+        
         .slideshow-image.active {
             opacity: 1;
         }
-
+        
         .slideshow-info {
             position: absolute;
             bottom: 2rem;
@@ -1325,20 +1334,20 @@
             background: rgba(0,0,0,0.5);
             padding: 1rem;
         }
-
+        
         .slideshow-year {
             font-size: 1.5rem;
             color: var(--gold);
             margin-bottom: 0.5rem;
         }
-
+        
         .share-panel {
             background: white;
             padding: 1.5rem;
             border-radius: 8px;
             text-align: center;
         }
-
+        
         .share-url {
             background: var(--rice-paper);
             padding: 1rem;
@@ -1349,7 +1358,7 @@
             font-size: 0.9rem;
             border: 1px solid var(--gold);
         }
-
+        
         .share-buttons {
             display: flex;
             gap: 1rem;
@@ -1357,7 +1366,7 @@
             margin-top: 1rem;
             flex-wrap: wrap;
         }
-
+        
         .toast {
             position: fixed;
             bottom: 100px;
@@ -1371,12 +1380,13 @@
             transition: all 0.3s;
             z-index: 3000;
         }
-
+        
         .toast.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-
+        
+        /* 红包样式 */
         .red-packet {
             background: linear-gradient(135deg, var(--spring-red) 0%, #B22222 100%);
             border: 3px solid var(--spring-gold);
@@ -1388,7 +1398,7 @@
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-
+        
         .red-packet::before {
             content: '福';
             position: absolute;
@@ -1399,20 +1409,20 @@
             opacity: 0.1;
             color: var(--spring-gold);
         }
-
+        
         .red-packet-title {
             font-size: 1.5rem;
             margin-bottom: 1rem;
             font-weight: bold;
         }
-
+        
         .red-packet-amount {
             font-size: 3rem;
             font-weight: bold;
             margin: 1rem 0;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-
+        
         .alipay-btn {
             background: #1677FF;
             color: white;
@@ -1430,12 +1440,12 @@
             transition: all 0.3s;
             text-decoration: none;
         }
-
+        
         .alipay-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(22, 119, 255, 0.4);
         }
-
+        
         .spring-festival-badge {
             position: fixed;
             top: 80px;
@@ -1450,19 +1460,19 @@
             border: 2px solid gold;
             animation: float 3s ease-in-out infinite;
         }
-
+        
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
         }
-
+        
         .price-options {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
             margin: 1.5rem 0;
         }
-
+        
         .price-card {
             background: rgba(255,255,255,0.1);
             border: 2px solid var(--gold);
@@ -1472,18 +1482,18 @@
             transition: all 0.3s;
             text-align: center;
         }
-
+        
         .price-card:hover {
             background: rgba(212, 175, 55, 0.2);
             transform: translateY(-2px);
         }
-
+        
         .price-card.recommended {
             border-color: var(--spring-gold);
             background: rgba(255, 215, 0, 0.15);
             position: relative;
         }
-
+        
         .price-card.recommended::before {
             content: '推荐';
             position: absolute;
@@ -1496,19 +1506,19 @@
             font-size: 0.8rem;
             font-weight: bold;
         }
-
+        
         .price-amount {
             font-size: 2rem;
             font-weight: bold;
             color: var(--gold);
             margin: 0.5rem 0;
         }
-
+        
         .price-period {
             font-size: 0.9rem;
             color: #aaa;
         }
-
+        
         @media (max-width: 768px) {
             .back-to-home { 
                 top: 10px; 
@@ -1531,10 +1541,19 @@
             .developer-info { bottom: 10px; right: 10px; font-size: 0.75rem; }
             .price-options { grid-template-columns: 1fr; }
             .gift-btn { right: 5rem; width: 50px; height: 50px; font-size: 1.5rem; }
+            /* 移动端调整计数器位置 */
+            .photo-counter {
+                top: 70px;
+                left: 10px;
+                font-size: 0.8rem;
+            }
+            .main-content {
+                margin-top: 50px;
+            }
         }
-
+        
         @media print {
-            .header, .timeline-container, .play-memories-btn, #plumCanvas, .lang-switcher, .developer-info, .back-to-home, .gift-btn {
+            .header, .timeline-container, .play-memories-btn, #plumCanvas, .lang-switcher, .developer-info, .back-to-home, .gift-btn, .photo-counter {
                 display: none;
             }
             .memory-detail {
@@ -1547,30 +1566,30 @@
 <body>
     <div id="app">
         <canvas id="plumCanvas" v-show="isSpringFestival"></canvas>
-
+        
         <div v-if="isSpringFestival" class="spring-festival-badge">
             🧧 {{ t('springFestival') }} 🧧
         </div>
-
+        
         <!-- 欢迎界面 -->
         <div v-if="showWelcome" class="welcome-screen">
             <div class="lang-switcher">
                 <button class="lang-btn" :class="{ active: currentLang === 'zh' }" @click="switchLang('zh')">中文</button>
                 <button class="lang-btn" :class="{ active: currentLang === 'en' }" @click="switchLang('en')">English</button>
             </div>
-
+            
             <div class="developer-info">KSharpR<span class="trademark">®</span></div>
-
+            
             <h1 class="welcome-title">{{ t('title') }}</h1>
             <p class="welcome-subtitle">{{ t('subtitle') }}</p>
             <div class="welcome-buttons">
                 <button class="btn-primary" @click="createNewAlbum">{{ t('newAlbum') }}</button>
                 <button class="btn-secondary" @click="importAlbum">{{ t('importAlbum') }}</button>
                 <button class="btn-secondary" @click="joinCollaboration">{{ t('joinCollab') }}</button>
-                <button class="btn-premium" @click="showPremiumInfo">👑 {{ t('premium') }}</button>
+                <button class="btn-premium" @click="openPremiumModal">👑 {{ t('premium') }}</button>
                 <button class="btn-gift" @click="openGiftModal">🧧 {{ t('springGift') }}</button>
             </div>
-
+            
             <div v-if="showJoinModal" class="modal" @click.self="showJoinModal = false">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1594,7 +1613,7 @@
                 </div>
             </div>
         </div>
-
+        
         <div v-if="isLoading" class="loading-overlay">
             <div class="lattice-loader">
                 <div class="lattice-cell"></div>
@@ -1605,9 +1624,9 @@
             </div>
             <div class="loading-text">{{ t('loading') }}</div>
         </div>
-
+        
         <div v-if="!showWelcome" class="app-container">
-            <!-- 照片数量提示 -->
+            <!-- 修复：照片计数器移至左侧，避免遮挡 -->
             <div class="photo-counter" :class="{ warning: photoCount >= photoLimit && !isPremium }">
                 <span v-if="!isPremium">{{ t('photoCount') }}: {{ photoCount }}/{{ photoLimit }}</span>
                 <span v-else>👑 {{ t('unlimited') }}</span>
@@ -1620,32 +1639,33 @@
                         <span>{{ t('appName') }}</span>
                         <span v-if="roomId" style="font-size: 0.6em; color: var(--gold); margin-left: 0.5rem;">[{{ t('room') }}: {{roomId}}]</span>
                     </h1>
-
+                    
                     <div class="view-tabs">
                         <button class="tab-btn" :class="{ active: currentView === 'timeline' }" @click="currentView = 'timeline'">{{ t('timeline') }}</button>
                         <button class="tab-btn" :class="{ active: currentView === 'album' }" @click="currentView = 'album'">{{ t('album') }}</button>
                         <button class="tab-btn" :class="{ active: currentView === 'tree' }" @click="currentView = 'tree'">{{ t('familyTree') }}</button>
                     </div>
-
+                    
                     <div class="header-actions">
-                        <button class="icon-btn" @click="showCollabModal" title="协同编辑" :disabled="!isPremium">👥</button>
+                        <!-- 修复：协同编辑按钮添加明确的点击提示 -->
+                        <button class="icon-btn" @click="handleCollabClick" title="协同编辑">👥</button>
                         <button class="icon-btn" @click="showShareModal" title="分享">🔗</button>
                         <button class="icon-btn" @click="exportData" title="导出">💾</button>
                     </div>
                 </div>
             </header>
-
+            
             <div class="timeline-container" v-if="currentView === 'timeline'">
                 <div class="timeline">
                     <div class="year-item active has-memory">
                         <span>2026 {{ t('year') }}</span>
                     </div>
-                    <button class="btn-premium" @click="showPremiumInfo" style="margin-left: 1rem; padding: 0.5rem 1.5rem; font-size: 0.9rem;">
+                    <button class="btn-premium" @click="openPremiumModal" style="margin-left: 1rem; padding: 0.5rem 1.5rem; font-size: 0.9rem;">
                         👑 {{ t('premium') }}
                     </button>
                 </div>
             </div>
-
+            
             <main class="main-content">
                 <div v-if="currentView === 'timeline'">
                     <div class="memory-detail">
@@ -1656,20 +1676,20 @@
                                 <input type="file" ref="fileInput" accept="image/*" style="display: none" @change="handleFileSelect" multiple>
                             </div>
                         </div>
-
+                        
                         <div v-if="photoCount >= photoLimit && !isPremium" class="limit-warning">
                             <strong>{{ t('limitReached') }}</strong><br>
                             {{ t('upgradePrompt') }}
-                            <br><button class="btn-primary" @click="showPremiumInfo" style="margin-top: 0.5rem; padding: 0.5rem 1rem;">{{ t('upgradeNow') }}</button>
+                            <br><button class="btn-primary" @click="openPremiumModal" style="margin-top: 0.5rem; padding: 0.5rem 1rem;">{{ t('upgradeNow') }}</button>
                         </div>
-
+                        
                         <div class="upload-zone" @click="triggerUpload" @drop.prevent="handleDrop" @dragover.prevent="isDragging = true" @dragleave="isDragging = false" :class="{ 'dragover': isDragging, 'disabled': photoCount >= photoLimit && !isPremium }">
                             <div class="upload-icon">📷</div>
                             <div class="upload-text">{{ t('uploadText') }}</div>
                             <div class="upload-hint" v-if="!isPremium">{{ t('uploadHint') }} ({{ photoCount }}/{{ photoLimit }})</div>
                             <div class="upload-hint" v-else>{{ t('uploadHintPremium') }}</div>
                         </div>
-
+                        
                         <div v-if="currentMemories.length > 0" class="photo-gallery">
                             <div v-for="(memory, index) in currentMemories" :key="index" class="photo-card" @click="editMemory(index)">
                                 <div class="photo-wrapper">
@@ -1685,14 +1705,14 @@
                                 </div>
                             </div>
                         </div>
-
+                        
                         <div v-else class="empty-state">
                             <div class="empty-icon">🕐</div>
                             <p>{{ t('emptyYear') }}</p>
                         </div>
                     </div>
                 </div>
-
+                
                 <div v-else-if="currentView === 'tree'" class="family-tree-container">
                     <div class="tree-controls">
                         <button class="btn-text" @click="resetZoom">{{ t('resetView') }}</button>
@@ -1710,17 +1730,19 @@
                     </div>
                 </div>
             </main>
-
+            
             <!-- 3D 相册视图 - 春节主题 -->
             <div v-if="currentView === 'album'" class="album-view">
-                <button class="back-to-home" @click="backToHome">🏠 {{ t('backToHome') }}</button>
-
+                <!-- 修复1：确保相册视图有返回首页按钮，位于左上角 -->
+                <button class="back-to-home" @click="backToHome" style="position: fixed; z-index: 2002;">🏠 {{ t('backToHome') }}</button>
+                
                 <button class="close-album" @click="currentView = 'timeline'">×</button>
-
+                
+                <!-- 音乐控制 -->
                 <button class="music-control" :class="{ playing: isPlayingMusic }" @click="toggleMusic">
                     {{ isPlayingMusic ? '🎵' : '🎶' }}
                 </button>
-
+                
                 <div class="book-container">
                     <div v-for="(page, index) in albumPages" :key="index" class="book-page" :class="{ 'flipped': page.flipped }" :style="{ 'z-index': albumPages.length - index, 'transform': page.flipped ? 'rotateY(-180deg)' : 'rotateY(0deg)' }">
                         <div class="page-content">
@@ -1737,7 +1759,7 @@
                     <button class="nav-btn" @click.stop="nextPage">▶</button>
                 </div>
             </div>
-
+            
             <div v-if="showEditModal" class="modal" @click.self="closeEditModal">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1755,7 +1777,7 @@
                                 <label for="sepia">{{ t('sepiaFilter') }}</label>
                             </div>
                         </div>
-
+                        
                         <div class="form-group">
                             <label class="form-label">{{ t('peopleTags') }}</label>
                             <div class="tags-input" @click="$refs.tagInput.focus()">
@@ -1764,35 +1786,36 @@
                             </div>
                             <small style="color: #999; margin-top: 0.3rem; display: block;">{{ t('tagHint') }}</small>
                         </div>
-
+                        
                         <div class="form-group">
                             <label class="form-label">{{ t('story') }} ({{ t('limit') }}200)</label>
                             <textarea class="form-textarea" v-model="editingMemory.text" maxlength="200" :placeholder="t('storyPlaceholder')"></textarea>
                             <div class="char-count" :class="{ 'warning': editingMemory.text.length > 180 }">{{ editingMemory.text.length }}/200</div>
                             <button class="voice-input-btn" :class="{ 'recording': isRecording }" @click="toggleVoiceInput"><span>{{ isRecording ? t('stopRecord') : t('voiceInput') }}</span></button>
                         </div>
-
+                        
                         <div class="form-group">
                             <label class="form-label">{{ t('date') }} ({{ t('optional') }})</label>
                             <input type="date" class="form-input" v-model="editingMemory.date">
                         </div>
-
+                        
                         <button class="btn-primary" @click="saveMemory" style="width: 100%; margin-top: 1rem;">{{ t('save') }}</button>
                     </div>
                 </div>
             </div>
-
-            <div v-if="showPremiumModal" class="modal" @click.self="showPremiumModal = false">
+            
+            <!-- 高级订阅弹窗 -->
+            <div v-if="showPremiumModal" class="modal" @click.self="closePremiumModal">
                 <div class="modal-content premium-section">
                     <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-bottom: 1px solid var(--gold);">
-                        <h3 class="modal-title" style="color: var('gold');">👑 {{ t('premiumFeature') }}</h3>
-                        <button class="modal-close" @click="showPremiumModal = false" style="color: var('gold');">×</button>
+                        <h3 class="modal-title" style="color: var(--gold);">👑 {{ t('premiumFeature') }}</h3>
+                        <button class="modal-close" @click="closePremiumModal" style="color: var(--gold);">×</button>
                     </div>
                     <div class="modal-body" style="text-align: center; padding: 2rem;">
                         <div class="premium-lock">🎆</div>
-                        <h3 style="color: var('gold'); margin-bottom: 1rem;">{{ t('unlockAll') }}</h3>
+                        <h3 style="color: var(--gold); margin-bottom: 1rem;">{{ t('unlockAll') }}</h3>
                         <p style="color: #ccc; margin-bottom: 1.5rem; line-height: 1.6;">{{ t('premiumDesc') }}</p>
-
+                        
                         <div class="price-options">
                             <div class="price-card" @click="selectPremium('yearly')">
                                 <div style="color: #aaa; font-size: 0.9rem;">{{ t('yearlyPlan') }}</div>
@@ -1805,7 +1828,7 @@
                                 <div class="price-period">{{ t('oneTime') }}</div>
                             </div>
                         </div>
-
+                        
                         <ul style="text-align: left; color: #aaa; margin-bottom: 2rem; display: inline-block; line-height: 2;">
                             <li>✨ {{ t('feature1') }}</li>
                             <li>✨ {{ t('feature2') }}</li>
@@ -1814,21 +1837,21 @@
                             <li>🧧 {{ t('feature5') }}</li>
                             <li>🎵 {{ t('feature6') }}</li>
                         </ul>
-
-                        <button class="btn-primary" @click="buyPremium" style="width: 100%; background: var('gold'); color: #1a1a2e; font-weight: bold; padding: 1rem;">
+                        
+                        <button class="btn-primary" @click="buyPremium" style="width: 100%; background: var(--gold); color: #1a1a2e; font-weight: bold; padding: 1rem;">
                             {{ t('buyNow') }}
                         </button>
                         <div style="margin-top: 1rem; font-size: 0.8rem; color: #666;">{{ t('securePayment') }}</div>
                     </div>
                 </div>
             </div>
-
+            
             <!-- 春节回忆礼物弹窗 -->
-            <div v-if="showGiftModal" class="modal" @click.self="showGiftModal = false">
+            <div v-if="showGiftModal" class="modal" @click.self="closeGiftModal">
                 <div class="modal-content">
-                    <div class="modal-header" style="background: linear-gradient(135deg, var('spring-red'), #B22222);">
+                    <div class="modal-header" style="background: linear-gradient(135deg, var(--spring-red), #B22222);">
                         <h3 class="modal-title">🧧 {{ t('springGiftTitle') }}</h3>
-                        <button class="modal-close" @click="showGiftModal = false">×</button>
+                        <button class="modal-close" @click="closeGiftModal">×</button>
                     </div>
                     <div class="modal-body" style="padding: 0;">
                         <div class="red-packet" v-if="!giftPaid">
@@ -1847,21 +1870,21 @@
                                 {{ t('afterPayment') }}
                             </div>
                         </div>
-
-                        <div v-else style="padding: 2rem; text-align: center; background: var('rice-paper');">
+                        
+                        <div v-else style="padding: 2rem; text-align: center; background: var(--rice-paper);">
                             <div style="font-size: 4rem; margin-bottom: 1rem;">🎁</div>
-                            <h3 style="color: var('spring-red'); margin-bottom: 1rem;">{{ t('paymentSuccess') }}</h3>
-                            <p style="margin-bottom: 1.5rem; color: var('dark-brown');">{{ t('giftReady') }}</p>
-
-                            <div style="background: white; padding: 1rem; border-radius: 8px; border: 2px solid var('spring-gold'); margin-bottom: 1.5rem;">
+                            <h3 style="color: var(--spring-red); margin-bottom: 1rem;">{{ t('paymentSuccess') }}</h3>
+                            <p style="margin-bottom: 1.5rem; color: var(--dark-brown);">{{ t('giftReady') }}</p>
+                            
+                            <div style="background: white; padding: 1rem; border-radius: 8px; border: 2px solid var(--spring-gold); margin-bottom: 1.5rem;">
                                 <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">{{ t('shareLink') }}</div>
                                 <div class="share-url" style="font-size: 0.8rem;">{{ giftLink }}</div>
                             </div>
-
+                            
                             <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: inline-block;">
                                 <div ref="giftQRCode"></div>
                             </div>
-
+                            
                             <div class="share-buttons">
                                 <button class="btn-primary" @click="copyGiftLink">{{ t('copyLink') }}</button>
                                 <button class="btn-secondary" @click="shareToWechat">{{ t('shareToWechat') }}</button>
@@ -1870,47 +1893,57 @@
                     </div>
                 </div>
             </div>
-
-            <div v-if="showCollab" class="modal" @click.self="showCollab = false">
+            
+            <!-- 协同编辑弹窗 -->
+            <div v-if="showCollab" class="modal" @click.self="closeCollabModal">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3 class="modal-title">{{ t('collabTitle') }}</h3>
-                        <button class="modal-close" @click="showCollab = false">×</button>
+                        <button class="modal-close" @click="closeCollabModal">×</button>
                     </div>
                     <div class="modal-body">
                         <div class="collab-panel">
-                            <p v-if="!roomId">{{ t('createRoomDesc') }}</p>
-                            <p v-else>{{ t('inRoomDesc') }}</p>
-                            <div v-if="roomId" class="room-code">{{ roomId }}</div>
-                            <div id="qrcode" v-show="roomId"></div>
-                            <div v-if="!roomId" style="margin: 1rem 0;">
-                                <button class="btn-primary" @click="createRoom">{{ t('createRoom') }}</button>
+                            <!-- 未订阅提示 -->
+                            <div v-if="!isPremium" style="background: rgba(212, 175, 55, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--gold);">
+                                <p style="color: var(--imperial-red); margin-bottom: 0.5rem;">🔒 {{ t('premiumRequired') }}</p>
+                                <p style="font-size: 0.9rem; color: #666;">{{ t('collabPremiumDesc') }}</p>
+                                <button class="btn-primary" @click="openPremiumModal" style="margin-top: 0.5rem; width: 100%;">{{ t('upgradeNow') }}</button>
                             </div>
-                            <div v-else style="margin: 1rem 0;">
-                                <button class="btn-secondary" @click="copyRoomLink">{{ t('copyLink') }}</button>
-                                <button class="btn-secondary" @click="leaveRoom" style="margin-left: 0.5rem;">{{ t('leave') }}</button>
-                            </div>
-                            <div class="collab-status" v-if="roomId">
-                                <div>{{ t('onlineUsers') }} ({{ onlineUsers.length + 1 }})</div>
-                                <div class="collab-users">
-                                    <div class="user-avatar" :title="t('me')">{{ currentLang === 'zh' ? '我' : 'Me' }}</div>
-                                    <div v-for="user in onlineUsers" :key="user" class="user-avatar" :title="user">{{ user[0] }}</div>
+                            
+                            <template v-else>
+                                <p v-if="!roomId">{{ t('createRoomDesc') }}</p>
+                                <p v-else>{{ t('inRoomDesc') }}</p>
+                                <div v-if="roomId" class="room-code">{{ roomId }}</div>
+                                <div id="qrcode" v-show="roomId"></div>
+                                <div v-if="!roomId" style="margin: 1rem 0;">
+                                    <button class="btn-primary" @click="createRoom">{{ t('createRoom') }}</button>
                                 </div>
-                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">{{ t('autoSync') }}</div>
-                            </div>
-                            <hr style="border: none; border-top: 1px solid var('gold'); margin: 1.5rem 0;">
-                            <div v-if="!roomId">
-                                <p style="margin-bottom: 0.5rem;">{{ t('haveRoom') }}</p>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <input type="text" class="form-input" v-model="joinRoomId" :placeholder="t('enter6digits')" maxlength="6" style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase;">
-                                    <button class="btn-primary" @click="joinRoom">{{ t('join') }}</button>
+                                <div v-else style="margin: 1rem 0;">
+                                    <button class="btn-secondary" @click="copyRoomLink">{{ t('copyLink') }}</button>
+                                    <button class="btn-secondary" @click="leaveRoom" style="margin-left: 0.5rem;">{{ t('leave') }}</button>
                                 </div>
-                            </div>
+                                <div class="collab-status" v-if="roomId">
+                                    <div>{{ t('onlineUsers') }} ({{ onlineUsers.length + 1 }})</div>
+                                    <div class="collab-users">
+                                        <div class="user-avatar" :title="t('me')">{{ currentLang === 'zh' ? '我' : 'Me' }}</div>
+                                        <div v-for="user in onlineUsers" :key="user" class="user-avatar" :title="user">{{ user[0] }}</div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">{{ t('autoSync') }}</div>
+                                </div>
+                                <hr style="border: none; border-top: 1px solid var(--gold); margin: 1.5rem 0;">
+                                <div v-if="!roomId">
+                                    <p style="margin-bottom: 0.5rem;">{{ t('haveRoom') }}</p>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <input type="text" class="form-input" v-model="joinRoomId" :placeholder="t('enter6digits')" maxlength="6" style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase;">
+                                        <button class="btn-primary" @click="joinRoom">{{ t('join') }}</button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
             </div>
-
+            
             <div v-if="showSharePanel" class="modal" @click.self="showSharePanel = false">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1930,7 +1963,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <div v-if="isPlaying" class="slideshow-view" @click="stopSlideshow">
                 <img v-for="(memory, index) in allMemories" :key="index" :src="memory.photo" class="slideshow-image" :class="{ 'active': currentSlide === index }" :style="{ filter: memory.filter === 'sepia' ? 'sepia(0.6)' : 'none' }">
                 <div class="slideshow-info" v-if="allMemories[currentSlide]">
@@ -1939,18 +1972,19 @@
                     <div v-if="allMemories[currentSlide].people" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">👥 {{ allMemories[currentSlide].people.join(', ') }}</div>
                 </div>
             </div>
-
+            
+            <!-- 悬浮按钮 -->
             <button v-if="!showWelcome && currentView !== 'album' && !isPlaying" class="play-memories-btn" @click="startSlideshow" title="播放回忆">▶</button>
-
+            
             <button v-if="!showWelcome && currentView !== 'album' && !isPlaying" class="gift-btn" @click="openGiftModal" title="春节回忆礼物">🧧</button>
-
+            
             <div class="toast" :class="{ 'show': toastMessage }">{{ toastMessage }}</div>
         </div>
     </div>
 
     <script>
         const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
-
+        
         createApp({
             setup() {
                 const currentLang = ref('zh');
@@ -1962,6 +1996,8 @@
                         importAlbum: '导入相册',
                         joinCollab: '加入协同',
                         premium: '高级订阅',
+                        premiumRequired: '需要高级订阅',
+                        collabPremiumDesc: '多人协作编辑是高级功能，订阅后即可使用',
                         loading: '生成回忆中...',
                         appName: '家族回忆记录册',
                         room: '房间',
@@ -2031,7 +2067,7 @@
                         defaultText: '这段时光没有留下文字，但照片记录了当时的美好...',
                         people: '人物',
                         collabTitle: '家族协同编辑',
-                        createRoomDesc: '创建房间，邀请家人一起完善家族回忆 (高级功能)',
+                        createRoomDesc: '创建房间，邀请家人一起完善家族回忆',
                         inRoomDesc: '您当前在房间中，家人可通过下方二维码加入',
                         createRoom: '创建房间',
                         copyLink: '复制链接',
@@ -2057,6 +2093,8 @@
                         importAlbum: 'Import Album',
                         joinCollab: 'Join Collaboration',
                         premium: 'Premium',
+                        premiumRequired: 'Premium Required',
+                        collabPremiumDesc: 'Collaboration is a premium feature. Subscribe to use it.',
                         loading: 'Generating memories...',
                         appName: 'Family Memories Record',
                         room: 'Room',
@@ -2126,7 +2164,7 @@
                         defaultText: 'No words were left for this moment, but the photo captured the beauty of that time...',
                         people: 'People',
                         collabTitle: 'Family Collaboration',
-                        createRoomDesc: 'Create a room and invite family members (Premium)',
+                        createRoomDesc: 'Create a room and invite family members',
                         inRoomDesc: 'You are in a room. Others can scan QR code to join.',
                         createRoom: 'Create Room',
                         copyLink: 'Copy Link',
@@ -2146,14 +2184,14 @@
                         exportPDF: 'Export PDF'
                     }
                 };
-
+                
                 const t = (key) => i18n[currentLang.value][key] || key;
-
+                
                 const switchLang = (lang) => {
                     currentLang.value = lang;
                     localStorage.setItem('familyMemoriesLang', lang);
                 };
-
+                
                 const showWelcome = ref(true);
                 const isLoading = ref(false);
                 const currentView = ref('timeline');
@@ -2167,14 +2205,14 @@
                 const showJoinModal = ref(false);
                 const showPremiumModal = ref(false);
                 const showGiftModal = ref(false);
-
+                
                 const photoLimit = 50;
                 const isPremium = ref(false);
                 const giftPaid = ref(false);
                 const isPlayingMusic = ref(false);
                 const audioPlayer = ref(null);
                 const giftQRCode = ref(null);
-
+                
                 const editingIndex = ref(-1);
                 const editingMemory = ref({ photo: '', text: '', date: '', filter: 'none', year: '', people: [] });
                 const isSepia = ref(false);
@@ -2185,7 +2223,7 @@
                 const isPlaying = ref(false);
                 const currentSlide = ref(0);
                 let slideshowInterval = null;
-
+                
                 const isSpringFestival = ref(true);
                 const roomId = ref('');
                 const joinRoomId = ref('');
@@ -2194,13 +2232,13 @@
                 const familyTreeData = ref({ nodes: [], links: [] });
                 const albumPages = ref([]);
                 const currentPage = ref(0);
-
+                
                 const photoCount = computed(() => {
                     return Object.values(memories.value).reduce((total, yearMemories) => total + (yearMemories ? yearMemories.length : 0), 0);
                 });
-
+                
                 const currentMemories = computed(() => memories.value[2026] || []);
-
+                
                 const allMemories = computed(() => {
                     const all = [];
                     Object.keys(memories.value).sort().forEach(year => {
@@ -2210,14 +2248,14 @@
                     });
                     return all;
                 });
-
+                
                 const shareUrl = computed(() => {
                     const data = encodeURIComponent(JSON.stringify(memories.value));
                     return `${window.location.origin}${window.location.pathname}#data=${data}`;
                 });
-
-                const alipayLink = ref('https://qr.alipay.com/fkx19446x1v1bpts5f1hy92');
-
+                
+                const alipayLink = ref('https://qr.alipay.com/fkx19371uit3zjejjealwc5');
+                
                 const giftLink = computed(() => {
                     const token = btoa(JSON.stringify({ 
                         memories: memories.value, 
@@ -2227,13 +2265,59 @@
                     }));
                     return `${window.location.origin}${window.location.pathname}?gift=${token}`;
                 });
-
+                
+                // 修复2：定义打开弹窗的方法，避免命名冲突
+                const openPremiumModal = () => {
+                    showPremiumModal.value = true;
+                };
+                
+                const closePremiumModal = () => {
+                    showPremiumModal.value = false;
+                };
+                
+                const openGiftModal = () => {
+                    showGiftModal.value = true;
+                    if (giftPaid.value) {
+                        nextTick(() => {
+                            generateGiftQR();
+                        });
+                    }
+                };
+                
+                const closeGiftModal = () => {
+                    showGiftModal.value = false;
+                };
+                
+                const openCollabModal = () => {
+                    showCollab.value = true;
+                    if (roomId.value && isPremium.value) {
+                        nextTick(() => {
+                            const qrcodeDiv = document.getElementById('qrcode');
+                            if (qrcodeDiv && qrcodeDiv.innerHTML === '') {
+                                new QRCode(qrcodeDiv, {
+                                    text: `${window.location.origin}${window.location.pathname}?room=${roomId.value}`,
+                                    width: 128, height: 128, colorDark: '#C8102E', colorLight: '#F5F5DC', correctLevel: QRCode.CorrectLevel.M
+                                });
+                            }
+                        });
+                    }
+                };
+                
+                const closeCollabModal = () => {
+                    showCollab.value = false;
+                };
+                
+                // 修复4：处理协同编辑点击
+                const handleCollabClick = () => {
+                    openCollabModal();
+                };
+                
                 const initAudio = () => {
                     audioPlayer.value = new Audio('https://cdn.pixabay.com/download/audio/2022/03/09/audio_c8c91e3327.mp3?filename=chinese-new-year-70558.mp3');
                     audioPlayer.value.loop = true;
                     audioPlayer.value.volume = 0.5;
                 };
-
+                
                 const toggleMusic = () => {
                     if (!audioPlayer.value) initAudio();
                     if (isPlayingMusic.value) {
@@ -2246,11 +2330,11 @@
                         isPlayingMusic.value = true;
                     }
                 };
-
+                
                 const checkSpringFestival = () => {
                     if (isSpringFestival.value) initPlumBlossoms();
                 };
-
+                
                 const initPlumBlossoms = () => {
                     const canvas = document.getElementById('plumCanvas');
                     if (!canvas) return;
@@ -2259,11 +2343,11 @@
                     let height = window.innerHeight;
                     canvas.width = width;
                     canvas.height = height;
-
+                    
                     const flowers = [];
                     const fireworks = [];
                     const flowerCount = 30;
-
+                    
                     class Flower {
                         constructor() { this.reset(); }
                         reset() {
@@ -2301,7 +2385,7 @@
                             ctx.restore();
                         }
                     }
-
+                    
                     class Firework {
                         constructor() {
                             this.x = Math.random() * width;
@@ -2360,13 +2444,13 @@
                             }
                         }
                     }
-
+                    
                     for (let i = 0; i < flowerCount; i++) {
                         const flower = new Flower();
                         flower.y = Math.random() * height;
                         flowers.push(flower);
                     }
-
+                    
                     let animationId;
                     const animate = () => {
                         ctx.clearRect(0, 0, width, height);
@@ -2384,7 +2468,7 @@
                         animationId = requestAnimationFrame(animate);
                     };
                     animate();
-
+                    
                     window.addEventListener('resize', () => {
                         width = window.innerWidth;
                         height = window.innerHeight;
@@ -2392,11 +2476,11 @@
                         canvas.height = height;
                     });
                 };
-
+                
                 const generateFamilyTreeData = () => {
                     const peopleMap = new Map();
                     const connections = new Map();
-
+                    
                     allMemories.value.forEach(memory => {
                         if (memory.people && memory.people.length > 0) {
                             memory.people.forEach(person => {
@@ -2406,7 +2490,7 @@
                                 peopleMap.get(person).count++;
                                 peopleMap.get(person).years.add(memory.year);
                             });
-
+                            
                             if (memory.people.length > 1) {
                                 for (let i = 0; i < memory.people.length; i++) {
                                     for (let j = i + 1; j < memory.people.length; j++) {
@@ -2418,70 +2502,81 @@
                             }
                         }
                     });
-
+                    
                     const nodes = Array.from(peopleMap.values()).map(p => ({
                         id: p.id, name: p.name, value: p.count, years: Array.from(p.years),
                         radius: Math.min(30, 10 + p.count * 3)
                     }));
-
+                    
                     const links = [];
                     connections.forEach((strength, key) => {
                         const [source, target] = key.split('-');
                         links.push({ source, target, value: strength });
                     });
-
+                    
                     familyTreeData.value = { nodes, links };
                 };
-
+                
                 const drawFamilyTree = () => {
                     if (currentView.value !== 'tree') return;
                     nextTick(() => {
                         const container = document.getElementById('familyTreeSvg');
                         if (!container || familyTreeData.value.nodes.length === 0) return;
                         container.innerHTML = '';
-
+                        
                         const width = container.clientWidth;
                         const height = container.clientHeight || 600;
-
+                        
                         const svg = d3.select('#familyTreeSvg').append('svg').attr('width', width).attr('height', height).attr('viewBox', [0, 0, width, height]);
                         const g = svg.append('g');
-
+                        
                         const zoom = d3.zoom().scaleExtent([0.1, 4]).on('zoom', (e) => g.attr('transform', e.transform));
                         svg.call(zoom);
-
+                        
                         const nodes = familyTreeData.value.nodes.map(d => ({...d}));
                         const links = familyTreeData.value.links.map(d => ({...d}));
-
+                        
                         const simulation = d3.forceSimulation(nodes)
                             .force('link', d3.forceLink(links).id(d => d.id).distance(100))
                             .force('charge', d3.forceManyBody().strength(-300))
                             .force('center', d3.forceCenter(width / 2, height / 2))
                             .force('collision', d3.forceCollide().radius(d => d.radius + 5));
-
+                        
                         const link = g.append('g').attr('class', 'links').selectAll('line').data(links).enter().append('line')
                             .attr('class', 'link').attr('stroke-width', d => Math.sqrt(d.value) * 2);
-
+                        
                         const node = g.append('g').attr('class', 'nodes').selectAll('g').data(nodes).enter().append('g')
                             .attr('class', 'node')
                             .call(d3.drag()
                                 .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
                                 .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
                                 .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
-
+                        
                         node.append('circle').attr('r', d => d.radius).attr('fill', d => d.value > 2 ? 'var(--imperial-red)' : 'var(--gold)')
                             .attr('stroke', '#fff').attr('stroke-width', 2);
                         node.append('text').attr('dy', d => d.radius + 15).text(d => d.name).style('font-size', '12px').style('fill', 'var(--dark-brown)');
-
+                        
+                        const tooltip = d3.select('body').append('div')
+                            .style('position', 'fixed').style('visibility', 'hidden')
+                            .style('background', 'rgba(255,255,255,0.95)').style('border', '1px solid var(--gold)')
+                            .style('border-radius', '4px').style('padding', '8px').style('font-size', '12px')
+                            .style('box-shadow', '0 2px 8px rgba(0,0,0,0.2)').style('pointer-events', 'none').style('z-index', '1000');
+                        
+                        node.on('mouseover', (e, d) => {
+                            tooltip.html(`<strong>${d.name}</strong><br/>Years: ${d.years.join(', ')}`)
+                                .style('visibility', 'visible').style('left', (e.clientX + 10) + 'px').style('top', (e.clientY - 10) + 'px');
+                        }).on('mouseout', () => tooltip.style('visibility', 'hidden'));
+                        
                         simulation.on('tick', () => {
                             link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
                             node.attr('transform', d => `translate(${d.x},${d.y})`);
                         });
                     });
                 };
-
+                
                 const resetZoom = () => drawFamilyTree();
                 const refreshTree = () => { generateFamilyTreeData(); drawFamilyTree(); };
-
+                
                 const initSpeechRecognition = () => {
                     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2489,7 +2584,7 @@
                         recognition.value.lang = currentLang.value === 'zh' ? 'zh-CN' : 'en-US';
                         recognition.value.continuous = true;
                         recognition.value.interimResults = true;
-
+                        
                         recognition.value.onresult = (e) => {
                             let finalTranscript = '';
                             for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -2504,18 +2599,17 @@
                         recognition.value.onend = () => { isRecording.value = false; };
                     }
                 };
-
+                
                 const showToast = (msg) => {
                     toastMessage.value = msg;
                     setTimeout(() => toastMessage.value = '', 3000);
                 };
-
+                
                 const generateRoomId = () => Math.random().toString(36).substring(2, 8).toUpperCase();
-
+                
                 const createRoom = () => {
                     if (!isPremium.value) {
                         showToast(t('premiumRequired'));
-                        showPremiumModal.value = true;
                         return;
                     }
                     roomId.value = generateRoomId();
@@ -2538,11 +2632,10 @@
                     });
                     showToast(t('roomCreated'));
                 };
-
+                
                 const joinRoom = () => {
                     if (!isPremium.value) {
                         showToast(t('premiumRequired'));
-                        showPremiumModal.value = true;
                         return;
                     }
                     if (joinRoomId.value.length !== 6) { showToast(t('enter6digits')); return; }
@@ -2555,51 +2648,37 @@
                     showCollab.value = false;
                     showToast(`${t('joined')}: ${roomId.value}`);
                 };
-
+                
                 const joinRoomFromWelcome = () => {
+                    if (!isPremium.value) {
+                        showToast(t('premiumRequired'));
+                        showJoinModal.value = false;
+                        openPremiumModal();
+                        return;
+                    }
                     joinRoom();
                     showJoinModal.value = false;
                     showWelcome.value = false;
                 };
-
+                
                 const leaveRoom = () => {
                     roomId.value = ''; onlineUsers.value = [];
                     if (broadcastChannel.value) { broadcastChannel.value.close(); broadcastChannel.value = null; }
                     showToast(t('left'));
                 };
-
+                
                 const copyRoomLink = () => {
                     const link = `${window.location.origin}${window.location.pathname}?room=${roomId.value}`;
                     navigator.clipboard.writeText(link).then(() => showToast(t('copied')));
                 };
-
-                const showCollabModal = () => {
-                    if (!isPremium.value) {
-                        showToast(t('premiumRequired'));
-                        showPremiumModal.value = true;
-                        return;
-                    }
-                    showCollab.value = true;
-                    if (roomId.value) {
-                        nextTick(() => {
-                            const qrcodeDiv = document.getElementById('qrcode');
-                            if (qrcodeDiv && qrcodeDiv.innerHTML === '') {
-                                new QRCode(qrcodeDiv, {
-                                    text: `${window.location.origin}${window.location.pathname}?room=${roomId.value}`,
-                                    width: 128, height: 128, colorDark: '#C8102E', colorLight: '#F5F5DC', correctLevel: QRCode.CorrectLevel.M
-                                });
-                            }
-                        });
-                    }
-                };
-
+                
                 const createNewAlbum = () => {
                     memories.value = {};
                     saveToLocalStorage();
                     showWelcome.value = false;
                     checkUrlParams();
                 };
-
+                
                 const importAlbum = () => {
                     const input = document.createElement('input');
                     input.type = 'file'; input.accept = '.json';
@@ -2623,67 +2702,80 @@
                     };
                     input.click();
                 };
-
-                const joinCollaboration = () => { showJoinModal.value = true; };
-
+                
+                const joinCollaboration = () => { 
+                    if (!isPremium.value) {
+                        openPremiumModal();
+                        return;
+                    }
+                    showJoinModal.value = true; 
+                };
+                
                 const backToHome = () => {
                     showWelcome.value = true;
                     currentView.value = 'timeline';
+                    // 停止音乐
+                    if (isPlayingMusic.value && audioPlayer.value) {
+                        audioPlayer.value.pause();
+                        isPlayingMusic.value = false;
+                    }
                 };
-
+                
                 const loadFromLocalStorage = () => {
                     const saved = localStorage.getItem('familyMemories');
                     const savedLang = localStorage.getItem('familyMemoriesLang');
                     const savedPremium = localStorage.getItem('familyMemoriesPremium');
                     const savedGift = localStorage.getItem('familyMemoriesGift');
-
+                    
                     if (saved) { try { memories.value = JSON.parse(saved); } catch (e) {} }
                     if (savedLang) currentLang.value = savedLang;
                     if (savedPremium === 'true') isPremium.value = true;
                     if (savedGift === 'true') giftPaid.value = true;
                 };
-
+                
                 const saveToLocalStorage = () => {
                     localStorage.setItem('familyMemories', JSON.stringify(memories.value));
                     if (broadcastChannel.value && roomId.value) broadcastChannel.value.postMessage({ type: 'sync', data: memories.value });
                 };
-
+                
                 const checkUrlParams = () => {
                     const url = new URL(window.location.href);
                     const room = url.searchParams.get('room');
                     if (room && room.length === 6) { joinRoomId.value = room; joinRoom(); }
                 };
-
+                
+                const hasMemory = (year) => memories.value[year] && memories.value[year].length > 0;
+                
                 const triggerUpload = () => {
                     if (photoCount.value >= photoLimit && !isPremium.value) {
-                        showPremiumModal.value = true;
+                        openPremiumModal();
                         return;
                     }
                     fileInput.value.click();
                 };
-
+                
                 const handleFileSelect = (e) => {
                     const files = Array.from(e.target.files);
                     if (photoCount.value + files.length > photoLimit && !isPremium.value) {
                         showToast(t('limitReached'));
-                        showPremiumModal.value = true;
+                        openPremiumModal();
                         return;
                     }
                     processFiles(files);
                     e.target.value = '';
                 };
-
+                
                 const handleDrop = (e) => {
                     isDragging.value = false;
                     const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
                     if (photoCount.value + files.length > photoLimit && !isPremium.value) {
                         showToast(t('limitReached'));
-                        showPremiumModal.value = true;
+                        openPremiumModal();
                         return;
                     }
                     processFiles(files);
                 };
-
+                
                 const processFiles = (files) => {
                     const maxSize = isPremium.value ? 20 * 1024 * 1024 : 5 * 1024 * 1024;
                     files.forEach(file => {
@@ -2707,24 +2799,24 @@
                         reader.readAsDataURL(file);
                     });
                 };
-
+                
                 const editMemory = (index) => {
                     editingIndex.value = index;
                     editingMemory.value = JSON.parse(JSON.stringify(currentMemories.value[index]));
                     isSepia.value = editingMemory.value.filter === 'sepia';
                     showEditModal.value = true;
                 };
-
+                
                 const closeEditModal = () => {
                     showEditModal.value = false;
                     editingMemory.value = { photo: '', text: '', date: '', filter: 'none', year: '', people: [] };
                     isSepia.value = false; tagInput.value = '';
                 };
-
+                
                 const saveMemory = () => {
                     if (photoCount.value >= photoLimit && !isPremium.value && editingIndex.value === -1) {
                         showToast(t('limitReached'));
-                        showPremiumModal.value = true;
+                        openPremiumModal();
                         return;
                     }
                     editingMemory.value.filter = isSepia.value ? 'sepia' : 'none';
@@ -2736,27 +2828,18 @@
                     showToast(t('saved'));
                     if (currentView.value === 'tree') refreshTree();
                 };
-
-                const showPremiumInfo = () => { showPremiumModal.value = true; };
-
-                const selectPremium = (type) => {};
-
+                
+                const selectPremium = (type) => {
+                    // 模拟选择方案
+                };
+                
                 const buyPremium = () => {
                     isPremium.value = true;
                     localStorage.setItem('familyMemoriesPremium', 'true');
                     showPremiumModal.value = false;
                     showToast(currentLang.value === 'zh' ? '开通成功！享受高级功能' : 'Upgrade successful!');
                 };
-
-                const openGiftModal = () => {
-                    showGiftModal.value = true;
-                    if (giftPaid.value) {
-                        nextTick(() => {
-                            generateGiftQR();
-                        });
-                    }
-                };
-
+                
                 const markGiftPaid = () => {
                     setTimeout(() => {
                         giftPaid.value = true;
@@ -2766,7 +2849,7 @@
                         });
                     }, 2000);
                 };
-
+                
                 const generateGiftQR = () => {
                     if (giftQRCode.value) {
                         giftQRCode.value.innerHTML = '';
@@ -2780,75 +2863,75 @@
                         });
                     }
                 };
-
+                
                 const copyGiftLink = () => {
                     navigator.clipboard.writeText(giftLink.value).then(() => showToast(t('copied')));
                 };
-
+                
                 const shareToWechat = () => {
                     showToast(currentLang.value === 'zh' ? '请使用微信扫一扫分享' : 'Please use WeChat scan to share');
                 };
-
+                
                 const addTag = () => {
                     const tag = tagInput.value.trim();
                     if (tag && !editingMemory.value.people.includes(tag)) editingMemory.value.people.push(tag);
                     tagInput.value = '';
                 };
-
+                
                 const removeTag = (index) => { editingMemory.value.people.splice(index, 1); };
-
+                
                 const removeLastTag = () => { if (tagInput.value === '' && editingMemory.value.people.length > 0) editingMemory.value.people.pop(); };
-
+                
                 const toggleVoiceInput = () => {
                     if (!recognition.value) { showToast(t('notSupported')); return; }
                     if (isRecording.value) { recognition.value.stop(); isRecording.value = false; }
                     else { recognition.value.start(); isRecording.value = true; showToast(t('speakNow')); }
                 };
-
+                
                 const formatDate = (dateStr) => {
                     if (!dateStr) return '';
                     const date = new Date(dateStr);
                     return currentLang.value === 'zh' ? `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日` : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
                 };
-
+                
                 const prepareAlbumPages = () => {
                     albumPages.value = allMemories.value.map(m => ({ ...m, flipped: false }));
                     currentPage.value = 0;
                 };
-
+                
                 const nextPage = () => {
                     if (currentPage.value < albumPages.value.length - 1) {
                         albumPages.value[currentPage.value].flipped = true;
                         currentPage.value++;
                     }
                 };
-
+                
                 const prevPage = () => {
                     if (currentPage.value > 0) {
                         currentPage.value--;
                         albumPages.value[currentPage.value].flipped = false;
                     }
                 };
-
+                
                 const startSlideshow = () => {
                     if (allMemories.value.length === 0) { showToast(t('noMemories')); return; }
                     isPlaying.value = true; currentSlide.value = 0;
                     slideshowInterval = setInterval(() => { currentSlide.value++; if (currentSlide.value >= allMemories.value.length) currentSlide.value = 0; }, 5000);
                 };
-
+                
                 const stopSlideshow = () => {
                     isPlaying.value = false;
                     if (slideshowInterval) { clearInterval(slideshowInterval); slideshowInterval = null; }
                 };
-
+                
                 const showShareModal = () => { showSharePanel.value = true; };
-
+                
                 const copyUrl = () => { navigator.clipboard.writeText(shareUrl.value).then(() => showToast(t('copied'))); };
-
+                
                 const exportImage = async () => {
                     if (!isPremium.value) {
                         showToast(t('premiumRequired'));
-                        showPremiumModal.value = true;
+                        openPremiumModal();
                         return;
                     }
                     showToast(t('generating'));
@@ -2862,11 +2945,11 @@
                         showToast(t('saved'));
                     } catch (err) { showToast(t('failed')); }
                 };
-
+                
                 const exportPDF = async () => {
                     if (!isPremium.value) {
                         showToast(t('premiumRequired'));
-                        showPremiumModal.value = true;
+                        openPremiumModal();
                         return;
                     }
                     showToast(t('generating'));
@@ -2887,7 +2970,7 @@
                     pdf.save(`family_memories_${new Date().toLocaleDateString()}.pdf`);
                     showToast(t('saved'));
                 };
-
+                
                 const exportData = () => {
                     const exportObj = { memories: memories.value, isPremium: isPremium.value, exportDate: new Date().toISOString() };
                     const dataStr = JSON.stringify(exportObj, null, 2);
@@ -2899,7 +2982,7 @@
                     link.click();
                     showToast(t('downloaded'));
                 };
-
+                
                 watch(currentView, (newView) => { 
                     if (newView === 'album') {
                         prepareAlbumPages();
@@ -2910,17 +2993,17 @@
                         refreshTree();
                     }
                 });
-
+                
                 watch(memories, () => saveToLocalStorage(), { deep: true });
                 watch(currentLang, (newLang) => { if (recognition.value) recognition.value.lang = newLang === 'zh' ? 'zh-CN' : 'en-US'; });
-
+                
                 onMounted(() => {
                     loadFromLocalStorage();
                     checkSpringFestival();
                     initSpeechRecognition();
                     if (Object.keys(memories.value).length > 0) { showWelcome.value = false; checkUrlParams(); }
                 });
-
+                
                 return {
                     currentLang, t, switchLang,
                     showWelcome, isLoading, currentView, selectedYear, memories,
@@ -2934,16 +3017,17 @@
                     photoCount, photoLimit, isPremium, giftPaid,
                     isPlayingMusic, alipayLink, giftLink, giftQRCode,
                     createNewAlbum, importAlbum, joinCollaboration, backToHome,
-                    triggerUpload, handleFileSelect, handleDrop,
+                    hasMemory, selectYear, triggerUpload, handleFileSelect, handleDrop,
                     editMemory, closeEditModal, saveMemory, addTag, removeTag, removeLastTag,
                     toggleVoiceInput, formatDate, nextPage, prevPage,
                     startSlideshow, stopSlideshow, showShareModal, copyUrl,
-                    exportImage, exportPDF, exportData, showCollabModal,
+                    exportImage, exportPDF, exportData,
                     createRoom, joinRoom, joinRoomFromWelcome, leaveRoom, copyRoomLink,
-                    resetZoom, refreshTree, showToast, showPremiumInfo,
-                    selectPremium, buyPremium, openGiftModal,
-                    markGiftPaid, copyGiftLink, shareToWechat, toggleMusic,
-                    generateGiftQR
+                    resetZoom, refreshTree, showToast,
+                    openPremiumModal, closePremiumModal, openGiftModal, closeGiftModal,
+                    openCollabModal, closeCollabModal, handleCollabClick,
+                    selectPremium, buyPremium, markGiftPaid, copyGiftLink, shareToWechat,
+                    toggleMusic, generateGiftQR
                 };
             }
         }).mount('#app');
