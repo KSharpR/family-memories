@@ -3,25 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>家族回忆时间轴 - 珍藏每一刻</title>
+    <title>Family Memories Timeline | 家族回忆时间轴</title>
     
     <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
-    <!-- D3.js 用于家族树 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    
-    <!-- QRCode.js 用于生成二维码 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <!-- html2canvas 和 jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
-    <!-- 字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -31,16 +24,15 @@
             --dark-brown: #3E2723;
             --light-gold: #F9E076;
             --shadow: rgba(62, 39, 35, 0.15);
+            --premium-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
         
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Noto Serif SC', 'Source Han Serif CN', serif;
+            font-family: 'Noto Serif SC', 'Playfair Display', serif;
             background-color: var(--rice-paper);
             background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
             color: var(--dark-brown);
@@ -48,7 +40,108 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* 春节梅花 Canvas */
+        /* 语言切换器 */
+        .lang-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1001;
+        }
+        
+        .lang-btn {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--gold);
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .lang-btn.active {
+            background: var(--imperial-red);
+            color: white;
+            border-color: var(--imperial-red);
+        }
+        
+        .lang-btn:hover:not(.active) {
+            background: var(--light-gold);
+        }
+        
+        /* 开发者信息 */
+        .developer-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.85rem;
+            color: var(--dark-brown);
+            opacity: 0.7;
+            z-index: 1001;
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 1px;
+        }
+        
+        .developer-info .trademark {
+            font-size: 0.6em;
+            vertical-align: super;
+            margin-left: 2px;
+        }
+        
+        /* 待开发区域样式 */
+        .premium-section {
+            background: var(--premium-bg);
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .premium-section::before {
+            content: '★ PREMIUM ★';
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background: var(--gold);
+            color: #1a1a2e;
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-size: 0.7rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        
+        .premium-lock {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+        
+        .year-edit-controls {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+        
+        .year-edit-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 5px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        
+        .year-edit-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        
+        /* 原有样式保留 */
         #plumCanvas {
             position: fixed;
             top: 0;
@@ -59,7 +152,6 @@
             z-index: 9999;
         }
         
-        /* 欢迎界面 */
         .welcome-screen {
             position: fixed;
             top: 0;
@@ -108,8 +200,6 @@
             font-family: inherit;
             box-shadow: 0 4px 6px var(--shadow);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
         
         .btn-primary:hover {
@@ -135,7 +225,20 @@
             color: white;
         }
         
-        /* Loading 动画 */
+        .btn-premium {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            cursor: not-allowed;
+            font-family: inherit;
+            opacity: 0.8;
+            position: relative;
+            overflow: hidden;
+        }
+        
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -193,7 +296,6 @@
             letter-spacing: 0.3em;
         }
         
-        /* 主容器 */
         .app-container {
             max-width: 100%;
             min-height: 100vh;
@@ -201,7 +303,6 @@
             flex-direction: column;
         }
         
-        /* 头部 */
         .header {
             background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(245,245,220,0.95));
             border-bottom: 2px solid var(--gold);
@@ -284,7 +385,6 @@
             transform: scale(1.1);
         }
         
-        /* 横向时间轴 */
         .timeline-container {
             background: white;
             border-bottom: 1px solid var(--gold);
@@ -325,6 +425,8 @@
             font-size: 0.9rem;
             transition: all 0.3s;
             position: relative;
+            display: flex;
+            align-items: center;
         }
         
         .year-item:hover {
@@ -352,7 +454,13 @@
             border: 2px solid white;
         }
         
-        /* 主内容区 */
+        .year-item.premium {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: var(--gold);
+            border-color: var(--gold);
+            cursor: not-allowed;
+        }
+        
         .main-content {
             flex: 1;
             padding: 2rem 1rem;
@@ -362,7 +470,6 @@
             box-sizing: border-box;
         }
         
-        /* 家族树视图 */
         .family-tree-container {
             background: white;
             border: 1px solid var(--gold);
@@ -448,13 +555,6 @@
             stroke-width: 1.5px;
         }
         
-        .link.active {
-            stroke: var(--imperial-red);
-            stroke-width: 2px;
-            stroke-opacity: 1;
-        }
-        
-        /* 照片详情 */
         .memory-detail {
             background: white;
             border: 1px solid var(--gold);
@@ -514,7 +614,6 @@
             color: white;
         }
         
-        /* 照片画廊 */
         .photo-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -602,7 +701,6 @@
             margin-top: 0.3rem;
         }
         
-        /* 空状态 */
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -615,7 +713,6 @@
             margin-bottom: 1rem;
         }
         
-        /* 上传区域 */
         .upload-zone {
             border: 2px dashed var(--gold);
             border-radius: 8px;
@@ -650,7 +747,6 @@
             color: #999;
         }
         
-        /* 模态框 */
         .modal {
             position: fixed;
             top: 0;
@@ -748,7 +844,6 @@
             color: var(--imperial-red);
         }
         
-        /* 标签输入 */
         .tags-input {
             display: flex;
             flex-wrap: wrap;
@@ -787,7 +882,6 @@
             padding: 0.3rem;
         }
         
-        /* 语音输入按钮 */
         .voice-input-btn {
             display: inline-flex;
             align-items: center;
@@ -814,7 +908,6 @@
             animation: pulse 1.5s infinite;
         }
         
-        /* 复选框 */
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -828,7 +921,6 @@
             accent-color: var(--imperial-red);
         }
         
-        /* 协同模态框特殊样式 */
         .collab-panel {
             text-align: center;
             padding: 1rem;
@@ -884,7 +976,6 @@
             border: 2px solid var(--gold);
         }
         
-        /* 3D 相册视图 */
         .album-view {
             position: fixed;
             top: 0;
@@ -1010,7 +1101,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         
-        /* 播放回忆按钮 */
         .play-memories-btn {
             position: fixed;
             bottom: 2rem;
@@ -1036,7 +1126,6 @@
             background: #B01026;
         }
         
-        /* 轮播播放界面 */
         .slideshow-view {
             position: fixed;
             top: 0;
@@ -1079,7 +1168,6 @@
             margin-bottom: 0.5rem;
         }
         
-        /* 分享面板 */
         .share-panel {
             background: white;
             padding: 1.5rem;
@@ -1106,7 +1194,6 @@
             flex-wrap: wrap;
         }
         
-        /* 提示消息 */
         .toast {
             position: fixed;
             bottom: 100px;
@@ -1126,7 +1213,6 @@
             transform: translateX(-50%) translateY(0);
         }
         
-        /* 春节装饰 */
         .spring-festival-badge {
             position: fixed;
             top: 80px;
@@ -1147,58 +1233,25 @@
             50% { transform: translateY(-5px); }
         }
         
-        /* 响应式调整 */
         @media (max-width: 768px) {
-            .welcome-title {
-                font-size: 1.8rem;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .view-tabs {
-                justify-content: center;
-            }
-            
-            .header-title {
-                justify-content: center;
-            }
-            
-            .memory-detail {
-                padding: 1rem;
-            }
-            
-            .detail-year {
-                font-size: 1.5rem;
-            }
-            
-            .book-container {
-                width: 95%;
-                height: 70vh;
-            }
-            
-            .page-content {
-                padding: 1rem;
-            }
-            
-            .family-tree-container {
-                padding: 1rem;
-                min-height: 400px;
-            }
-            
-            #familyTreeSvg {
-                height: 400px;
-            }
+            .welcome-title { font-size: 1.8rem; }
+            .header-content { flex-direction: column; align-items: stretch; }
+            .view-tabs { justify-content: center; }
+            .header-title { justify-content: center; }
+            .memory-detail { padding: 1rem; }
+            .detail-year { font-size: 1.5rem; }
+            .book-container { width: 95%; height: 70vh; }
+            .page-content { padding: 1rem; }
+            .family-tree-container { padding: 1rem; min-height: 400px; }
+            #familyTreeSvg { height: 400px; }
+            .lang-switcher { top: 10px; right: 10px; }
+            .developer-info { bottom: 10px; right: 10px; font-size: 0.75rem; }
         }
         
-        /* 打印样式 */
         @media print {
-            .header, .timeline-container, .play-memories-btn, #plumCanvas {
+            .header, .timeline-container, .play-memories-btn, #plumCanvas, .lang-switcher, .developer-info {
                 display: none;
             }
-            
             .memory-detail {
                 break-inside: avoid;
                 page-break-inside: avoid;
@@ -1208,26 +1261,45 @@
 </head>
 <body>
     <div id="app">
-        <!-- 春节梅花 Canvas -->
+        <!-- 语言切换器（始终显示） -->
+        <div class="lang-switcher" v-if="showWelcome">
+            <button 
+                class="lang-btn" 
+                :class="{ active: currentLang === 'zh' }"
+                @click="switchLang('zh')"
+            >中文</button>
+            <button 
+                class="lang-btn" 
+                :class="{ active: currentLang === 'en' }"
+                @click="switchLang('en')"
+            >English</button>
+        </div>
+        
+        <!-- 开发者信息（始终显示） -->
+        <div class="developer-info" v-if="showWelcome">
+            KSharpR<span class="trademark">®</span>
+        </div>
+        
         <canvas id="plumCanvas" v-show="isSpringFestival"></canvas>
         
-        <!-- 春节标识 -->
         <div v-if="isSpringFestival" class="spring-festival-badge">
-            🧧 春节模式 🧧
+            🧧 {{ t('springFestival') }} 🧧
         </div>
         
         <!-- 欢迎界面 -->
         <div v-if="showWelcome" class="welcome-screen">
-            <h1 class="welcome-title">家族回忆时间轴</h1>
-            <p class="welcome-subtitle">珍藏岁月，传承记忆</p>
+            <h1 class="welcome-title">{{ t('title') }}</h1>
+            <p class="welcome-subtitle">{{ t('subtitle') }}</p>
             <div class="welcome-buttons">
-                <button class="btn-primary" @click="createNewAlbum">新建相册</button>
-                <button class="btn-secondary" @click="importAlbum">导入相册</button>
-                <button class="btn-secondary" @click="joinCollaboration">加入协同</button>
+                <button class="btn-primary" @click="createNewAlbum">{{ t('newAlbum') }}</button>
+                <button class="btn-secondary" @click="importAlbum">{{ t('importAlbum') }}</button>
+                <button class="btn-secondary" @click="joinCollaboration">{{ t('joinCollab') }}</button>
+                <button class="btn-premium" @click="showPremiumInfo">
+                    🔒 {{ t('premium') }}
+                </button>
             </div>
         </div>
         
-        <!-- Loading 动画 -->
         <div v-if="isLoading" class="loading-overlay">
             <div class="lattice-loader">
                 <div class="lattice-cell"></div>
@@ -1236,18 +1308,16 @@
                 <div class="lattice-cell"></div>
                 <div class="lattice-cell"></div>
             </div>
-            <div class="loading-text">生成回忆中...</div>
+            <div class="loading-text">{{ t('loading') }}</div>
         </div>
         
-        <!-- 主应用 -->
         <div v-if="!showWelcome" class="app-container">
-            <!-- 头部 -->
             <header class="header">
                 <div class="header-content">
                     <h1 class="header-title">
                         <span>❖</span>
-                        <span>家族回忆时间轴</span>
-                        <span v-if="roomId" style="font-size: 0.6em; color: var(--gold); margin-left: 0.5rem;">[房间: {{roomId}}]</span>
+                        <span>{{ t('appName') }}</span>
+                        <span v-if="roomId" style="font-size: 0.6em; color: var(--gold); margin-left: 0.5rem;">[{{ t('room') }}: {{roomId}}]</span>
                     </h1>
                     
                     <div class="view-tabs">
@@ -1255,23 +1325,17 @@
                             class="tab-btn" 
                             :class="{ active: currentView === 'timeline' }"
                             @click="currentView = 'timeline'"
-                        >
-                            时间轴
-                        </button>
+                        >{{ t('timeline') }}</button>
                         <button 
                             class="tab-btn" 
                             :class="{ active: currentView === 'album' }"
                             @click="currentView = 'album'"
-                        >
-                            相册
-                        </button>
+                        >{{ t('album') }}</button>
                         <button 
                             class="tab-btn" 
                             :class="{ active: currentView === 'tree' }"
                             @click="currentView = 'tree'"
-                        >
-                            家族树
-                        </button>
+                        >{{ t('familyTree') }}</button>
                     </div>
                     
                     <div class="header-actions">
@@ -1282,33 +1346,47 @@
                 </div>
             </header>
             
-            <!-- 横向时间轴（仅在时间轴视图显示） -->
             <div class="timeline-container" v-if="currentView === 'timeline'">
                 <div class="timeline">
                     <div 
-                        v-for="year in yearRange" 
-                        :key="year"
+                        v-for="(year, index) in editableYears" 
+                        :key="year.id"
                         class="year-item"
                         :class="{ 
-                            'active': selectedYear === year,
-                            'has-memory': hasMemory(year)
+                            'active': selectedYear === year.value,
+                            'has-memory': hasMemory(year.value)
                         }"
-                        @click="selectYear(year)"
                     >
-                        {{ year }}
+                        <span @click="selectYear(year.value)">{{ year.label }}</span>
+                        <div class="year-edit-controls">
+                            <button class="year-edit-btn" @click.stop="editYearLabel(index)" title="重命名">✏️</button>
+                            <button class="year-edit-btn" @click.stop="removeYear(index)" title="删除">✕</button>
+                        </div>
                     </div>
+                    
+                    <!-- 待开发年份 -->
+                    <div class="year-item premium" @click="showPremiumInfo">
+                        <span>+ {{ t('moreYears') }}</span>
+                    </div>
+                    
+                    <button 
+                        v-if="editableYears.length < 5" 
+                        class="btn-text" 
+                        @click="restoreDefaultYears"
+                        style="margin-left: 10px;"
+                    >
+                        {{ t('restoreYears') }}
+                    </button>
                 </div>
             </div>
             
-            <!-- 主内容区 -->
             <main class="main-content">
-                <!-- 时间轴视图 -->
                 <div v-if="currentView === 'timeline'">
                     <div class="memory-detail">
                         <div class="detail-header">
-                            <h2 class="detail-year">{{ selectedYear }}年</h2>
+                            <h2 class="detail-year">{{ selectedYear }}{{ t('year') }}</h2>
                             <div class="detail-actions">
-                                <button class="btn-text" @click="triggerUpload">添加照片</button>
+                                <button class="btn-text" @click="triggerUpload">{{ t('addPhoto') }}</button>
                                 <input 
                                     type="file" 
                                     ref="fileInput" 
@@ -1320,7 +1398,6 @@
                             </div>
                         </div>
                         
-                        <!-- 上传区域 -->
                         <div 
                             class="upload-zone"
                             @click="triggerUpload"
@@ -1330,11 +1407,10 @@
                             :class="{ 'dragover': isDragging }"
                         >
                             <div class="upload-icon">📷</div>
-                            <div class="upload-text">点击或拖拽上传照片</div>
-                            <div class="upload-hint">支持 JPG、PNG 格式，单张最大 5MB</div>
+                            <div class="upload-text">{{ t('uploadText') }}</div>
+                            <div class="upload-hint">{{ t('uploadHint') }}</div>
                         </div>
                         
-                        <!-- 照片列表 -->
                         <div v-if="currentMemories.length > 0" class="photo-gallery">
                             <div 
                                 v-for="(memory, index) in currentMemories" 
@@ -1346,11 +1422,11 @@
                                     <img 
                                         :src="memory.photo" 
                                         :class="{ 'sepia': memory.filter === 'sepia' }"
-                                        alt="回忆照片"
+                                        alt="Memory"
                                     >
                                 </div>
                                 <div class="photo-info">
-                                    <p class="photo-text">{{ memory.text || '无描述' }}</p>
+                                    <p class="photo-text">{{ memory.text || t('noDesc') }}</p>
                                     <div class="photo-tags" v-if="memory.people && memory.people.length > 0">
                                         <span v-for="person in memory.people.slice(0, 2)" :key="person" class="tag">{{ person }}</span>
                                         <span v-if="memory.people.length > 2" class="tag">+{{ memory.people.length - 2 }}</span>
@@ -1362,30 +1438,29 @@
                         
                         <div v-else class="empty-state">
                             <div class="empty-icon">🕐</div>
-                            <p>这一年还没有回忆，添加第一张照片吧</p>
+                            <p>{{ t('emptyYear') }}</p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 家族树视图 -->
                 <div v-else-if="currentView === 'tree'" class="family-tree-container">
                     <div class="tree-controls">
-                        <button class="btn-text" @click="resetZoom">重置视图</button>
-                        <button class="btn-text" @click="refreshTree">刷新数据</button>
+                        <button class="btn-text" @click="resetZoom">{{ t('resetView') }}</button>
+                        <button class="btn-text" @click="refreshTree">{{ t('refresh') }}</button>
                     </div>
                     
                     <div class="tree-legend">
                         <div class="legend-item">
                             <div class="legend-color" style="background: var(--imperial-red);"></div>
-                            <span>核心成员（多张照片）</span>
+                            <span>{{ t('coreMember') }}</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-color" style="background: var(--gold);"></div>
-                            <span>普通成员</span>
+                            <span>{{ t('normalMember') }}</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-color" style="background: #999;"></div>
-                            <span>连线粗细表示同框频率</span>
+                            <span>{{ t('relationStrength') }}</span>
                         </div>
                     </div>
                     
@@ -1393,12 +1468,11 @@
                     
                     <div v-if="familyTreeData.nodes.length === 0" class="empty-state" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
                         <div class="empty-icon">🌳</div>
-                        <p>暂无家族数据，请在照片中添加人物标签</p>
+                        <p>{{ t('noTreeData') }}</p>
                     </div>
                 </div>
             </main>
             
-            <!-- 3D 相册视图 -->
             <div v-if="currentView === 'album'" class="album-view" @click.self="currentView = 'timeline'">
                 <button class="close-album" @click="currentView = 'timeline'">×</button>
                 <div class="book-container">
@@ -1413,9 +1487,9 @@
                         }"
                     >
                         <div class="page-content">
-                            <div class="page-year">{{ page.year }}年</div>
+                            <div class="page-year">{{ page.year }}{{ t('year') }}</div>
                             <img v-if="page.photo" :src="page.photo" class="page-photo" :class="{ 'sepia': page.filter === 'sepia' }">
-                            <p class="page-text">{{ page.text || '这段时光没有留下文字，但照片记录了当时的美好...' }}</p>
+                            <p class="page-text">{{ page.text || t('defaultText') }}</p>
                             <div v-if="page.people && page.people.length > 0" style="margin-top: 1rem; text-align: center; color: var(--gold);">
                                 👥 {{ page.people.join(', ') }}
                             </div>
@@ -1429,27 +1503,26 @@
                 </div>
             </div>
             
-            <!-- 添加/编辑照片模态框 -->
             <div v-if="showEditModal" class="modal" @click.self="closeEditModal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3 class="modal-title">{{ editingIndex === -1 ? '添加回忆' : '编辑回忆' }}</h3>
+                        <h3 class="modal-title">{{ editingIndex === -1 ? t('addMemory') : t('editMemory') }}</h3>
                         <button class="modal-close" @click="closeEditModal">×</button>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label class="form-label">照片预览</label>
+                            <label class="form-label">{{ t('preview') }}</label>
                             <div style="max-height: 300px; overflow: hidden; border: 1px solid var(--gold); border-radius: 4px;">
                                 <img :src="editingMemory.photo" style="width: 100%; height: auto; display: block;" :class="{ 'sepia': editingMemory.filter === 'sepia' }">
                             </div>
                             <div class="checkbox-group">
                                 <input type="checkbox" id="sepia" v-model="isSepia">
-                                <label for="sepia">应用老照片滤镜（Sepia 色调）</label>
+                                <label for="sepia">{{ t('sepiaFilter') }}</label>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">人物标签（输入名字后按回车）</label>
+                            <label class="form-label">{{ t('peopleTags') }}</label>
                             <div class="tags-input" @click="$refs.tagInput.focus()">
                                 <span v-for="(tag, idx) in editingMemory.people" :key="idx" class="tag-item">
                                     {{ tag }}
@@ -1462,19 +1535,19 @@
                                     v-model="tagInput"
                                     @keydown.enter.prevent="addTag"
                                     @keydown.delete="removeLastTag"
-                                    placeholder="输入名字..."
+                                    :placeholder="t('enterName')"
                                 >
                             </div>
-                            <small style="color: #999; margin-top: 0.3rem; display: block;">提示：标注人物后可自动生成家族关系图谱</small>
+                            <small style="color: #999; margin-top: 0.3rem; display: block;">{{ t('tagHint') }}</small>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">故事描述（限200字）</label>
+                            <label class="form-label">{{ t('story') }} ({{ t('limit') }}200)</label>
                             <textarea 
                                 class="form-textarea" 
                                 v-model="editingMemory.text"
                                 maxlength="200"
-                                placeholder="记录下这张照片背后的故事..."
+                                :placeholder="t('storyPlaceholder')"
                             ></textarea>
                             <div class="char-count" :class="{ 'warning': editingMemory.text.length > 180 }">
                                 {{ editingMemory.text.length }}/200
@@ -1484,72 +1557,128 @@
                                 :class="{ 'recording': isRecording }"
                                 @click="toggleVoiceInput"
                             >
-                                <span>{{ isRecording ? '⏹️ 停止录音' : '🎤 语音输入' }}</span>
+                                <span>{{ isRecording ? t('stopRecord') : t('voiceInput') }}</span>
                             </button>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">具体日期（可选）</label>
+                            <label class="form-label">{{ t('date') }} ({{ t('optional') }})</label>
                             <input type="date" class="form-input" v-model="editingMemory.date">
                         </div>
                         
                         <button class="btn-primary" @click="saveMemory" style="width: 100%; margin-top: 1rem;">
-                            保存回忆
+                            {{ t('save') }}
                         </button>
                     </div>
                 </div>
             </div>
             
-            <!-- 协同编辑模态框 -->
+            <!-- 年份编辑模态框 -->
+            <div v-if="showYearEditModal" class="modal" @click.self="showYearEditModal = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">{{ t('editYear') }}</h3>
+                        <button class="modal-close" @click="showYearEditModal = false">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">{{ t('yearLabel') }}</label>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="editingYearLabel"
+                                :placeholder="t('yearPlaceholder')"
+                            >
+                            <small style="color: #666; margin-top: 0.5rem; display: block;">
+                                {{ t('yearHint') }}
+                            </small>
+                        </div>
+                        <button class="btn-primary" @click="saveYearLabel" style="width: 100%;">
+                            {{ t('confirm') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 待开发提示模态框 -->
+            <div v-if="showPremiumModal" class="modal" @click.self="showPremiumModal = false">
+                <div class="modal-content premium-section">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-bottom: 1px solid var(--gold);">
+                        <h3 class="modal-title" style="color: var(--gold);">🔒 {{ t('premiumFeature') }}</h3>
+                        <button class="modal-close" @click="showPremiumModal = false" style="color: var(--gold);">×</button>
+                    </div>
+                    <div class="modal-body" style="text-align: center; padding: 2rem;">
+                        <div class="premium-lock">🎆</div>
+                        <h3 style="color: var(--gold); margin-bottom: 1rem;">{{ t('moreYears') }}</h3>
+                        <p style="color: #ccc; margin-bottom: 1.5rem; line-height: 1.6;">
+                            {{ t('premiumDesc') }}
+                        </p>
+                        <ul style="text-align: left; color: #aaa; margin-bottom: 2rem; display: inline-block;">
+                            <li>✨ {{ t('feature1') }}</li>
+                            <li>✨ {{ t('feature2') }}</li>
+                            <li>✨ {{ t('feature3') }}</li>
+                        </ul>
+                        <div style="background: rgba(212, 175, 55, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <span style="color: var(--gold); font-size: 1.2rem; font-weight: bold;">
+                                {{ t('contact') }}: KSharpR®
+                            </span>
+                        </div>
+                        <button class="btn-primary" @click="showPremiumModal = false" style="background: var(--gold); color: #1a1a2e;">
+                            {{ t('gotIt') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <div v-if="showCollab" class="modal" @click.self="showCollab = false">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3 class="modal-title">家族协同编辑</h3>
+                        <h3 class="modal-title">{{ t('collabTitle') }}</h3>
                         <button class="modal-close" @click="showCollab = false">×</button>
                     </div>
                     <div class="modal-body">
                         <div class="collab-panel">
-                            <p v-if="!roomId">创建房间，邀请家人一起完善家族回忆</p>
-                            <p v-else>您当前在房间中，家人可通过下方二维码加入</p>
+                            <p v-if="!roomId">{{ t('createRoomDesc') }}</p>
+                            <p v-else>{{ t('inRoomDesc') }}</p>
                             
                             <div v-if="roomId" class="room-code">{{ roomId }}</div>
                             
                             <div id="qrcode" v-show="roomId"></div>
                             
                             <div v-if="!roomId" style="margin: 1rem 0;">
-                                <button class="btn-primary" @click="createRoom">创建房间</button>
+                                <button class="btn-primary" @click="createRoom">{{ t('createRoom') }}</button>
                             </div>
                             
                             <div v-else style="margin: 1rem 0;">
-                                <button class="btn-secondary" @click="copyRoomLink">复制房间链接</button>
-                                <button class="btn-secondary" @click="leaveRoom" style="margin-left: 0.5rem;">离开房间</button>
+                                <button class="btn-secondary" @click="copyRoomLink">{{ t('copyLink') }}</button>
+                                <button class="btn-secondary" @click="leaveRoom" style="margin-left: 0.5rem;">{{ t('leave') }}</button>
                             </div>
                             
                             <div class="collab-status" v-if="roomId">
-                                <div>在线成员 ({{ onlineUsers.length + 1 }})</div>
+                                <div>{{ t('onlineUsers') }} ({{ onlineUsers.length + 1 }})</div>
                                 <div class="collab-users">
-                                    <div class="user-avatar" title="我">我</div>
+                                    <div class="user-avatar" :title="t('me')">{{ t('me')[0] }}</div>
                                     <div v-for="user in onlineUsers" :key="user" class="user-avatar" :title="user">{{ user[0] }}</div>
                                 </div>
                                 <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">
-                                    数据会自动同步到所有在线成员
+                                    {{ t('autoSync') }}
                                 </div>
                             </div>
                             
                             <hr style="border: none; border-top: 1px solid var(--gold); margin: 1.5rem 0;">
                             
                             <div v-if="!roomId">
-                                <p style="margin-bottom: 0.5rem;">已有房间号？</p>
+                                <p style="margin-bottom: 0.5rem;">{{ t('haveRoom') }}</p>
                                 <div style="display: flex; gap: 0.5rem;">
                                     <input 
                                         type="text" 
                                         class="form-input" 
                                         v-model="joinRoomId" 
-                                        placeholder="输入6位房间号"
+                                        :placeholder="t('enter6digits')"
                                         maxlength="6"
                                         style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase;"
                                     >
-                                    <button class="btn-primary" @click="joinRoom">加入</button>
+                                    <button class="btn-primary" @click="joinRoom">{{ t('join') }}</button>
                                 </div>
                             </div>
                         </div>
@@ -1557,52 +1686,49 @@
                 </div>
             </div>
             
-            <!-- 加入协同模态框（欢迎页用） -->
             <div v-if="showJoinModal" class="modal" @click.self="showJoinModal = false">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3 class="modal-title">加入家族协同</h3>
+                        <h3 class="modal-title">{{ t('joinCollabTitle') }}</h3>
                         <button class="modal-close" @click="showJoinModal = false">×</button>
                     </div>
                     <div class="modal-body">
                         <div class="collab-panel">
-                            <p>输入家人分享的房间号</p>
+                            <p>{{ t('enterRoomCode') }}</p>
                             <input 
                                 type="text" 
                                 class="form-input" 
                                 v-model="joinRoomId" 
-                                placeholder="6位房间号"
+                                :placeholder="t('6digitCode')"
                                 maxlength="6"
                                 style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase; margin: 1rem 0;"
                             >
-                            <button class="btn-primary" @click="joinRoomFromWelcome" style="width: 100%;">加入房间</button>
+                            <button class="btn-primary" @click="joinRoomFromWelcome" style="width: 100%;">{{ t('joinRoom') }}</button>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 分享模态框 -->
             <div v-if="showSharePanel" class="modal" @click.self="showSharePanel = false">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3 class="modal-title">分享家族回忆</h3>
+                        <h3 class="modal-title">{{ t('shareTitle') }}</h3>
                         <button class="modal-close" @click="showSharePanel = false">×</button>
                     </div>
                     <div class="modal-body">
                         <div class="share-panel">
-                            <p>复制下方链接分享给家人：</p>
+                            <p>{{ t('copyLink') }}</p>
                             <div class="share-url">{{ shareUrl }}</div>
                             <div class="share-buttons">
-                                <button class="btn-primary" @click="copyUrl">复制链接</button>
-                                <button class="btn-secondary" @click="exportImage">导出长图</button>
-                                <button class="btn-secondary" @click="exportPDF">导出 PDF</button>
+                                <button class="btn-primary" @click="copyUrl">{{ t('copy') }}</button>
+                                <button class="btn-secondary" @click="exportImage">{{ t('exportImage') }}</button>
+                                <button class="btn-secondary" @click="exportPDF">{{ t('exportPDF') }}</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 播放回忆 -->
             <div v-if="isPlaying" class="slideshow-view" @click="stopSlideshow">
                 <img 
                     v-for="(memory, index) in allMemories" 
@@ -1613,7 +1739,7 @@
                     :style="{ filter: memory.filter === 'sepia' ? 'sepia(0.6)' : 'none' }"
                 >
                 <div class="slideshow-info" v-if="allMemories[currentSlide]">
-                    <div class="slideshow-year">{{ allMemories[currentSlide].year }}年</div>
+                    <div class="slideshow-year">{{ allMemories[currentSlide].year }}{{ t('year') }}</div>
                     <div>{{ allMemories[currentSlide].text }}</div>
                     <div v-if="allMemories[currentSlide].people" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">
                         👥 {{ allMemories[currentSlide].people.join(', ') }}
@@ -1621,12 +1747,10 @@
                 </div>
             </div>
             
-            <!-- 播放按钮 -->
             <button v-if="!showWelcome && currentView !== 'album' && !isPlaying" class="play-memories-btn" @click="startSlideshow" title="播放回忆">
                 ▶
             </button>
             
-            <!-- Toast 提示 -->
             <div class="toast" :class="{ 'show': toastMessage }">{{ toastMessage }}</div>
         </div>
     </div>
@@ -1636,11 +1760,177 @@
         
         createApp({
             setup() {
+                // 语言系统
+                const currentLang = ref('zh');
+                const i18n = {
+                    zh: {
+                        title: '家族回忆时间轴',
+                        subtitle: '珍藏岁月，传承记忆',
+                        newAlbum: '新建相册',
+                        importAlbum: '导入相册',
+                        joinCollab: '加入协同',
+                        premium: '待开发',
+                        loading: '生成回忆中...',
+                        appName: '家族回忆时间轴',
+                        room: '房间',
+                        timeline: '时间轴',
+                        album: '相册',
+                        familyTree: '家族树',
+                        year: '年',
+                        addPhoto: '添加照片',
+                        uploadText: '点击或拖拽上传照片',
+                        uploadHint: '支持 JPG、PNG 格式，单张最大 5MB',
+                        noDesc: '无描述',
+                        emptyYear: '这一年还没有回忆，添加第一张照片吧',
+                        resetView: '重置视图',
+                        refresh: '刷新数据',
+                        coreMember: '核心成员（多张照片）',
+                        normalMember: '普通成员',
+                        relationStrength: '连线粗细表示同框频率',
+                        noTreeData: '暂无家族数据，请在照片中添加人物标签',
+                        addMemory: '添加回忆',
+                        editMemory: '编辑回忆',
+                        preview: '照片预览',
+                        sepiaFilter: '应用老照片滤镜（Sepia 色调）',
+                        peopleTags: '人物标签（输入名字后按回车）',
+                        enterName: '输入名字...',
+                        tagHint: '提示：标注人物后可自动生成家族关系图谱',
+                        story: '故事描述',
+                        limit: '限',
+                        storyPlaceholder: '记录下这张照片背后的故事...',
+                        stopRecord: '停止录音',
+                        voiceInput: '语音输入',
+                        date: '具体日期',
+                        optional: '可选',
+                        save: '保存回忆',
+                        editYear: '编辑年份',
+                        yearLabel: '年份显示名称',
+                        yearPlaceholder: '如：2024 或 甲午年',
+                        yearHint: '可以修改为农历年份或其他有意义的名称',
+                        confirm: '确认',
+                        premiumFeature: '高级功能',
+                        premiumDesc: '解锁更多年份时间轴，记录家族完整历史',
+                        feature1: '无限年份扩展（1950-2030）',
+                        feature2: 'AI 智能人脸识别自动标注',
+                        feature3: '云端备份与跨设备同步',
+                        contact: '联系开发者',
+                        gotIt: '我知道了',
+                        moreYears: '更多年份',
+                        restoreYears: '恢复默认年份',
+                        collabTitle: '家族协同编辑',
+                        createRoomDesc: '创建房间，邀请家人一起完善家族回忆',
+                        inRoomDesc: '您当前在房间中，家人可通过下方二维码加入',
+                        createRoom: '创建房间',
+                        copyLink: '复制链接',
+                        leave: '离开房间',
+                        onlineUsers: '在线成员',
+                        me: '我',
+                        autoSync: '数据会自动同步到所有在线成员',
+                        haveRoom: '已有房间号？',
+                        enter6digits: '输入6位房间号',
+                        join: '加入',
+                        joinCollabTitle: '加入家族协同',
+                        enterRoomCode: '输入家人分享的房间号',
+                        '6digitCode': '6位房间号',
+                        joinRoom: '加入房间',
+                        shareTitle: '分享家族回忆',
+                        copy: '复制链接',
+                        exportImage: '导出长图',
+                        exportPDF: '导出 PDF',
+                        springFestival: '春节模式'
+                    },
+                    en: {
+                        title: 'Family Memories Timeline',
+                        subtitle: 'Cherish Every Moment, Preserve Our Heritage',
+                        newAlbum: 'New Album',
+                        importAlbum: 'Import Album',
+                        joinCollab: 'Join Collaboration',
+                        premium: 'Coming Soon',
+                        loading: 'Generating memories...',
+                        appName: 'Family Memories',
+                        room: 'Room',
+                        timeline: 'Timeline',
+                        album: 'Album',
+                        familyTree: 'Family Tree',
+                        year: '',
+                        addPhoto: 'Add Photo',
+                        uploadText: 'Click or drag to upload photos',
+                        uploadHint: 'Supports JPG, PNG. Max 5MB per file',
+                        noDesc: 'No description',
+                        emptyYear: 'No memories for this year yet. Add your first photo!',
+                        resetView: 'Reset View',
+                        refresh: 'Refresh Data',
+                        coreMember: 'Core Member (Many photos)',
+                        normalMember: 'Regular Member',
+                        relationStrength: 'Line thickness shows frequency',
+                        noTreeData: 'No family data yet. Add people tags to photos.',
+                        addMemory: 'Add Memory',
+                        editMemory: 'Edit Memory',
+                        preview: 'Photo Preview',
+                        sepiaFilter: 'Apply Sepia Filter (Vintage tone)',
+                        peopleTags: 'People Tags (Press Enter to add)',
+                        enterName: 'Enter name...',
+                        tagHint: 'Tip: Tag people to auto-generate family tree',
+                        story: 'Story',
+                        limit: 'Limit: ',
+                        storyPlaceholder: 'Record the story behind this photo...',
+                        stopRecord: 'Stop Recording',
+                        voiceInput: 'Voice Input',
+                        date: 'Specific Date',
+                        optional: 'Optional',
+                        save: 'Save Memory',
+                        editYear: 'Edit Year Label',
+                        yearLabel: 'Year Display Name',
+                        yearPlaceholder: 'e.g., 2024 or Year of Dragon',
+                        yearHint: 'Can be changed to lunar calendar or meaningful names',
+                        confirm: 'Confirm',
+                        premiumFeature: 'Premium Feature',
+                        premiumDesc: 'Unlock more years to record complete family history',
+                        feature1: 'Unlimited year expansion (1950-2030)',
+                        feature2: 'AI face recognition auto-tagging',
+                        feature3: 'Cloud backup & cross-device sync',
+                        contact: 'Contact Developer',
+                        gotIt: 'Got it',
+                        moreYears: 'More Years',
+                        restoreYears: 'Restore Default',
+                        collabTitle: 'Family Collaboration',
+                        createRoomDesc: 'Create a room and invite family members',
+                        inRoomDesc: 'You are in a room. Others can scan QR code to join.',
+                        createRoom: 'Create Room',
+                        copyLink: 'Copy Link',
+                        leave: 'Leave Room',
+                        onlineUsers: 'Online Users',
+                        me: 'Me',
+                        autoSync: 'Data will auto-sync to all online members',
+                        haveRoom: 'Have a room code?',
+                        enter6digits: 'Enter 6-digit code',
+                        join: 'Join',
+                        joinCollabTitle: 'Join Collaboration',
+                        enterRoomCode: 'Enter the room code shared by family',
+                        '6digitCode': '6-digit code',
+                        joinRoom: 'Join Room',
+                        shareTitle: 'Share Family Memories',
+                        copy: 'Copy Link',
+                        exportImage: 'Export Image',
+                        exportPDF: 'Export PDF',
+                        springFestival: 'Spring Festival Mode'
+                    }
+                };
+                
+                const t = (key) => {
+                    return i18n[currentLang.value][key] || key;
+                };
+                
+                const switchLang = (lang) => {
+                    currentLang.value = lang;
+                    localStorage.setItem('familyMemoriesLang', lang);
+                };
+                
                 // 基础状态
                 const showWelcome = ref(true);
                 const isLoading = ref(false);
                 const currentView = ref('timeline');
-                const selectedYear = ref(new Date().getFullYear());
+                const selectedYear = ref(2024);
                 const memories = ref({});
                 const isDragging = ref(false);
                 const fileInput = ref(null);
@@ -1648,6 +1938,21 @@
                 const showSharePanel = ref(false);
                 const showCollab = ref(false);
                 const showJoinModal = ref(false);
+                const showPremiumModal = ref(false);
+                const showYearEditModal = ref(false);
+                const editingYearIndex = ref(-1);
+                const editingYearLabel = ref('');
+                
+                // 可编辑的年份列表（2024-2025默认）
+                const defaultYears = [
+                    { id: 'y2024', value: 2024, label: '2024' },
+                    { id: 'y2025', value: 2025, label: '2025' },
+                    { id: 'y2026', value: 2026, label: '2026' },
+                    { id: 'y2027', value: 2027, label: '2027' },
+                    { id: 'y2028', value: 2028, label: '2028' }
+                ];
+                const editableYears = ref(JSON.parse(JSON.stringify(defaultYears)));
+                
                 const editingIndex = ref(-1);
                 const editingMemory = ref({ photo: '', text: '', date: '', filter: 'none', year: '', people: [] });
                 const isSepia = ref(false);
@@ -1659,30 +1964,14 @@
                 const currentSlide = ref(0);
                 let slideshowInterval = null;
                 
-                // 春节模式检测（2026.1.20-2.23）
                 const isSpringFestival = ref(false);
-                
-                // 协同编辑状态
                 const roomId = ref('');
                 const joinRoomId = ref('');
                 const onlineUsers = ref([]);
                 const broadcastChannel = ref(null);
-                
-                // 家族树相关
                 const familyTreeData = ref({ nodes: [], links: [] });
-                
-                // 相册分页
                 const albumPages = ref([]);
                 const currentPage = ref(0);
-                
-                // 计算属性
-                const yearRange = computed(() => {
-                    const years = [];
-                    for (let i = 2026; i >= 1930; i--) {
-                        years.push(i);
-                    }
-                    return years;
-                });
                 
                 const currentMemories = computed(() => {
                     return memories.value[selectedYear.value] || [];
@@ -1703,23 +1992,22 @@
                     return `${window.location.origin}${window.location.pathname}#data=${data}`;
                 });
                 
-                // 春节检测
+                // 检查是否包含所有默认年份
+                const hasAllDefaultYears = computed(() => {
+                    return editableYears.value.length === 5;
+                });
+                
                 const checkSpringFestival = () => {
                     const now = new Date();
                     const start = new Date('2026-01-20');
                     const end = new Date('2026-02-23');
                     isSpringFestival.value = now >= start && now <= end;
-                    
-                    if (isSpringFestival.value) {
-                        initPlumBlossoms();
-                    }
+                    if (isSpringFestival.value) initPlumBlossoms();
                 };
                 
-                // Canvas 梅花动画
                 const initPlumBlossoms = () => {
                     const canvas = document.getElementById('plumCanvas');
                     if (!canvas) return;
-                    
                     const ctx = canvas.getContext('2d');
                     let width = window.innerWidth;
                     let height = window.innerHeight;
@@ -1730,10 +2018,7 @@
                     const flowerCount = 30;
                     
                     class Flower {
-                        constructor() {
-                            this.reset();
-                        }
-                        
+                        constructor() { this.reset(); }
                         reset() {
                             this.x = Math.random() * width;
                             this.y = -10;
@@ -1745,35 +2030,27 @@
                             this.opacity = Math.random() * 0.5 + 0.3;
                             this.color = `rgba(255, ${200 + Math.random() * 55}, ${220 + Math.random() * 35}, ${this.opacity})`;
                         }
-                        
                         update() {
                             this.y += this.speedY;
                             this.x += Math.sin(this.y * 0.01) * 0.5 + this.speedX;
                             this.rotation += this.rotationSpeed;
-                            
-                            if (this.y > height + 10) {
-                                this.reset();
-                            }
+                            if (this.y > height + 10) this.reset();
                         }
-                        
                         draw() {
                             ctx.save();
                             ctx.translate(this.x, this.y);
                             ctx.rotate(this.rotation * Math.PI / 180);
                             ctx.fillStyle = this.color;
-                            
                             for (let i = 0; i < 5; i++) {
                                 ctx.beginPath();
                                 ctx.rotate((Math.PI * 2) / 5);
                                 ctx.ellipse(0, this.size, this.size * 0.6, this.size, 0, 0, Math.PI * 2);
                                 ctx.fill();
                             }
-                            
                             ctx.beginPath();
                             ctx.arc(0, 0, this.size * 0.3, 0, Math.PI * 2);
                             ctx.fillStyle = `rgba(255, 215, 0, ${this.opacity})`;
                             ctx.fill();
-                            
                             ctx.restore();
                         }
                     }
@@ -1787,13 +2064,9 @@
                     let animationId;
                     const animate = () => {
                         ctx.clearRect(0, 0, width, height);
-                        flowers.forEach(flower => {
-                            flower.update();
-                            flower.draw();
-                        });
+                        flowers.forEach(flower => { flower.update(); flower.draw(); });
                         animationId = requestAnimationFrame(animate);
                     };
-                    
                     animate();
                     
                     window.addEventListener('resize', () => {
@@ -1804,15 +2077,48 @@
                     });
                     
                     document.addEventListener('visibilitychange', () => {
-                        if (document.hidden) {
-                            cancelAnimationFrame(animationId);
-                        } else {
-                            animate();
-                        }
+                        if (document.hidden) cancelAnimationFrame(animationId);
+                        else animate();
                     });
                 };
                 
-                // 家族树数据生成
+                // 年份编辑功能
+                const editYearLabel = (index) => {
+                    editingYearIndex.value = index;
+                    editingYearLabel.value = editableYears.value[index].label;
+                    showYearEditModal.value = true;
+                };
+                
+                const saveYearLabel = () => {
+                    if (editingYearIndex.value !== -1 && editingYearLabel.value.trim()) {
+                        editableYears.value[editingYearIndex.value].label = editingYearLabel.value.trim();
+                        saveToLocalStorage();
+                    }
+                    showYearEditModal.value = false;
+                    editingYearIndex.value = -1;
+                    editingYearLabel.value = '';
+                };
+                
+                const removeYear = (index) => {
+                    if (confirm(currentLang.value === 'zh' ? '确定要删除这个年份吗？相关照片将被隐藏。' : 'Delete this year? Related photos will be hidden.')) {
+                        editableYears.value.splice(index, 1);
+                        // 如果删除的是当前选中的年份，切换到第一个可用年份
+                        if (selectedYear.value === editableYears.value[index]?.value && editableYears.value.length > 0) {
+                            selectedYear.value = editableYears.value[0].value;
+                        }
+                        saveToLocalStorage();
+                    }
+                };
+                
+                const restoreDefaultYears = () => {
+                    editableYears.value = JSON.parse(JSON.stringify(defaultYears));
+                    saveToLocalStorage();
+                };
+                
+                const showPremiumInfo = () => {
+                    showPremiumModal.value = true;
+                };
+                
                 const generateFamilyTreeData = () => {
                     const peopleMap = new Map();
                     const connections = new Map();
@@ -1836,9 +2142,7 @@
                                 for (let i = 0; i < memory.people.length; i++) {
                                     for (let j = i + 1; j < memory.people.length; j++) {
                                         const key = [memory.people[i], memory.people[j]].sort().join('-');
-                                        if (!connections.has(key)) {
-                                            connections.set(key, 0);
-                                        }
+                                        if (!connections.has(key)) connections.set(key, 0);
                                         connections.set(key, connections.get(key) + 1);
                                     }
                                 }
@@ -1857,24 +2161,17 @@
                     const links = [];
                     connections.forEach((strength, key) => {
                         const [source, target] = key.split('-');
-                        links.push({
-                            source,
-                            target,
-                            value: strength
-                        });
+                        links.push({ source, target, value: strength });
                     });
                     
                     familyTreeData.value = { nodes, links };
                 };
                 
-                // 绘制家族树
                 const drawFamilyTree = () => {
                     if (currentView.value !== 'tree') return;
-                    
                     nextTick(() => {
                         const container = document.getElementById('familyTreeSvg');
                         if (!container || familyTreeData.value.nodes.length === 0) return;
-                        
                         container.innerHTML = '';
                         
                         const width = container.clientWidth;
@@ -1887,13 +2184,9 @@
                             .attr('viewBox', [0, 0, width, height]);
                         
                         const g = svg.append('g');
-                        
                         const zoom = d3.zoom()
                             .scaleExtent([0.1, 4])
-                            .on('zoom', (event) => {
-                                g.attr('transform', event.transform);
-                            });
-                        
+                            .on('zoom', (event) => { g.attr('transform', event.transform); });
                         svg.call(zoom);
                         
                         const nodes = familyTreeData.value.nodes.map(d => ({...d}));
@@ -1905,34 +2198,23 @@
                             .force('center', d3.forceCenter(width / 2, height / 2))
                             .force('collision', d3.forceCollide().radius(d => d.radius + 5));
                         
-                        const link = g.append('g')
-                            .attr('class', 'links')
-                            .selectAll('line')
-                            .data(links)
-                            .enter().append('line')
+                        const link = g.append('g').attr('class', 'links').selectAll('line')
+                            .data(links).enter().append('line')
                             .attr('class', 'link')
                             .attr('stroke-width', d => Math.sqrt(d.value) * 2);
                         
-                        const node = g.append('g')
-                            .attr('class', 'nodes')
-                            .selectAll('g')
-                            .data(nodes)
-                            .enter().append('g')
+                        const node = g.append('g').attr('class', 'nodes').selectAll('g')
+                            .data(nodes).enter().append('g')
                             .attr('class', 'node')
                             .call(d3.drag()
                                 .on('start', (event, d) => {
                                     if (!event.active) simulation.alphaTarget(0.3).restart();
-                                    d.fx = d.x;
-                                    d.fy = d.y;
+                                    d.fx = d.x; d.fy = d.y;
                                 })
-                                .on('drag', (event, d) => {
-                                    d.fx = event.x;
-                                    d.fy = event.y;
-                                })
+                                .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
                                 .on('end', (event, d) => {
                                     if (!event.active) simulation.alphaTarget(0);
-                                    d.fx = null;
-                                    d.fy = null;
+                                    d.fx = null; d.fy = null;
                                 }));
                         
                         node.append('circle')
@@ -1948,158 +2230,109 @@
                             .style('fill', 'var(--dark-brown)');
                         
                         const tooltip = d3.select('body').append('div')
-                            .style('position', 'fixed')
-                            .style('visibility', 'hidden')
-                            .style('background', 'rgba(255,255,255,0.95)')
-                            .style('border', '1px solid var(--gold)')
-                            .style('border-radius', '4px')
-                            .style('padding', '8px')
-                            .style('font-size', '12px')
-                            .style('box-shadow', '0 2px 8px rgba(0,0,0,0.2)')
-                            .style('pointer-events', 'none')
-                            .style('z-index', '1000');
+                            .style('position', 'fixed').style('visibility', 'hidden')
+                            .style('background', 'rgba(255,255,255,0.95)').style('border', '1px solid var(--gold)')
+                            .style('border-radius', '4px').style('padding', '8px')
+                            .style('font-size', '12px').style('box-shadow', '0 2px 8px rgba(0,0,0,0.2)')
+                            .style('pointer-events', 'none').style('z-index', '1000');
                         
                         node.on('mouseover', (event, d) => {
-                            tooltip.html(`
-                                <strong>${d.name}</strong><br/>
-                                出现次数: ${d.value}<br/>
-                                年份: ${d.years.join(', ')}
-                            `)
-                            .style('visibility', 'visible')
-                            .style('left', (event.clientX + 10) + 'px')
-                            .style('top', (event.clientY - 10) + 'px');
-                        })
-                        .on('mouseout', () => {
-                            tooltip.style('visibility', 'hidden');
-                        });
+                            tooltip.html(`<strong>${d.name}</strong><br/>${t('count') || 'Count'}: ${d.value}<br/>${t('years') || 'Years'}: ${d.years.join(', ')}`)
+                                .style('visibility', 'visible')
+                                .style('left', (event.clientX + 10) + 'px')
+                                .style('top', (event.clientY - 10) + 'px');
+                        }).on('mouseout', () => tooltip.style('visibility', 'hidden'));
                         
                         simulation.on('tick', () => {
-                            link
-                                .attr('x1', d => d.source.x)
-                                .attr('y1', d => d.source.y)
-                                .attr('x2', d => d.target.x)
-                                .attr('y2', d => d.target.y);
-                            
+                            link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+                                .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
                             node.attr('transform', d => `translate(${d.x},${d.y})`);
                         });
                     });
                 };
                 
-                const resetZoom = () => {
-                    drawFamilyTree();
-                };
+                const resetZoom = () => { drawFamilyTree(); };
+                const refreshTree = () => { generateFamilyTreeData(); drawFamilyTree(); };
                 
-                const refreshTree = () => {
-                    generateFamilyTreeData();
-                    drawFamilyTree();
-                };
-                
-                // 初始化语音识别
                 const initSpeechRecognition = () => {
                     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                         recognition.value = new SpeechRecognition();
-                        recognition.value.lang = 'zh-CN';
+                        recognition.value.lang = currentLang.value === 'zh' ? 'zh-CN' : 'en-US';
                         recognition.value.continuous = true;
                         recognition.value.interimResults = true;
                         
                         recognition.value.onresult = (event) => {
                             let finalTranscript = '';
                             for (let i = event.resultIndex; i < event.results.length; i++) {
-                                if (event.results[i].isFinal) {
-                                    finalTranscript += event.results[i][0].transcript;
-                                }
+                                if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
                             }
-                            if (finalTranscript) {
-                                editingMemory.value.text += finalTranscript;
-                            }
+                            if (finalTranscript) editingMemory.value.text += finalTranscript;
                         };
-                        
-                        recognition.value.onerror = (event) => {
-                            console.error('语音识别错误:', event.error);
-                            showToast('语音识别出错，请重试');
+                        recognition.value.onerror = () => {
+                            showToast(currentLang.value === 'zh' ? '语音识别出错' : 'Voice recognition error');
                             isRecording.value = false;
                         };
-                        
-                        recognition.value.onend = () => {
-                            isRecording.value = false;
-                        };
+                        recognition.value.onend = () => { isRecording.value = false; };
                     }
                 };
                 
                 const showToast = (msg) => {
                     toastMessage.value = msg;
-                    setTimeout(() => {
-                        toastMessage.value = '';
-                    }, 3000);
+                    setTimeout(() => { toastMessage.value = ''; }, 3000);
                 };
                 
-                // 协同编辑功能
                 const generateRoomId = () => {
                     return Math.random().toString(36).substring(2, 8).toUpperCase();
                 };
                 
                 const createRoom = () => {
                     roomId.value = generateRoomId();
-                    
                     if ('BroadcastChannel' in window) {
                         broadcastChannel.value = new BroadcastChannel('family_memories_' + roomId.value);
                         broadcastChannel.value.onmessage = (event) => {
                             if (event.data.type === 'sync') {
                                 memories.value = event.data.data;
-                                showToast('收到新数据同步');
+                                showToast(t('syncReceived'));
                             } else if (event.data.type === 'join') {
                                 onlineUsers.value.push(event.data.user);
-                                broadcastChannel.value.postMessage({
-                                    type: 'sync',
-                                    data: memories.value
-                                });
+                                broadcastChannel.value.postMessage({ type: 'sync', data: memories.value });
                             }
                         };
                     }
-                    
                     nextTick(() => {
                         const qrcodeDiv = document.getElementById('qrcode');
                         if (qrcodeDiv) {
                             qrcodeDiv.innerHTML = '';
                             new QRCode(qrcodeDiv, {
                                 text: `${window.location.origin}${window.location.pathname}?room=${roomId.value}`,
-                                width: 128,
-                                height: 128,
-                                colorDark: '#C8102E',
-                                colorLight: '#F5F5DC',
+                                width: 128, height: 128,
+                                colorDark: '#C8102E', colorLight: '#F5F5DC',
                                 correctLevel: QRCode.CorrectLevel.M
                             });
                         }
                     });
-                    
-                    showToast('房间创建成功');
+                    showToast(t('roomCreated'));
                 };
                 
                 const joinRoom = () => {
                     if (joinRoomId.value.length !== 6) {
-                        showToast('请输入6位房间号');
+                        showToast(t('enter6digits'));
                         return;
                     }
                     roomId.value = joinRoomId.value.toUpperCase();
-                    
                     if ('BroadcastChannel' in window) {
                         broadcastChannel.value = new BroadcastChannel('family_memories_' + roomId.value);
-                        broadcastChannel.value.postMessage({
-                            type: 'join',
-                            user: '用户' + Math.floor(Math.random() * 1000)
-                        });
-                        
+                        broadcastChannel.value.postMessage({ type: 'join', user: 'User' + Math.floor(Math.random() * 1000) });
                         broadcastChannel.value.onmessage = (event) => {
                             if (event.data.type === 'sync') {
                                 memories.value = event.data.data;
-                                showToast('已同步房间数据');
+                                showToast(t('synced'));
                             }
                         };
                     }
-                    
                     showCollab.value = false;
-                    showToast(`已加入房间 ${roomId.value}`);
+                    showToast(`${t('joined')}: ${roomId.value}`);
                 };
                 
                 const joinRoomFromWelcome = () => {
@@ -2115,14 +2348,12 @@
                         broadcastChannel.value.close();
                         broadcastChannel.value = null;
                     }
-                    showToast('已离开房间');
+                    showToast(t('left'));
                 };
                 
                 const copyRoomLink = () => {
                     const link = `${window.location.origin}${window.location.pathname}?room=${roomId.value}`;
-                    navigator.clipboard.writeText(link).then(() => {
-                        showToast('房间链接已复制');
-                    });
+                    navigator.clipboard.writeText(link).then(() => showToast(t('copied')));
                 };
                 
                 const showCollabModal = () => {
@@ -2133,10 +2364,8 @@
                             if (qrcodeDiv && qrcodeDiv.innerHTML === '') {
                                 new QRCode(qrcodeDiv, {
                                     text: `${window.location.origin}${window.location.pathname}?room=${roomId.value}`,
-                                    width: 128,
-                                    height: 128,
-                                    colorDark: '#C8102E',
-                                    colorLight: '#F5F5DC',
+                                    width: 128, height: 128,
+                                    colorDark: '#C8102E', colorLight: '#F5F5DC',
                                     correctLevel: QRCode.CorrectLevel.M
                                 });
                             }
@@ -2144,9 +2373,9 @@
                     }
                 };
                 
-                // 基础功能
                 const createNewAlbum = () => {
                     memories.value = {};
+                    editableYears.value = JSON.parse(JSON.stringify(defaultYears));
                     saveToLocalStorage();
                     showWelcome.value = false;
                     checkUrlParams();
@@ -2162,14 +2391,14 @@
                             const reader = new FileReader();
                             reader.onload = (event) => {
                                 try {
-                                    memories.value = JSON.parse(event.target.result);
+                                    const data = JSON.parse(event.target.result);
+                                    memories.value = data.memories || data;
+                                    if (data.years) editableYears.value = data.years;
                                     saveToLocalStorage();
                                     showWelcome.value = false;
                                     checkUrlParams();
-                                    showToast('导入成功');
-                                } catch (err) {
-                                    showToast('文件格式错误');
-                                }
+                                    showToast(t('imported'));
+                                } catch (err) { showToast(t('formatError')); }
                             };
                             reader.readAsText(file);
                         }
@@ -2177,28 +2406,27 @@
                     input.click();
                 };
                 
-                const joinCollaboration = () => {
-                    showJoinModal.value = true;
-                };
+                const joinCollaboration = () => { showJoinModal.value = true; };
                 
                 const loadFromLocalStorage = () => {
                     const saved = localStorage.getItem('familyMemories');
+                    const savedLang = localStorage.getItem('familyMemoriesLang');
+                    const savedYears = localStorage.getItem('familyMemoriesYears');
+                    
                     if (saved) {
-                        try {
-                            memories.value = JSON.parse(saved);
-                        } catch (e) {
-                            console.error('加载失败', e);
-                        }
+                        try { memories.value = JSON.parse(saved); } catch (e) {}
+                    }
+                    if (savedLang) currentLang.value = savedLang;
+                    if (savedYears) {
+                        try { editableYears.value = JSON.parse(savedYears); } catch (e) {}
                     }
                 };
                 
                 const saveToLocalStorage = () => {
                     localStorage.setItem('familyMemories', JSON.stringify(memories.value));
+                    localStorage.setItem('familyMemoriesYears', JSON.stringify(editableYears.value));
                     if (broadcastChannel.value && roomId.value) {
-                        broadcastChannel.value.postMessage({
-                            type: 'sync',
-                            data: memories.value
-                        });
+                        broadcastChannel.value.postMessage({ type: 'sync', data: memories.value });
                     }
                 };
                 
@@ -2215,13 +2443,9 @@
                     return memories.value[year] && memories.value[year].length > 0;
                 };
                 
-                const selectYear = (year) => {
-                    selectedYear.value = year;
-                };
+                const selectYear = (year) => { selectedYear.value = year; };
                 
-                const triggerUpload = () => {
-                    fileInput.value.click();
-                };
+                const triggerUpload = () => { fileInput.value.click(); };
                 
                 const handleFileSelect = (event) => {
                     const files = Array.from(event.target.files);
@@ -2238,10 +2462,9 @@
                 const processFiles = (files) => {
                     files.forEach(file => {
                         if (file.size > 5 * 1024 * 1024) {
-                            showToast(`${file.name} 超过5MB限制`);
+                            showToast(`${file.name} ${t('tooLarge') || 'too large'}`);
                             return;
                         }
-                        
                         isLoading.value = true;
                         const reader = new FileReader();
                         reader.onload = (e) => {
@@ -2281,37 +2504,25 @@
                 
                 const saveMemory = () => {
                     editingMemory.value.filter = isSepia.value ? 'sepia' : 'none';
-                    
-                    if (!memories.value[selectedYear.value]) {
-                        memories.value[selectedYear.value] = [];
-                    }
-                    
+                    if (!memories.value[selectedYear.value]) memories.value[selectedYear.value] = [];
                     if (editingIndex.value === -1) {
                         memories.value[selectedYear.value].push({ ...editingMemory.value });
                     } else {
                         memories.value[selectedYear.value][editingIndex.value] = { ...editingMemory.value };
                     }
-                    
                     saveToLocalStorage();
                     closeEditModal();
-                    showToast('保存成功');
-                    
-                    if (currentView.value === 'tree') {
-                        refreshTree();
-                    }
+                    showToast(t('saved'));
+                    if (currentView.value === 'tree') refreshTree();
                 };
                 
                 const addTag = () => {
                     const tag = tagInput.value.trim();
-                    if (tag && !editingMemory.value.people.includes(tag)) {
-                        editingMemory.value.people.push(tag);
-                    }
+                    if (tag && !editingMemory.value.people.includes(tag)) editingMemory.value.people.push(tag);
                     tagInput.value = '';
                 };
                 
-                const removeTag = (index) => {
-                    editingMemory.value.people.splice(index, 1);
-                };
+                const removeTag = (index) => { editingMemory.value.people.splice(index, 1); };
                 
                 const removeLastTag = () => {
                     if (tagInput.value === '' && editingMemory.value.people.length > 0) {
@@ -2321,31 +2532,29 @@
                 
                 const toggleVoiceInput = () => {
                     if (!recognition.value) {
-                        showToast('您的浏览器不支持语音识别');
+                        showToast(t('notSupported'));
                         return;
                     }
-                    
                     if (isRecording.value) {
                         recognition.value.stop();
                         isRecording.value = false;
                     } else {
                         recognition.value.start();
                         isRecording.value = true;
-                        showToast('请开始说话...');
+                        showToast(t('speakNow'));
                     }
                 };
                 
                 const formatDate = (dateStr) => {
                     if (!dateStr) return '';
                     const date = new Date(dateStr);
-                    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+                    return currentLang.value === 'zh' 
+                        ? `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+                        : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
                 };
                 
                 const prepareAlbumPages = () => {
-                    albumPages.value = allMemories.value.map(m => ({
-                        ...m,
-                        flipped: false
-                    }));
+                    albumPages.value = allMemories.value.map(m => ({ ...m, flipped: false }));
                     currentPage.value = 0;
                 };
                 
@@ -2365,16 +2574,14 @@
                 
                 const startSlideshow = () => {
                     if (allMemories.value.length === 0) {
-                        showToast('没有可播放的回忆');
+                        showToast(t('noMemories'));
                         return;
                     }
                     isPlaying.value = true;
                     currentSlide.value = 0;
                     slideshowInterval = setInterval(() => {
                         currentSlide.value++;
-                        if (currentSlide.value >= allMemories.value.length) {
-                            currentSlide.value = 0;
-                        }
+                        if (currentSlide.value >= allMemories.value.length) currentSlide.value = 0;
                     }, 5000);
                 };
                 
@@ -2386,96 +2593,80 @@
                     }
                 };
                 
-                const showShareModal = () => {
-                    showSharePanel.value = true;
-                };
+                const showShareModal = () => { showSharePanel.value = true; };
                 
                 const copyUrl = () => {
-                    navigator.clipboard.writeText(shareUrl.value).then(() => {
-                        showToast('链接已复制');
-                    });
+                    navigator.clipboard.writeText(shareUrl.value).then(() => showToast(t('copied')));
                 };
                 
                 const exportImage = async () => {
-                    showToast('正在生成图片...');
+                    showToast(t('generating'));
                     const element = document.querySelector('.main-content');
                     try {
-                        const canvas = await html2canvas(element, {
-                            backgroundColor: '#F5F5DC',
-                            scale: 2
-                        });
+                        const canvas = await html2canvas(element, { backgroundColor: '#F5F5DC', scale: 2 });
                         const link = document.createElement('a');
-                        link.download = `家族回忆时间轴_${new Date().toLocaleDateString()}.png`;
+                        link.download = `family_memories_${new Date().toLocaleDateString()}.png`;
                         link.href = canvas.toDataURL();
                         link.click();
-                        showToast('图片已保存');
-                    } catch (err) {
-                        showToast('生成失败');
-                    }
+                        showToast(t('saved'));
+                    } catch (err) { showToast(t('failed')); }
                 };
                 
                 const exportPDF = async () => {
-                    showToast('正在生成 PDF...');
+                    showToast(t('generating'));
                     const { jsPDF } = window.jspdf;
                     const pdf = new jsPDF('p', 'mm', 'a4');
-                    
                     const allMems = allMemories.value;
                     for (let i = 0; i < allMems.length; i++) {
                         if (i > 0) pdf.addPage();
-                        
                         const memory = allMems[i];
                         pdf.setFontSize(20);
-                        pdf.text(`${memory.year}年`, 105, 20, { align: 'center' });
-                        
+                        pdf.text(`${memory.year}${t('year')}`, 105, 20, { align: 'center' });
                         if (memory.photo) {
-                            try {
-                                pdf.addImage(memory.photo, 'JPEG', 55, 30, 100, 100);
-                            } catch (e) {
-                                console.error('添加图片失败', e);
-                            }
+                            try { pdf.addImage(memory.photo, 'JPEG', 55, 30, 100, 100); } catch (e) {}
                         }
-                        
                         pdf.setFontSize(12);
                         const text = pdf.splitTextToSize(memory.text || '', 180);
                         pdf.text(text, 15, 140);
-                        
                         if (memory.people && memory.people.length > 0) {
-                            pdf.text(`人物: ${memory.people.join(', ')}`, 15, 180);
+                            pdf.text(`${t('people')}: ${memory.people.join(', ')}`, 15, 180);
                         }
                     }
-                    
-                    pdf.save(`家族回忆时间轴_${new Date().toLocaleDateString()}.pdf`);
-                    showToast('PDF 已保存');
+                    pdf.save(`family_memories_${new Date().toLocaleDateString()}.pdf`);
+                    showToast(t('saved'));
                 };
                 
                 const exportData = () => {
-                    const dataStr = JSON.stringify(memories.value, null, 2);
+                    const exportObj = {
+                        memories: memories.value,
+                        years: editableYears.value,
+                        exportDate: new Date().toISOString()
+                    };
+                    const dataStr = JSON.stringify(exportObj, null, 2);
                     const blob = new Blob([dataStr], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `家族回忆备份_${new Date().toLocaleDateString()}.json`;
+                    link.download = `family_memories_backup_${new Date().toLocaleDateString()}.json`;
                     link.click();
-                    showToast('备份文件已下载');
+                    showToast(t('downloaded'));
                 };
                 
                 watch(currentView, (newView) => {
-                    if (newView === 'album') {
-                        prepareAlbumPages();
-                    } else if (newView === 'tree') {
-                        refreshTree();
-                    }
+                    if (newView === 'album') prepareAlbumPages();
+                    else if (newView === 'tree') refreshTree();
                 });
                 
-                watch(memories, () => {
-                    saveToLocalStorage();
-                }, { deep: true });
+                watch(memories, () => { saveToLocalStorage(); }, { deep: true });
+                
+                watch(currentLang, (newLang) => {
+                    if (recognition.value) recognition.value.lang = newLang === 'zh' ? 'zh-CN' : 'en-US';
+                });
                 
                 onMounted(() => {
                     loadFromLocalStorage();
                     checkSpringFestival();
                     initSpeechRecognition();
-                    
                     if (Object.keys(memories.value).length > 0) {
                         showWelcome.value = false;
                         checkUrlParams();
@@ -2483,69 +2674,25 @@
                 });
                 
                 return {
-                    showWelcome,
-                    isLoading,
-                    currentView,
-                    selectedYear,
-                    memories,
-                    isDragging,
-                    fileInput,
-                    showEditModal,
-                    showSharePanel,
-                    showCollab,
-                    showJoinModal,
-                    editingIndex,
-                    editingMemory,
-                    isSepia,
-                    isRecording,
-                    isSpringFestival,
-                    roomId,
-                    joinRoomId,
-                    onlineUsers,
-                    familyTreeData,
-                    tagInput,
-                    albumPages,
-                    currentPage,
-                    isPlaying,
-                    currentSlide,
-                    yearRange,
-                    currentMemories,
-                    allMemories,
-                    shareUrl,
-                    createNewAlbum,
-                    importAlbum,
-                    joinCollaboration,
-                    hasMemory,
-                    selectYear,
-                    triggerUpload,
-                    handleFileSelect,
-                    handleDrop,
-                    editMemory,
-                    closeEditModal,
-                    saveMemory,
-                    addTag,
-                    removeTag,
-                    removeLastTag,
-                    toggleVoiceInput,
-                    formatDate,
-                    nextPage,
-                    prevPage,
-                    startSlideshow,
-                    stopSlideshow,
-                    showShareModal,
-                    copyUrl,
-                    exportImage,
-                    exportPDF,
-                    exportData,
-                    showCollabModal,
-                    createRoom,
-                    joinRoom,
-                    joinRoomFromWelcome,
-                    leaveRoom,
-                    copyRoomLink,
-                    resetZoom,
-                    refreshTree,
-                    showToast
+                    currentLang, t, switchLang,
+                    showWelcome, isLoading, currentView, selectedYear, memories,
+                    isDragging, fileInput, showEditModal, showSharePanel, showCollab,
+                    showJoinModal, showPremiumModal, showYearEditModal,
+                    editingYearIndex, editingYearLabel, editableYears,
+                    editingIndex, editingMemory, isSepia, isRecording,
+                    toastMessage, tagInput, isPlaying, currentSlide,
+                    isSpringFestival, roomId, joinRoomId, onlineUsers,
+                    familyTreeData, albumPages, currentPage,
+                    currentMemories, allMemories, shareUrl, hasAllDefaultYears,
+                    createNewAlbum, importAlbum, joinCollaboration,
+                    editYearLabel, saveYearLabel, removeYear, restoreDefaultYears, showPremiumInfo,
+                    hasMemory, selectYear, triggerUpload, handleFileSelect, handleDrop,
+                    editMemory, closeEditModal, saveMemory, addTag, removeTag, removeLastTag,
+                    toggleVoiceInput, formatDate, nextPage, prevPage,
+                    startSlideshow, stopSlideshow, showShareModal, copyUrl,
+                    exportImage, exportPDF, exportData, showCollabModal,
+                    createRoom, joinRoom, joinRoomFromWelcome, leaveRoom, copyRoomLink,
+                    resetZoom, refreshTree, showToast
                 };
             }
         }).mount('#app');
