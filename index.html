@@ -24,6 +24,8 @@
             --light-gold: #F9E076;
             --shadow: rgba(62, 39, 35, 0.15);
             --premium-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --spring-red: #E60012;
+            --spring-gold: #FFD700;
         }
         
         * { box-sizing: border-box; }
@@ -42,16 +44,16 @@
         /* 返回首页按钮 - 确保在最上层 */
         .back-to-home {
             position: fixed;
-            top: 2rem;
-            left: 2rem;
+            top: 20px;
+            left: 20px;
             background: white;
             border: 2px solid var(--gold);
-            padding: 0.8rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             border-radius: 25px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--dark-brown);
-            z-index: 2001; /* 确保最高层级 */
+            z-index: 2002;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
@@ -65,7 +67,7 @@
             background: var(--imperial-red);
             color: white;
             border-color: var(--imperial-red);
-            transform: translateX(-5px) scale(1.05);
+            transform: translateX(-3px) scale(1.05);
         }
         
         .lang-switcher {
@@ -142,28 +144,6 @@
             font-size: 3rem;
             margin-bottom: 1rem;
             opacity: 0.8;
-        }
-        
-        .year-edit-controls {
-            display: flex;
-            gap: 5px;
-            margin-left: 10px;
-        }
-        
-        .year-edit-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 0.8rem;
-            padding: 2px 5px;
-            opacity: 0.6;
-            transition: opacity 0.3s;
-        }
-        
-        .year-edit-btn:hover {
-            opacity: 1;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
         }
         
         #plumCanvas {
@@ -256,11 +236,40 @@
             padding: 1rem 2.5rem;
             font-size: 1.1rem;
             border-radius: 4px;
-            cursor: not-allowed;
+            cursor: pointer;
             font-family: inherit;
-            opacity: 0.8;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+        
+        .btn-gift {
+            background: linear-gradient(135deg, var(--spring-red) 0%, #FF4444 100%);
+            color: var(--spring-gold);
+            border: 2px solid var(--spring-gold);
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+            animation: glow 2s ease-in-out infinite;
+            font-weight: bold;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px var(--spring-gold); }
+            50% { box-shadow: 0 0 20px var(--spring-gold), 0 0 40px var(--spring-red); }
+        }
+        
+        .btn-gift:hover {
+            transform: scale(1.05);
         }
         
         .loading-overlay {
@@ -409,6 +418,30 @@
             transform: scale(1.1);
         }
         
+        .photo-counter {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 2px solid var(--gold);
+            font-size: 0.9rem;
+            z-index: 99;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+        
+        .photo-counter.warning {
+            border-color: var(--imperial-red);
+            color: var(--imperial-red);
+            animation: pulse-border 2s infinite;
+        }
+        
+        @keyframes pulse-border {
+            0%, 100% { border-color: var(--imperial-red); }
+            50% { border-color: var(--gold); }
+        }
+        
         .timeline-container {
             background: white;
             border-bottom: 1px solid var(--gold);
@@ -437,25 +470,31 @@
             gap: 0.5rem;
             padding: 0 1rem;
             min-width: max-content;
+            align-items: center;
+            justify-content: center;
         }
         
         .year-item {
             flex-shrink: 0;
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--gold);
+            padding: 0.8rem 2rem;
+            border: 2px solid var(--imperial-red);
             background: white;
             cursor: pointer;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
             transition: all 0.3s;
             position: relative;
             display: flex;
             align-items: center;
+            color: var(--imperial-red);
         }
         
         .year-item:hover {
-            background: var(--light-gold);
+            background: var(--imperial-red);
+            color: white;
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
         }
         
         .year-item.active {
@@ -471,18 +510,11 @@
             position: absolute;
             top: -4px;
             right: -4px;
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             background: var(--gold);
             border-radius: 50%;
             border: 2px solid white;
-        }
-        
-        .year-item.premium {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: var(--gold);
-            border-color: var(--gold);
-            cursor: not-allowed;
         }
         
         .main-content {
@@ -638,6 +670,11 @@
             color: white;
         }
         
+        .btn-text:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         .photo-gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -754,6 +791,12 @@
             transform: scale(1.02);
         }
         
+        .upload-zone.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #999;
+        }
+        
         .upload-icon {
             font-size: 3rem;
             color: var(--gold);
@@ -769,6 +812,16 @@
         .upload-hint {
             font-size: 0.9rem;
             color: #999;
+        }
+        
+        .limit-warning {
+            background: rgba(200, 16, 46, 0.1);
+            border: 1px solid var(--imperial-red);
+            color: var(--imperial-red);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
         }
         
         .modal {
@@ -1000,18 +1053,33 @@
             border: 2px solid var(--gold);
         }
         
+        /* 春节主题相册视图 */
         .album-view {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(62, 39, 35, 0.95);
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #8B0000 100%);
             z-index: 1500;
             display: flex;
             justify-content: center;
             align-items: center;
             perspective: 1500px;
+            overflow: hidden;
+        }
+        
+        .album-view::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+            pointer-events: none;
         }
         
         .book-container {
@@ -1026,15 +1094,28 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background: white;
-            border: 1px solid var(--gold);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background: linear-gradient(to right, #FFF8DC 0%, #FFFEF0 100%);
+            border: 3px solid var(--spring-gold);
+            box-shadow: 
+                0 0 30px rgba(0,0,0,0.5),
+                inset 0 0 60px rgba(212, 175, 55, 0.1);
             transform-origin: left center;
-            transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+            transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
             backface-visibility: hidden;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+        }
+        
+        .book-page::before {
+            content: '福';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 3rem;
+            color: rgba(200, 16, 46, 0.1);
+            font-family: 'Noto Serif SC', serif;
+            pointer-events: none;
         }
         
         .book-page.flipped {
@@ -1052,9 +1133,11 @@
         .page-number {
             text-align: center;
             padding: 1rem;
-            color: var(--gold);
-            border-top: 1px solid var(--gold);
+            color: var(--spring-red);
+            border-top: 2px solid var(--spring-gold);
             font-size: 0.9rem;
+            font-weight: bold;
+            background: rgba(255, 215, 0, 0.1);
         }
         
         .page-photo {
@@ -1064,6 +1147,8 @@
             background: #f5f5f5;
             margin-bottom: 1rem;
             max-height: 60%;
+            border: 2px solid var(--spring-gold);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
         .page-text {
@@ -1071,15 +1156,18 @@
             line-height: 1.8;
             color: var(--dark-brown);
             text-align: justify;
+            font-family: 'Noto Serif SC', serif;
         }
         
         .page-year {
-            font-size: 1.5rem;
-            color: var(--imperial-red);
+            font-size: 1.8rem;
+            color: var(--spring-red);
             text-align: center;
             margin-bottom: 1rem;
-            border-bottom: 2px solid var(--gold);
+            border-bottom: 3px double var(--spring-gold);
             padding-bottom: 0.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
         
         .album-nav {
@@ -1093,36 +1181,65 @@
         }
         
         .nav-btn {
-            background: var(--gold);
-            border: none;
-            width: 50px;
-            height: 50px;
+            background: var(--spring-gold);
+            border: 3px solid var(--spring-red);
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 1.2rem;
-            color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            font-size: 1.5rem;
+            color: var(--spring-red);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             transition: all 0.3s;
+            font-weight: bold;
         }
         
         .nav-btn:hover {
             transform: scale(1.1);
-            background: var(--imperial-red);
+            background: var(--spring-red);
+            color: var(--spring-gold);
+            border-color: var(--spring-gold);
         }
         
         .close-album {
             position: absolute;
-            top: 2rem;
-            right: 2rem;
+            top: 20px;
+            right: 20px;
             background: white;
-            border: none;
-            width: 40px;
-            height: 40px;
+            border: 2px solid var(--spring-gold);
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             cursor: pointer;
             font-size: 1.5rem;
-            z-index: 10;
+            z-index: 2003;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            color: var(--spring-red);
+        }
+        
+        .music-control {
+            position: absolute;
+            top: 20px;
+            right: 80px;
+            background: white;
+            border: 2px solid var(--spring-gold);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3rem;
+            z-index: 2003;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--spring-red);
+            animation: rotate 3s linear infinite;
+            animation-play-state: paused;
+        }
+        
+        .music-control.playing {
+            animation-play-state: running;
         }
         
         .play-memories-btn {
@@ -1148,6 +1265,31 @@
         .play-memories-btn:hover {
             transform: scale(1.1) rotate(15deg);
             background: #B01026;
+        }
+        
+        .gift-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 6rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--spring-red), #FF4444);
+            color: var(--spring-gold);
+            border: 2px solid var(--spring-gold);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        .gift-btn:hover {
+            transform: scale(1.15);
         }
         
         .slideshow-view {
@@ -1237,6 +1379,66 @@
             transform: translateX(-50%) translateY(0);
         }
         
+        /* 红包样式 */
+        .red-packet {
+            background: linear-gradient(135deg, var(--spring-red) 0%, #B22222 100%);
+            border: 3px solid var(--spring-gold);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: var(--spring-gold);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .red-packet::before {
+            content: '福';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            opacity: 0.1;
+            color: var(--spring-gold);
+        }
+        
+        .red-packet-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        
+        .red-packet-amount {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .alipay-btn {
+            background: #1677FF;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-family: inherit;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .alipay-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(22, 119, 255, 0.4);
+        }
+        
         .spring-festival-badge {
             position: fixed;
             top: 80px;
@@ -1257,12 +1459,65 @@
             50% { transform: translateY(-5px); }
         }
         
+        .price-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .price-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .price-card:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .price-card.recommended {
+            border-color: var(--spring-gold);
+            background: rgba(255, 215, 0, 0.15);
+            position: relative;
+        }
+        
+        .price-card.recommended::before {
+            content: '推荐';
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: var(--spring-gold);
+            color: #1a1a2e;
+            padding: 0.2rem 0.8rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .price-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--gold);
+            margin: 0.5rem 0;
+        }
+        
+        .price-period {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
         @media (max-width: 768px) {
             .back-to-home { 
-                top: 1rem; 
-                left: 1rem; 
-                padding: 0.6rem 1rem; 
-                font-size: 0.9rem;
+                top: 10px; 
+                left: 10px; 
+                padding: 0.5rem 1rem; 
+                font-size: 0.8rem;
                 z-index: 2002;
             }
             .welcome-title { font-size: 1.8rem; }
@@ -1277,10 +1532,12 @@
             #familyTreeSvg { height: 400px; }
             .lang-switcher { top: 10px; right: 10px; }
             .developer-info { bottom: 10px; right: 10px; font-size: 0.75rem; }
+            .price-options { grid-template-columns: 1fr; }
+            .gift-btn { right: 5rem; width: 50px; height: 50px; font-size: 1.5rem; }
         }
         
         @media print {
-            .header, .timeline-container, .play-memories-btn, #plumCanvas, .lang-switcher, .developer-info, .back-to-home {
+            .header, .timeline-container, .play-memories-btn, #plumCanvas, .lang-switcher, .developer-info, .back-to-home, .gift-btn {
                 display: none;
             }
             .memory-detail {
@@ -1313,7 +1570,8 @@
                 <button class="btn-primary" @click="createNewAlbum">{{ t('newAlbum') }}</button>
                 <button class="btn-secondary" @click="importAlbum">{{ t('importAlbum') }}</button>
                 <button class="btn-secondary" @click="joinCollaboration">{{ t('joinCollab') }}</button>
-                <button class="btn-premium" @click="showPremiumInfo">🔒 {{ t('premium') }}</button>
+                <button class="btn-premium" @click="showPremiumInfo">👑 {{ t('premium') }}</button>
+                <button class="btn-gift" @click="showGiftModal">🧧 {{ t('springGift') }}</button>
             </div>
             
             <div v-if="showJoinModal" class="modal" @click.self="showJoinModal = false">
@@ -1352,10 +1610,11 @@
         </div>
         
         <div v-if="!showWelcome" class="app-container">
-            <!-- 返回首页按钮 - 在时间轴和家族树页面也显示，但主要在相册页使用 -->
-            <button v-if="currentView !== 'album'" class="back-to-home" @click="backToHome" style="position: fixed; top: 80px; left: 20px; z-index: 99;">
-                🏠 {{ t('backToHome') }}
-            </button>
+            <!-- 照片数量提示 -->
+            <div class="photo-counter" :class="{ warning: photoCount >= photoLimit && !isPremium }">
+                <span v-if="!isPremium">{{ t('photoCount') }}: {{ photoCount }}/{{ photoLimit }}</span>
+                <span v-else>👑 {{ t('unlimited') }}</span>
+            </div>
 
             <header class="header">
                 <div class="header-content">
@@ -1372,7 +1631,7 @@
                     </div>
                     
                     <div class="header-actions">
-                        <button class="icon-btn" @click="showCollabModal" title="协同编辑">👥</button>
+                        <button class="icon-btn" @click="showCollabModal" title="协同编辑" :disabled="!isPremium">👥</button>
                         <button class="icon-btn" @click="showShareModal" title="分享">🔗</button>
                         <button class="icon-btn" @click="exportData" title="导出">💾</button>
                     </div>
@@ -1381,15 +1640,12 @@
             
             <div class="timeline-container" v-if="currentView === 'timeline'">
                 <div class="timeline">
-                    <div v-for="(year, index) in editableYears" :key="year.id" class="year-item" :class="{ 'active': selectedYear === year.value, 'has-memory': hasMemory(year.value) }">
-                        <span @click="selectYear(year.value)">{{ year.label }}</span>
-                        <div class="year-edit-controls">
-                            <button class="year-edit-btn" @click.stop="editYearLabel(index)" title="重命名">✏️</button>
-                            <button class="year-edit-btn" @click.stop="removeYear(index)" title="删除">✕</button>
-                        </div>
+                    <div class="year-item active has-memory">
+                        <span>2026 {{ t('year') }}</span>
                     </div>
-                    <div class="year-item premium" @click="showPremiumInfo"><span>+ {{ t('moreYears') }}</span></div>
-                    <button v-if="editableYears.length < 5" class="btn-text" @click="restoreDefaultYears" style="margin-left: 10px;">{{ t('restoreYears') }}</button>
+                    <button class="btn-premium" @click="showPremiumInfo" style="margin-left: 1rem; padding: 0.5rem 1.5rem; font-size: 0.9rem;">
+                        👑 {{ t('premium') }}
+                    </button>
                 </div>
             </div>
             
@@ -1397,17 +1653,24 @@
                 <div v-if="currentView === 'timeline'">
                     <div class="memory-detail">
                         <div class="detail-header">
-                            <h2 class="detail-year">{{ selectedYear }}{{ t('year') }}</h2>
+                            <h2 class="detail-year">2026 {{ t('year') }}</h2>
                             <div class="detail-actions">
-                                <button class="btn-text" @click="triggerUpload">{{ t('addPhoto') }}</button>
+                                <button class="btn-text" @click="triggerUpload" :disabled="photoCount >= photoLimit && !isPremium">{{ t('addPhoto') }}</button>
                                 <input type="file" ref="fileInput" accept="image/*" style="display: none" @change="handleFileSelect" multiple>
                             </div>
                         </div>
                         
-                        <div class="upload-zone" @click="triggerUpload" @drop.prevent="handleDrop" @dragover.prevent="isDragging = true" @dragleave="isDragging = false" :class="{ 'dragover': isDragging }">
+                        <div v-if="photoCount >= photoLimit && !isPremium" class="limit-warning">
+                            <strong>{{ t('limitReached') }}</strong><br>
+                            {{ t('upgradePrompt') }}
+                            <br><button class="btn-primary" @click="showPremiumInfo" style="margin-top: 0.5rem; padding: 0.5rem 1rem;">{{ t('upgradeNow') }}</button>
+                        </div>
+                        
+                        <div class="upload-zone" @click="triggerUpload" @drop.prevent="handleDrop" @dragover.prevent="isDragging = true" @dragleave="isDragging = false" :class="{ 'dragover': isDragging, 'disabled': photoCount >= photoLimit && !isPremium }">
                             <div class="upload-icon">📷</div>
                             <div class="upload-text">{{ t('uploadText') }}</div>
-                            <div class="upload-hint">{{ t('uploadHint') }}</div>
+                            <div class="upload-hint" v-if="!isPremium">{{ t('uploadHint') }} ({{ photoCount }}/{{ photoLimit }})</div>
+                            <div class="upload-hint" v-else>{{ t('uploadHintPremium') }}</div>
                         </div>
                         
                         <div v-if="currentMemories.length > 0" class="photo-gallery">
@@ -1451,19 +1714,25 @@
                 </div>
             </main>
             
-            <!-- 3D 相册视图 - 带返回首页按钮 -->
+            <!-- 3D 相册视图 - 春节主题 -->
             <div v-if="currentView === 'album'" class="album-view">
-                <!-- 返回首页按钮 - 在相册视图左上角 -->
-                <button class="back-to-home" @click="backToHome">🏠 {{ t('backToHome') }}</button>
+                <!-- 返回首页按钮 - 调整到左上角不遮挡 -->
+                <button class="back-to-home" @click="backToHome" style="top: 20px; left: 20px; z-index: 2002;">🏠 {{ t('backToHome') }}</button>
                 
                 <button class="close-album" @click="currentView = 'timeline'">×</button>
+                
+                <!-- 音乐控制 -->
+                <button class="music-control" :class="{ playing: isPlayingMusic }" @click="toggleMusic">
+                    {{ isPlayingMusic ? '🎵' : '🎶' }}
+                </button>
+                
                 <div class="book-container">
                     <div v-for="(page, index) in albumPages" :key="index" class="book-page" :class="{ 'flipped': page.flipped }" :style="{ 'z-index': albumPages.length - index, 'transform': page.flipped ? 'rotateY(-180deg)' : 'rotateY(0deg)' }">
                         <div class="page-content">
-                            <div class="page-year">{{ page.year }}{{ t('year') }}</div>
+                            <div class="page-year">2026 {{ t('year') }}</div>
                             <img v-if="page.photo" :src="page.photo" class="page-photo" :class="{ 'sepia': page.filter === 'sepia' }">
                             <p class="page-text">{{ page.text || t('defaultText') }}</p>
-                            <div v-if="page.people && page.people.length > 0" style="margin-top: 1rem; text-align: center; color: var(--gold);">👥 {{ page.people.join(', ') }}</div>
+                            <div v-if="page.people && page.people.length > 0" style="margin-top: 1rem; text-align: center; color: var(--imperial-red); font-weight: bold;">👥 {{ page.people.join(', ') }}</div>
                         </div>
                         <div class="page-number">{{ index + 1 }} / {{ albumPages.length }}</div>
                     </div>
@@ -1518,42 +1787,91 @@
                 </div>
             </div>
             
-            <div v-if="showYearEditModal" class="modal" @click.self="showYearEditModal = false">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title">{{ t('editYear') }}</h3>
-                        <button class="modal-close" @click="showYearEditModal = false">×</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label class="form-label">{{ t('yearLabel') }}</label>
-                            <input type="text" class="form-input" v-model="editingYearLabel" :placeholder="t('yearPlaceholder')">
-                            <small style="color: #666; margin-top: 0.5rem; display: block;">{{ t('yearHint') }}</small>
-                        </div>
-                        <button class="btn-primary" @click="saveYearLabel" style="width: 100%;">{{ t('confirm') }}</button>
-                    </div>
-                </div>
-            </div>
-            
             <div v-if="showPremiumModal" class="modal" @click.self="showPremiumModal = false">
                 <div class="modal-content premium-section">
                     <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-bottom: 1px solid var(--gold);">
-                        <h3 class="modal-title" style="color: var(--gold);">🔒 {{ t('premiumFeature') }}</h3>
+                        <h3 class="modal-title" style="color: var(--gold);">👑 {{ t('premiumFeature') }}</h3>
                         <button class="modal-close" @click="showPremiumModal = false" style="color: var(--gold);">×</button>
                     </div>
                     <div class="modal-body" style="text-align: center; padding: 2rem;">
                         <div class="premium-lock">🎆</div>
-                        <h3 style="color: var(--gold); margin-bottom: 1rem;">{{ t('moreYears') }}</h3>
+                        <h3 style="color: var(--gold); margin-bottom: 1rem;">{{ t('unlockAll') }}</h3>
                         <p style="color: #ccc; margin-bottom: 1.5rem; line-height: 1.6;">{{ t('premiumDesc') }}</p>
-                        <ul style="text-align: left; color: #aaa; margin-bottom: 2rem; display: inline-block;">
+                        
+                        <div class="price-options">
+                            <div class="price-card" @click="selectPremium('yearly')">
+                                <div style="color: #aaa; font-size: 0.9rem;">{{ t('yearlyPlan') }}</div>
+                                <div class="price-amount">¥9.9</div>
+                                <div class="price-period">/{{ t('year') }}</div>
+                            </div>
+                            <div class="price-card recommended" @click="selectPremium('lifetime')">
+                                <div style="color: #aaa; font-size: 0.9rem;">{{ t('lifetimePlan') }}</div>
+                                <div class="price-amount">¥19.9</div>
+                                <div class="price-period">{{ t('oneTime') }}</div>
+                            </div>
+                        </div>
+                        
+                        <ul style="text-align: left; color: #aaa; margin-bottom: 2rem; display: inline-block; line-height: 2;">
                             <li>✨ {{ t('feature1') }}</li>
                             <li>✨ {{ t('feature2') }}</li>
                             <li>✨ {{ t('feature3') }}</li>
+                            <li>✨ {{ t('feature4') }}</li>
+                            <li>🧧 {{ t('feature5') }}</li>
+                            <li>🎵 {{ t('feature6') }}</li>
                         </ul>
-                        <div style="background: rgba(212, 175, 55, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                            <span style="color: var(--gold); font-size: 1.2rem; font-weight: bold;">{{ t('contact') }}: KSharpR®</span>
+                        
+                        <button class="btn-primary" @click="buyPremium" style="width: 100%; background: var(--gold); color: #1a1a2e; font-weight: bold; padding: 1rem;">
+                            {{ t('buyNow') }}
+                        </button>
+                        <div style="margin-top: 1rem; font-size: 0.8rem; color: #666;">{{ t('securePayment') }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 春节回忆礼物弹窗 -->
+            <div v-if="showGiftModal" class="modal" @click.self="showGiftModal = false">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, var(--spring-red), #B22222);">
+                        <h3 class="modal-title">🧧 {{ t('springGiftTitle') }}</h3>
+                        <button class="modal-close" @click="showGiftModal = false">×</button>
+                    </div>
+                    <div class="modal-body" style="padding: 0;">
+                        <div class="red-packet" v-if="!giftPaid">
+                            <div class="red-packet-title">{{ t('giftDesc') }}</div>
+                            <div style="font-size: 1rem; opacity: 0.9; margin-bottom: 1rem;">
+                                {{ t('giftInclude') }}
+                            </div>
+                            <div class="red-packet-amount">¥6.6</div>
+                            <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1.5rem;">
+                                {{ t('generateH5') }}
+                            </div>
+                            <a :href="alipayLink" target="_blank" class="alipay-btn" @click="markGiftPaid">
+                                <span>💳</span> {{ t('payViaAlipay') }}
+                            </a>
+                            <div style="margin-top: 1rem; font-size: 0.8rem; opacity: 0.7;">
+                                {{ t('afterPayment') }}
+                            </div>
                         </div>
-                        <button class="btn-primary" @click="showPremiumModal = false" style="background: var(--gold); color: #1a1a2e;">{{ t('gotIt') }}</button>
+                        
+                        <div v-else style="padding: 2rem; text-align: center; background: var(--rice-paper);">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">🎁</div>
+                            <h3 style="color: var(--spring-red); margin-bottom: 1rem;">{{ t('paymentSuccess') }}</h3>
+                            <p style="margin-bottom: 1.5rem; color: var(--dark-brown);">{{ t('giftReady') }}</p>
+                            
+                            <div style="background: white; padding: 1rem; border-radius: 8px; border: 2px solid var(--spring-gold); margin-bottom: 1.5rem;">
+                                <div style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">{{ t('shareLink') }}</div>
+                                <div class="share-url" style="font-size: 0.8rem;">{{ giftLink }}</div>
+                            </div>
+                            
+                            <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: inline-block;">
+                                <div id="giftQRCode"></div>
+                            </div>
+                            
+                            <div class="share-buttons">
+                                <button class="btn-primary" @click="copyGiftLink">{{ t('copyLink') }}</button>
+                                <button class="btn-secondary" @click="shareToWechat">{{ t('shareToWechat') }}</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1610,8 +1928,8 @@
                             <div class="share-url">{{ shareUrl }}</div>
                             <div class="share-buttons">
                                 <button class="btn-primary" @click="copyUrl">{{ t('copy') }}</button>
-                                <button class="btn-secondary" @click="exportImage">{{ t('exportImage') }}</button>
-                                <button class="btn-secondary" @click="exportPDF">{{ t('exportPDF') }}</button>
+                                <button class="btn-secondary" @click="exportImage" :disabled="!isPremium">{{ t('exportImage') }} {{ !isPremium ? '👑' : '' }}</button>
+                                <button class="btn-secondary" @click="exportPDF" :disabled="!isPremium">{{ t('exportPDF') }} {{ !isPremium ? '👑' : '' }}</button>
                             </div>
                         </div>
                     </div>
@@ -1621,13 +1939,16 @@
             <div v-if="isPlaying" class="slideshow-view" @click="stopSlideshow">
                 <img v-for="(memory, index) in allMemories" :key="index" :src="memory.photo" class="slideshow-image" :class="{ 'active': currentSlide === index }" :style="{ filter: memory.filter === 'sepia' ? 'sepia(0.6)' : 'none' }">
                 <div class="slideshow-info" v-if="allMemories[currentSlide]">
-                    <div class="slideshow-year">{{ allMemories[currentSlide].year }}{{ t('year') }}</div>
+                    <div class="slideshow-year">2026 {{ t('year') }}</div>
                     <div>{{ allMemories[currentSlide].text }}</div>
                     <div v-if="allMemories[currentSlide].people" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">👥 {{ allMemories[currentSlide].people.join(', ') }}</div>
                 </div>
             </div>
             
+            <!-- 悬浮按钮 -->
             <button v-if="!showWelcome && currentView !== 'album' && !isPlaying" class="play-memories-btn" @click="startSlideshow" title="播放回忆">▶</button>
+            
+            <button v-if="!showWelcome && currentView !== 'album' && !isPlaying" class="gift-btn" @click="showGiftModal" title="春节回忆礼物">🧧</button>
             
             <div class="toast" :class="{ 'show': toastMessage }">{{ toastMessage }}</div>
         </div>
@@ -1646,7 +1967,7 @@
                         newAlbum: '新建相册',
                         importAlbum: '导入相册',
                         joinCollab: '加入协同',
-                        premium: '待开发',
+                        premium: '高级订阅',
                         loading: '生成回忆中...',
                         appName: '家族回忆记录册',
                         room: '房间',
@@ -1654,11 +1975,17 @@
                         album: '相册',
                         familyTree: '家族树',
                         year: '年',
+                        photoCount: '照片数量',
+                        unlimited: '无限容量',
+                        limitReached: '已达免费上限 (50张)',
+                        upgradePrompt: '升级高级版解锁无限存储空间',
+                        upgradeNow: '立即升级',
                         addPhoto: '添加照片',
                         uploadText: '点击或拖拽上传照片',
                         uploadHint: '支持 JPG、PNG 格式，单张最大 5MB',
+                        uploadHintPremium: '高级版支持单张最大 20MB 高清上传',
                         noDesc: '无描述',
-                        emptyYear: '这一年还没有回忆，添加第一张照片吧',
+                        emptyYear: '还没有回忆，添加第一张照片吧',
                         resetView: '重置视图',
                         refresh: '刷新数据',
                         coreMember: '核心成员（多张照片）',
@@ -1680,22 +2007,37 @@
                         date: '具体日期',
                         optional: '可选',
                         save: '保存回忆',
-                        editYear: '编辑年份',
-                        yearLabel: '年份显示名称',
-                        yearPlaceholder: '如：2024 或 甲午年',
-                        yearHint: '可以修改为农历年份或其他有意义的名称',
-                        confirm: '确认',
-                        premiumFeature: '高级功能',
-                        premiumDesc: '解锁更多年份时间轴，记录家族完整历史',
-                        feature1: '无限年份扩展（1950-2030）',
-                        feature2: 'AI 智能人脸识别自动标注',
-                        feature3: '云端备份与跨设备同步',
-                        contact: '联系开发者',
-                        gotIt: '我知道了',
-                        moreYears: '更多年份',
-                        restoreYears: '恢复默认年份',
+                        premiumFeature: '高级订阅',
+                        unlockAll: '解锁全部功能',
+                        premiumDesc: '解锁无限存储、高清导出、多人协作等专属功能',
+                        yearlyPlan: '年度会员',
+                        lifetimePlan: '永久会员',
+                        oneTime: '一次性',
+                        feature1: '无限照片数量 (无50张限制)',
+                        feature2: '高清图片导出 (4K分辨率)',
+                        feature3: 'PDF导出无水印',
+                        feature4: '多人协作编辑 (实时同步)',
+                        feature5: '专属春节主题翻页特效',
+                        feature6: '春节背景音乐 & 烟花特效',
+                        buyNow: '立即开通',
+                        securePayment: '安全支付 · 随时取消',
+                        springFestival: '春节模式',
+                        springGift: '春节回忆礼物',
+                        springGiftTitle: '春节回忆礼物',
+                        giftDesc: '生成精美H5电子红包',
+                        giftInclude: '包含：精美小程序码 + 微信分享链接',
+                        generateH5: '付费后生成可分享的电子红包',
+                        payViaAlipay: '支付宝支付 ¥6.6',
+                        afterPayment: '支付完成后请返回此页面',
+                        paymentSuccess: '支付成功！',
+                        giftReady: '您的春节回忆礼物已准备好',
+                        shareLink: '分享链接',
+                        shareToWechat: '分享到微信',
+                        backToHome: '返回首页',
+                        defaultText: '这段时光没有留下文字，但照片记录了当时的美好...',
+                        people: '人物',
                         collabTitle: '家族协同编辑',
-                        createRoomDesc: '创建房间，邀请家人一起完善家族回忆',
+                        createRoomDesc: '创建房间，邀请家人一起完善家族回忆 (高级功能)',
                         inRoomDesc: '您当前在房间中，家人可通过下方二维码加入',
                         createRoom: '创建房间',
                         copyLink: '复制链接',
@@ -1712,11 +2054,7 @@
                         shareTitle: '分享家族回忆',
                         copy: '复制链接',
                         exportImage: '导出长图',
-                        exportPDF: '导出 PDF',
-                        springFestival: '春节模式',
-                        backToHome: '返回首页',
-                        defaultText: '这段时光没有留下文字，但照片记录了当时的美好...',
-                        people: '人物'
+                        exportPDF: '导出 PDF'
                     },
                     en: {
                         title: 'Family Memories Record Book',
@@ -1724,7 +2062,7 @@
                         newAlbum: 'New Album',
                         importAlbum: 'Import Album',
                         joinCollab: 'Join Collaboration',
-                        premium: 'Coming Soon',
+                        premium: 'Premium',
                         loading: 'Generating memories...',
                         appName: 'Family Memories Record',
                         room: 'Room',
@@ -1732,11 +2070,17 @@
                         album: 'Album',
                         familyTree: 'Family Tree',
                         year: '',
+                        photoCount: 'Photos',
+                        unlimited: 'Unlimited',
+                        limitReached: 'Free limit reached (50 photos)',
+                        upgradePrompt: 'Upgrade to Premium for unlimited storage',
+                        upgradeNow: 'Upgrade Now',
                         addPhoto: 'Add Photo',
                         uploadText: 'Click or drag to upload photos',
                         uploadHint: 'Supports JPG, PNG. Max 5MB per file',
+                        uploadHintPremium: 'Premium: Up to 20MB per file',
                         noDesc: 'No description',
-                        emptyYear: 'No memories for this year yet. Add your first photo!',
+                        emptyYear: 'No memories yet. Add your first photo!',
                         resetView: 'Reset View',
                         refresh: 'Refresh Data',
                         coreMember: 'Core Member (Many photos)',
@@ -1758,22 +2102,37 @@
                         date: 'Specific Date',
                         optional: 'Optional',
                         save: 'Save Memory',
-                        editYear: 'Edit Year Label',
-                        yearLabel: 'Year Display Name',
-                        yearPlaceholder: 'e.g., 2024 or Year of Dragon',
-                        yearHint: 'Can be changed to lunar calendar or meaningful names',
-                        confirm: 'Confirm',
-                        premiumFeature: 'Premium Feature',
-                        premiumDesc: 'Unlock more years to record complete family history',
-                        feature1: 'Unlimited year expansion (1950-2030)',
-                        feature2: 'AI face recognition auto-tagging',
-                        feature3: 'Cloud backup & cross-device sync',
-                        contact: 'Contact Developer',
-                        gotIt: 'Got it',
-                        moreYears: 'More Years',
-                        restoreYears: 'Restore Default',
+                        premiumFeature: 'Premium Subscription',
+                        unlockAll: 'Unlock All Features',
+                        premiumDesc: 'Unlock unlimited storage, HD export, collaboration and more',
+                        yearlyPlan: 'Yearly Plan',
+                        lifetimePlan: 'Lifetime Plan',
+                        oneTime: 'One-time',
+                        feature1: 'Unlimited photos (No 50 limit)',
+                        feature2: 'HD Image Export (4K resolution)',
+                        feature3: 'PDF Export without watermark',
+                        feature4: 'Multi-user Collaboration (Real-time)',
+                        feature5: 'Exclusive Spring Festival effects',
+                        feature6: 'Spring Festival music & fireworks',
+                        buyNow: 'Subscribe Now',
+                        securePayment: 'Secure Payment · Cancel anytime',
+                        springFestival: 'Spring Festival Mode',
+                        springGift: 'Spring Festival Gift',
+                        springGiftTitle: 'Spring Festival Gift',
+                        giftDesc: 'Generate exquisite H5 Red Packet',
+                        giftInclude: 'Includes: Mini Program QR + WeChat Link',
+                        generateH5: 'Generate shareable red packet after payment',
+                        payViaAlipay: 'Pay ¥6.6 via Alipay',
+                        afterPayment: 'Please return to this page after payment',
+                        paymentSuccess: 'Payment Successful!',
+                        giftReady: 'Your Spring Festival gift is ready',
+                        shareLink: 'Share Link',
+                        shareToWechat: 'Share to WeChat',
+                        backToHome: 'Back to Home',
+                        defaultText: 'No words were left for this moment, but the photo captured the beauty of that time...',
+                        people: 'People',
                         collabTitle: 'Family Collaboration',
-                        createRoomDesc: 'Create a room and invite family members',
+                        createRoomDesc: 'Create a room and invite family members (Premium)',
                         inRoomDesc: 'You are in a room. Others can scan QR code to join.',
                         createRoom: 'Create Room',
                         copyLink: 'Copy Link',
@@ -1790,11 +2149,7 @@
                         shareTitle: 'Share Family Memories',
                         copy: 'Copy Link',
                         exportImage: 'Export Image',
-                        exportPDF: 'Export PDF',
-                        springFestival: 'Spring Festival Mode',
-                        backToHome: 'Back to Home',
-                        defaultText: 'No words were left for this moment, but the photo captured the beauty of that time...',
-                        people: 'People'
+                        exportPDF: 'Export PDF'
                     }
                 };
                 
@@ -1808,7 +2163,7 @@
                 const showWelcome = ref(true);
                 const isLoading = ref(false);
                 const currentView = ref('timeline');
-                const selectedYear = ref(2024);
+                const selectedYear = ref(2026);
                 const memories = ref({});
                 const isDragging = ref(false);
                 const fileInput = ref(null);
@@ -1817,18 +2172,17 @@
                 const showCollab = ref(false);
                 const showJoinModal = ref(false);
                 const showPremiumModal = ref(false);
-                const showYearEditModal = ref(false);
-                const editingYearIndex = ref(-1);
-                const editingYearLabel = ref('');
+                const showGiftModal = ref(false);
                 
                 const defaultYears = [
-                    { id: 'y2024', value: 2024, label: '2024' },
-                    { id: 'y2025', value: 2025, label: '2025' },
-                    { id: 'y2026', value: 2026, label: '2026' },
-                    { id: 'y2027', value: 2027, label: '2027' },
-                    { id: 'y2028', value: 2028, label: '2028' }
+                    { id: 'y2026', value: 2026, label: '2026' }
                 ];
-                const editableYears = ref(JSON.parse(JSON.stringify(defaultYears)));
+                
+                const photoLimit = 50;
+                const isPremium = ref(false);
+                const giftPaid = ref(false);
+                const isPlayingMusic = ref(false);
+                const audioPlayer = ref(null);
                 
                 const editingIndex = ref(-1);
                 const editingMemory = ref({ photo: '', text: '', date: '', filter: 'none', year: '', people: [] });
@@ -1841,7 +2195,7 @@
                 const currentSlide = ref(0);
                 let slideshowInterval = null;
                 
-                const isSpringFestival = ref(false);
+                const isSpringFestival = ref(true); // 强制开启春节模式
                 const roomId = ref('');
                 const joinRoomId = ref('');
                 const onlineUsers = ref([]);
@@ -1850,12 +2204,19 @@
                 const albumPages = ref([]);
                 const currentPage = ref(0);
                 
-                const currentMemories = computed(() => memories.value[selectedYear.value] || []);
+                // 照片数量计算
+                const photoCount = computed(() => {
+                    return Object.values(memories.value).reduce((total, yearMemories) => total + (yearMemories ? yearMemories.length : 0), 0);
+                });
+                
+                const currentMemories = computed(() => memories.value[2026] || []);
                 
                 const allMemories = computed(() => {
                     const all = [];
                     Object.keys(memories.value).sort().forEach(year => {
-                        memories.value[year].forEach(memory => all.push({ ...memory, year }));
+                        if (memories.value[year]) {
+                            memories.value[year].forEach(memory => all.push({ ...memory, year }));
+                        }
                     });
                     return all;
                 });
@@ -1865,11 +2226,42 @@
                     return `${window.location.origin}${window.location.pathname}#data=${data}`;
                 });
                 
+                // 支付宝链接（示例，实际使用时替换为真实收款链接）
+                const alipayLink = ref('alipays://platformapi/startapp?appId=20000123&actionType=scanAndRoute&qrcode=https%3A%2F%2Fqr.alipay.com%2Fyour_code_here');
+                
+                // 礼物链接
+                const giftLink = computed(() => {
+                    const token = btoa(JSON.stringify({ 
+                        memories: memories.value, 
+                        timestamp: Date.now(),
+                        type: 'spring_gift',
+                        from: 'Family Memories Record Book'
+                    }));
+                    return `${window.location.origin}${window.location.pathname}?gift=${token}`;
+                });
+                
+                const initAudio = () => {
+                    // 春节背景音乐 - 使用喜庆的民乐URL（这里使用示例URL，实际部署时请替换为真实音乐文件）
+                    audioPlayer.value = new Audio('https://cdn.pixabay.com/download/audio/2022/03/09/audio_c8c91e3327.mp3?filename=chinese-new-year-70558.mp3');
+                    audioPlayer.value.loop = true;
+                    audioPlayer.value.volume = 0.5;
+                };
+                
+                const toggleMusic = () => {
+                    if (!audioPlayer.value) initAudio();
+                    if (isPlayingMusic.value) {
+                        audioPlayer.value.pause();
+                        isPlayingMusic.value = false;
+                    } else {
+                        audioPlayer.value.play().catch(e => {
+                            showToast(t('clickToPlay'));
+                        });
+                        isPlayingMusic.value = true;
+                    }
+                };
+                
                 const checkSpringFestival = () => {
-                    const now = new Date();
-                    const start = new Date('2026-01-20');
-                    const end = new Date('2026-02-23');
-                    isSpringFestival.value = now >= start && now <= end;
+                    // 始终开启春节模式以展示特效
                     if (isSpringFestival.value) initPlumBlossoms();
                 };
                 
@@ -1883,6 +2275,7 @@
                     canvas.height = height;
                     
                     const flowers = [];
+                    const fireworks = [];
                     const flowerCount = 30;
                     
                     class Flower {
@@ -1923,6 +2316,66 @@
                         }
                     }
                     
+                    // 烟花效果（春节特效）
+                    class Firework {
+                        constructor() {
+                            this.x = Math.random() * width;
+                            this.y = height;
+                            this.targetY = Math.random() * height * 0.5;
+                            this.speed = 8;
+                            this.particles = [];
+                            this.exploded = false;
+                            this.color = `hsl(${Math.random() * 60 + 10}, 100%, 50%)`; // 金色到红色
+                        }
+                        update() {
+                            if (!this.exploded) {
+                                this.y -= this.speed;
+                                if (this.y <= this.targetY) {
+                                    this.explode();
+                                }
+                            } else {
+                                this.particles.forEach((p, i) => {
+                                    p.x += p.vx;
+                                    p.y += p.vy;
+                                    p.vy += 0.1;
+                                    p.life -= 0.02;
+                                    if (p.life <= 0) this.particles.splice(i, 1);
+                                });
+                            }
+                        }
+                        explode() {
+                            this.exploded = true;
+                            for (let i = 0; i < 30; i++) {
+                                const angle = (Math.PI * 2 / 30) * i;
+                                const velocity = Math.random() * 4 + 2;
+                                this.particles.push({
+                                    x: this.x, y: this.y,
+                                    vx: Math.cos(angle) * velocity,
+                                    vy: Math.sin(angle) * velocity,
+                                    life: 1,
+                                    color: this.color
+                                });
+                            }
+                        }
+                        draw() {
+                            if (!this.exploded) {
+                                ctx.beginPath();
+                                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                                ctx.fillStyle = this.color;
+                                ctx.fill();
+                            } else {
+                                this.particles.forEach(p => {
+                                    ctx.beginPath();
+                                    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                                    ctx.fillStyle = p.color;
+                                    ctx.globalAlpha = p.life;
+                                    ctx.fill();
+                                    ctx.globalAlpha = 1;
+                                });
+                            }
+                        }
+                    }
+                    
                     for (let i = 0; i < flowerCount; i++) {
                         const flower = new Flower();
                         flower.y = Math.random() * height;
@@ -1932,7 +2385,22 @@
                     let animationId;
                     const animate = () => {
                         ctx.clearRect(0, 0, width, height);
+                        
+                        // 绘制梅花
                         flowers.forEach(f => { f.update(); f.draw(); });
+                        
+                        // 偶尔燃放烟花
+                        if (Math.random() < 0.02 && fireworks.length < 3) {
+                            fireworks.push(new Firework());
+                        }
+                        fireworks.forEach((fw, i) => {
+                            fw.update();
+                            fw.draw();
+                            if (fw.exploded && fw.particles.length === 0) {
+                                fireworks.splice(i, 1);
+                            }
+                        });
+                        
                         animationId = requestAnimationFrame(animate);
                     };
                     animate();
@@ -1942,11 +2410,6 @@
                         height = window.innerHeight;
                         canvas.width = width;
                         canvas.height = height;
-                    });
-                    
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.hidden) cancelAnimationFrame(animationId);
-                        else animate();
                     });
                 };
                 
@@ -2036,7 +2499,7 @@
                             .style('box-shadow', '0 2px 8px rgba(0,0,0,0.2)').style('pointer-events', 'none').style('z-index', '1000');
                         
                         node.on('mouseover', (e, d) => {
-                            tooltip.html(`<strong>${d.name}</strong><br/>${t('years')}: ${d.years.join(', ')}`)
+                            tooltip.html(`<strong>${d.name}</strong><br/>Years: ${d.years.join(', ')}`)
                                 .style('visibility', 'visible').style('left', (e.clientX + 10) + 'px').style('top', (e.clientY - 10) + 'px');
                         }).on('mouseout', () => tooltip.style('visibility', 'hidden'));
                         
@@ -2081,6 +2544,11 @@
                 const generateRoomId = () => Math.random().toString(36).substring(2, 8).toUpperCase();
                 
                 const createRoom = () => {
+                    if (!isPremium.value) {
+                        showToast(t('premiumRequired'));
+                        showPremiumModal.value = true;
+                        return;
+                    }
                     roomId.value = generateRoomId();
                     if ('BroadcastChannel' in window) {
                         broadcastChannel.value = new BroadcastChannel('family_memories_' + roomId.value);
@@ -2103,6 +2571,11 @@
                 };
                 
                 const joinRoom = () => {
+                    if (!isPremium.value) {
+                        showToast(t('premiumRequired'));
+                        showPremiumModal.value = true;
+                        return;
+                    }
                     if (joinRoomId.value.length !== 6) { showToast(t('enter6digits')); return; }
                     roomId.value = joinRoomId.value.toUpperCase();
                     if ('BroadcastChannel' in window) {
@@ -2132,6 +2605,11 @@
                 };
                 
                 const showCollabModal = () => {
+                    if (!isPremium.value) {
+                        showToast(t('premiumRequired'));
+                        showPremiumModal.value = true;
+                        return;
+                    }
                     showCollab.value = true;
                     if (roomId.value) {
                         nextTick(() => {
@@ -2148,7 +2626,6 @@
                 
                 const createNewAlbum = () => {
                     memories.value = {};
-                    editableYears.value = JSON.parse(JSON.stringify(defaultYears));
                     saveToLocalStorage();
                     showWelcome.value = false;
                     checkUrlParams();
@@ -2165,7 +2642,7 @@
                                 try {
                                     const data = JSON.parse(ev.target.result);
                                     memories.value = data.memories || data;
-                                    if (data.years) editableYears.value = data.years;
+                                    if (data.isPremium) isPremium.value = true;
                                     saveToLocalStorage();
                                     showWelcome.value = false;
                                     checkUrlParams();
@@ -2188,16 +2665,17 @@
                 const loadFromLocalStorage = () => {
                     const saved = localStorage.getItem('familyMemories');
                     const savedLang = localStorage.getItem('familyMemoriesLang');
-                    const savedYears = localStorage.getItem('familyMemoriesYears');
+                    const savedPremium = localStorage.getItem('familyMemoriesPremium');
+                    const savedGift = localStorage.getItem('familyMemoriesGift');
                     
                     if (saved) { try { memories.value = JSON.parse(saved); } catch (e) {} }
                     if (savedLang) currentLang.value = savedLang;
-                    if (savedYears) { try { editableYears.value = JSON.parse(savedYears); } catch (e) {} }
+                    if (savedPremium === 'true') isPremium.value = true;
+                    if (savedGift === 'true') giftPaid.value = true;
                 };
                 
                 const saveToLocalStorage = () => {
                     localStorage.setItem('familyMemories', JSON.stringify(memories.value));
-                    localStorage.setItem('familyMemoriesYears', JSON.stringify(editableYears.value));
                     if (broadcastChannel.value && roomId.value) broadcastChannel.value.postMessage({ type: 'sync', data: memories.value });
                 };
                 
@@ -2208,11 +2686,22 @@
                 };
                 
                 const hasMemory = (year) => memories.value[year] && memories.value[year].length > 0;
-                const selectYear = (year) => { selectedYear.value = year; };
-                const triggerUpload = () => { fileInput.value.click(); };
+                
+                const triggerUpload = () => {
+                    if (photoCount.value >= photoLimit && !isPremium.value) {
+                        showPremiumModal.value = true;
+                        return;
+                    }
+                    fileInput.value.click();
+                };
                 
                 const handleFileSelect = (e) => {
                     const files = Array.from(e.target.files);
+                    if (photoCount.value + files.length > photoLimit && !isPremium.value) {
+                        showToast(t('limitReached'));
+                        showPremiumModal.value = true;
+                        return;
+                    }
                     processFiles(files);
                     e.target.value = '';
                 };
@@ -2220,17 +2709,30 @@
                 const handleDrop = (e) => {
                     isDragging.value = false;
                     const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                    if (photoCount.value + files.length > photoLimit && !isPremium.value) {
+                        showToast(t('limitReached'));
+                        showPremiumModal.value = true;
+                        return;
+                    }
                     processFiles(files);
                 };
                 
                 const processFiles = (files) => {
+                    const maxSize = isPremium.value ? 20 * 1024 * 1024 : 5 * 1024 * 1024;
                     files.forEach(file => {
-                        if (file.size > 5 * 1024 * 1024) { showToast(`${file.name} too large`); return; }
+                        if (file.size > maxSize) { showToast(`${file.name} ${isPremium.value ? 'Max 20MB' : 'Max 5MB'}`); return; }
                         isLoading.value = true;
                         const reader = new FileReader();
                         reader.onload = (e) => {
                             setTimeout(() => {
-                                editingMemory.value = { photo: e.target.result, text: '', date: new Date().toISOString().split('T')[0], filter: 'none', year: selectedYear.value, people: [] };
+                                editingMemory.value = { 
+                                    photo: e.target.result, 
+                                    text: '', 
+                                    date: new Date().toISOString().split('T')[0], 
+                                    filter: 'none', 
+                                    year: 2026, 
+                                    people: [] 
+                                };
                                 isSepia.value = false; tagInput.value = ''; editingIndex.value = -1;
                                 showEditModal.value = true; isLoading.value = false;
                             }, 800);
@@ -2253,46 +2755,76 @@
                 };
                 
                 const saveMemory = () => {
+                    if (photoCount.value >= photoLimit && !isPremium.value && editingIndex.value === -1) {
+                        showToast(t('limitReached'));
+                        showPremiumModal.value = true;
+                        return;
+                    }
                     editingMemory.value.filter = isSepia.value ? 'sepia' : 'none';
-                    if (!memories.value[selectedYear.value]) memories.value[selectedYear.value] = [];
-                    if (editingIndex.value === -1) memories.value[selectedYear.value].push({ ...editingMemory.value });
-                    else memories.value[selectedYear.value][editingIndex.value] = { ...editingMemory.value };
+                    if (!memories.value[2026]) memories.value[2026] = [];
+                    if (editingIndex.value === -1) memories.value[2026].push({ ...editingMemory.value });
+                    else memories.value[2026][editingIndex.value] = { ...editingMemory.value };
                     saveToLocalStorage();
                     closeEditModal();
                     showToast(t('saved'));
                     if (currentView.value === 'tree') refreshTree();
                 };
                 
-                const editYearLabel = (index) => {
-                    editingYearIndex.value = index;
-                    editingYearLabel.value = editableYears.value[index].label;
-                    showYearEditModal.value = true;
-                };
-                
-                const saveYearLabel = () => {
-                    if (editingYearIndex.value !== -1 && editingYearLabel.value.trim()) {
-                        editableYears.value[editingYearIndex.value].label = editingYearLabel.value.trim();
-                        saveToLocalStorage();
-                    }
-                    showYearEditModal.value = false;
-                    editingYearIndex.value = -1;
-                    editingYearLabel.value = '';
-                };
-                
-                const removeYear = (index) => {
-                    if (confirm(currentLang.value === 'zh' ? '确定要删除这个年份吗？相关照片将被隐藏。' : 'Delete this year? Related photos will be hidden.')) {
-                        editableYears.value.splice(index, 1);
-                        if (selectedYear.value === editableYears.value[index]?.value && editableYears.value.length > 0) selectedYear.value = editableYears.value[0].value;
-                        saveToLocalStorage();
-                    }
-                };
-                
-                const restoreDefaultYears = () => {
-                    editableYears.value = JSON.parse(JSON.stringify(defaultYears));
-                    saveToLocalStorage();
-                };
-                
                 const showPremiumInfo = () => { showPremiumModal.value = true; };
+                
+                const selectPremium = (type) => {
+                    // 模拟选择方案
+                };
+                
+                const buyPremium = () => {
+                    // 模拟购买流程
+                    isPremium.value = true;
+                    localStorage.setItem('familyMemoriesPremium', 'true');
+                    showPremiumModal.value = false;
+                    showToast(currentLang.value === 'zh' ? '开通成功！享受高级功能' : 'Upgrade successful!');
+                };
+                
+                const showGiftModal = () => {
+                    showGiftModal.value = true;
+                    if (giftPaid.value) {
+                        nextTick(() => {
+                            generateGiftQR();
+                        });
+                    }
+                };
+                
+                const markGiftPaid = () => {
+                    setTimeout(() => {
+                        giftPaid.value = true;
+                        localStorage.setItem('familyMemoriesGift', 'true');
+                        nextTick(() => {
+                            generateGiftQR();
+                        });
+                    }, 2000);
+                };
+                
+                const generateGiftQR = () => {
+                    const qrcodeDiv = document.getElementById('giftQRCode');
+                    if (qrcodeDiv) {
+                        qrcodeDiv.innerHTML = '';
+                        new QRCode(qrcodeDiv, {
+                            text: giftLink.value,
+                            width: 150,
+                            height: 150,
+                            colorDark: '#C8102E',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                };
+                
+                const copyGiftLink = () => {
+                    navigator.clipboard.writeText(giftLink.value).then(() => showToast(t('copied')));
+                };
+                
+                const shareToWechat = () => {
+                    showToast(currentLang.value === 'zh' ? '请使用微信扫一扫分享' : 'Please use WeChat scan to share');
+                };
                 
                 const addTag = () => {
                     const tag = tagInput.value.trim();
@@ -2351,6 +2883,11 @@
                 const copyUrl = () => { navigator.clipboard.writeText(shareUrl.value).then(() => showToast(t('copied'))); };
                 
                 const exportImage = async () => {
+                    if (!isPremium.value) {
+                        showToast(t('premiumRequired'));
+                        showPremiumModal.value = true;
+                        return;
+                    }
                     showToast(t('generating'));
                     const element = document.querySelector('.main-content');
                     try {
@@ -2364,6 +2901,11 @@
                 };
                 
                 const exportPDF = async () => {
+                    if (!isPremium.value) {
+                        showToast(t('premiumRequired'));
+                        showPremiumModal.value = true;
+                        return;
+                    }
                     showToast(t('generating'));
                     const { jsPDF } = window.jspdf;
                     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -2372,7 +2914,7 @@
                         if (i > 0) pdf.addPage();
                         const memory = allMems[i];
                         pdf.setFontSize(20);
-                        pdf.text(`${memory.year}${t('year')}`, 105, 20, { align: 'center' });
+                        pdf.text(`2026${t('year')}`, 105, 20, { align: 'center' });
                         if (memory.photo) { try { pdf.addImage(memory.photo, 'JPEG', 55, 30, 100, 100); } catch (e) {} }
                         pdf.setFontSize(12);
                         const text = pdf.splitTextToSize(memory.text || '', 180);
@@ -2384,7 +2926,7 @@
                 };
                 
                 const exportData = () => {
-                    const exportObj = { memories: memories.value, years: editableYears.value, exportDate: new Date().toISOString() };
+                    const exportObj = { memories: memories.value, isPremium: isPremium.value, exportDate: new Date().toISOString() };
                     const dataStr = JSON.stringify(exportObj, null, 2);
                     const blob = new Blob([dataStr], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
@@ -2395,7 +2937,18 @@
                     showToast(t('downloaded'));
                 };
                 
-                watch(currentView, (newView) => { if (newView === 'album') prepareAlbumPages(); else if (newView === 'tree') refreshTree(); });
+                watch(currentView, (newView) => { 
+                    if (newView === 'album') {
+                        prepareAlbumPages();
+                        // 进入相册页自动播放音乐
+                        if (!isPlayingMusic.value && isPremium.value) {
+                            toggleMusic();
+                        }
+                    } else if (newView === 'tree') {
+                        refreshTree();
+                    }
+                });
+                
                 watch(memories, () => saveToLocalStorage(), { deep: true });
                 watch(currentLang, (newLang) => { if (recognition.value) recognition.value.lang = newLang === 'zh' ? 'zh-CN' : 'en-US'; });
                 
@@ -2410,22 +2963,25 @@
                     currentLang, t, switchLang,
                     showWelcome, isLoading, currentView, selectedYear, memories,
                     isDragging, fileInput, showEditModal, showSharePanel, showCollab,
-                    showJoinModal, showPremiumModal, showYearEditModal,
-                    editingYearIndex, editingYearLabel, editableYears,
+                    showJoinModal, showPremiumModal, showGiftModal,
                     editingIndex, editingMemory, isSepia, isRecording,
                     toastMessage, tagInput, isPlaying, currentSlide,
                     isSpringFestival, roomId, joinRoomId, onlineUsers,
                     familyTreeData, albumPages, currentPage,
                     currentMemories, allMemories, shareUrl,
+                    photoCount, photoLimit, isPremium, giftPaid,
+                    isPlayingMusic, alipayLink, giftLink,
                     createNewAlbum, importAlbum, joinCollaboration, backToHome,
-                    editYearLabel, saveYearLabel, removeYear, restoreDefaultYears, showPremiumInfo,
                     hasMemory, selectYear, triggerUpload, handleFileSelect, handleDrop,
                     editMemory, closeEditModal, saveMemory, addTag, removeTag, removeLastTag,
                     toggleVoiceInput, formatDate, nextPage, prevPage,
                     startSlideshow, stopSlideshow, showShareModal, copyUrl,
                     exportImage, exportPDF, exportData, showCollabModal,
                     createRoom, joinRoom, joinRoomFromWelcome, leaveRoom, copyRoomLink,
-                    resetZoom, refreshTree, showToast
+                    resetZoom, refreshTree, showToast, showPremiumInfo,
+                    selectPremium, buyPremium, showGiftModal: () => { showGiftModal.value = true; },
+                    markGiftPaid, copyGiftLink, shareToWechat, toggleMusic,
+                    generateGiftQR
                 };
             }
         }).mount('#app');
