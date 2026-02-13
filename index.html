@@ -1,0 +1,2554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>家族回忆时间轴 - 珍藏每一刻</title>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- D3.js 用于家族树 -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- QRCode.js 用于生成二维码 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- html2canvas 和 jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --imperial-red: #C8102E;
+            --rice-paper: #F5F5DC;
+            --gold: #D4AF37;
+            --dark-brown: #3E2723;
+            --light-gold: #F9E076;
+            --shadow: rgba(62, 39, 35, 0.15);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Serif SC', 'Source Han Serif CN', serif;
+            background-color: var(--rice-paper);
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+            color: var(--dark-brown);
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* 春节梅花 Canvas */
+        #plumCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        /* 欢迎界面 */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--rice-paper) 0%, #FFF8E1 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.6s ease;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            color: var(--imperial-red);
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px var(--shadow);
+            letter-spacing: 0.2em;
+        }
+        
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: var(--dark-brown);
+            margin-bottom: 3rem;
+            opacity: 0.8;
+        }
+        
+        .welcome-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: var(--imperial-red);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 6px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px var(--shadow);
+            background: #B01026;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--dark-brown);
+            border: 2px solid var(--gold);
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gold);
+            color: white;
+        }
+        
+        /* Loading 动画 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(245, 245, 220, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        
+        .lattice-loader {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            animation: rotate 3s linear infinite;
+        }
+        
+        .lattice-cell {
+            position: absolute;
+            width: 35%;
+            height: 35%;
+            background: var(--imperial-red);
+            opacity: 0.8;
+            border-radius: 2px;
+        }
+        
+        .lattice-cell:nth-child(1) { top: 0; left: 0; animation: pulse 1.5s ease-in-out infinite; }
+        .lattice-cell:nth-child(2) { top: 0; right: 0; animation: pulse 1.5s ease-in-out 0.2s infinite; }
+        .lattice-cell:nth-child(3) { bottom: 0; left: 0; animation: pulse 1.5s ease-in-out 0.4s infinite; }
+        .lattice-cell:nth-child(4) { bottom: 0; right: 0; animation: pulse 1.5s ease-in-out 0.6s infinite; }
+        .lattice-cell:nth-child(5) { 
+            top: 32.5%; left: 32.5%; 
+            background: var(--gold);
+            animation: pulse 1.5s ease-in-out 0.3s infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(0.8); opacity: 0.4; }
+        }
+        
+        .loading-text {
+            margin-top: 2rem;
+            color: var(--imperial-red);
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+        }
+        
+        /* 主容器 */
+        .app-container {
+            max-width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 头部 */
+        .header {
+            background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(245,245,220,0.95));
+            border-bottom: 2px solid var(--gold);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            color: var(--imperial-red);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .view-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.5);
+            padding: 0.3rem;
+            border-radius: 20px;
+            border: 1px solid var(--gold);
+        }
+        
+        .tab-btn {
+            padding: 0.4rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--dark-brown);
+            cursor: pointer;
+            border-radius: 15px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: var(--imperial-red);
+            color: white;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+        
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--gold);
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            color: var(--dark-brown);
+        }
+        
+        .icon-btn:hover {
+            background: var(--imperial-red);
+            color: white;
+            border-color: var(--imperial-red);
+            transform: scale(1.1);
+        }
+        
+        /* 横向时间轴 */
+        .timeline-container {
+            background: white;
+            border-bottom: 1px solid var(--gold);
+            padding: 1rem 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: var(--imperial-red) var(--rice-paper);
+        }
+        
+        .timeline-container::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .timeline-container::-webkit-scrollbar-track {
+            background: var(--rice-paper);
+        }
+        
+        .timeline-container::-webkit-scrollbar-thumb {
+            background: var(--imperial-red);
+            border-radius: 3px;
+        }
+        
+        .timeline {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0 1rem;
+            min-width: max-content;
+        }
+        
+        .year-item {
+            flex-shrink: 0;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gold);
+            background: white;
+            cursor: pointer;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .year-item:hover {
+            background: var(--light-gold);
+            transform: translateY(-2px);
+        }
+        
+        .year-item.active {
+            background: var(--imperial-red);
+            color: white;
+            border-color: var(--imperial-red);
+            font-weight: bold;
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+        
+        .year-item.has-memory::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 2rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* 家族树视图 */
+        .family-tree-container {
+            background: white;
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            padding: 2rem;
+            min-height: 600px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tree-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+            background: rgba(255,255,255,0.9);
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--gold);
+        }
+        
+        .tree-legend {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(255,255,255,0.9);
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--gold);
+            font-size: 0.9rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        #familyTreeSvg {
+            width: 100%;
+            height: 600px;
+            cursor: grab;
+        }
+        
+        #familyTreeSvg:active {
+            cursor: grabbing;
+        }
+        
+        .node circle {
+            stroke: #fff;
+            stroke-width: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .node circle:hover {
+            stroke: var(--imperial-red);
+            stroke-width: 3px;
+            filter: drop-shadow(0 0 8px var(--gold));
+        }
+        
+        .node text {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 12px;
+            pointer-events: none;
+            text-anchor: middle;
+            fill: var(--dark-brown);
+            font-weight: 600;
+        }
+        
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        
+        .link.active {
+            stroke: var(--imperial-red);
+            stroke-width: 2px;
+            stroke-opacity: 1;
+        }
+        
+        /* 照片详情 */
+        .memory-detail {
+            background: white;
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .memory-detail::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--imperial-red), var(--gold), var(--imperial-red));
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .detail-year {
+            font-size: 2rem;
+            color: var(--imperial-red);
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .detail-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-text {
+            background: none;
+            border: 1px solid var(--gold);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--dark-brown);
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .btn-text:hover {
+            background: var(--gold);
+            color: white;
+        }
+        
+        /* 照片画廊 */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .photo-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+        }
+        
+        .photo-card {
+            position: relative;
+            background: white;
+            border: 1px solid var(--gold);
+            padding: 8px;
+            box-shadow: 0 4px 8px var(--shadow);
+            transition: transform 0.3s;
+            cursor: pointer;
+            aspect-ratio: 3/4;
+            overflow: hidden;
+        }
+        
+        .photo-card:hover {
+            transform: translateY(-5px) rotate(1deg);
+            box-shadow: 0 8px 16px var(--shadow);
+        }
+        
+        .photo-wrapper {
+            width: 100%;
+            height: 70%;
+            overflow: hidden;
+            background: #f0f0f0;
+            position: relative;
+        }
+        
+        .photo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: filter 0.3s;
+        }
+        
+        .photo-wrapper img.sepia {
+            filter: sepia(0.6) contrast(1.1) brightness(0.9);
+        }
+        
+        .photo-info {
+            padding: 0.8rem 0.4rem;
+        }
+        
+        .photo-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--dark-brown);
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .photo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-top: 0.3rem;
+        }
+        
+        .tag {
+            font-size: 0.7rem;
+            background: var(--light-gold);
+            color: var(--dark-brown);
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+        }
+        
+        .photo-date {
+            font-size: 0.8rem;
+            color: var(--gold);
+            margin-top: 0.3rem;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--dark-brown);
+            opacity: 0.6;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* 上传区域 */
+        .upload-zone {
+            border: 2px dashed var(--gold);
+            border-radius: 8px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: rgba(212, 175, 55, 0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-zone:hover, .upload-zone.dragover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--imperial-red);
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text {
+            font-size: 1.1rem;
+            color: var(--dark-brown);
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        /* 模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .modal-content {
+            background: var(--rice-paper);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 2px solid var(--gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            background: var(--imperial-red);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark-brown);
+            font-weight: 600;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            background: white;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .char-count {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.3rem;
+        }
+        
+        .char-count.warning {
+            color: var(--imperial-red);
+        }
+        
+        /* 标签输入 */
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            background: white;
+            min-height: 46px;
+            align-items: center;
+        }
+        
+        .tag-item {
+            background: var(--imperial-red);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .tag-input-field {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 0.3rem;
+        }
+        
+        /* 语音输入按钮 */
+        .voice-input-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: white;
+            border: 1px solid var(--imperial-red);
+            color: var(--imperial-red);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+        }
+        
+        .voice-input-btn:hover {
+            background: var(--imperial-red);
+            color: white;
+        }
+        
+        .voice-input-btn.recording {
+            background: var(--imperial-red);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* 复选框 */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--imperial-red);
+        }
+        
+        /* 协同模态框特殊样式 */
+        .collab-panel {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .room-code {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--imperial-red);
+            letter-spacing: 0.3em;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--rice-paper);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            font-family: monospace;
+        }
+        
+        #qrcode {
+            margin: 1rem auto;
+            padding: 1rem;
+            background: white;
+            display: inline-block;
+            border: 1px solid var(--gold);
+        }
+        
+        .collab-status {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: var(--dark-brown);
+        }
+        
+        .collab-users {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--imperial-red);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            border: 2px solid var(--gold);
+        }
+        
+        /* 3D 相册视图 */
+        .album-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(62, 39, 35, 0.95);
+            z-index: 1500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1500px;
+        }
+        
+        .book-container {
+            width: 80%;
+            max-width: 800px;
+            height: 80vh;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        
+        .book-page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            border: 1px solid var(--gold);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transform-origin: left center;
+            transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .book-page.flipped {
+            transform: rotateY(-180deg);
+        }
+        
+        .page-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .page-number {
+            text-align: center;
+            padding: 1rem;
+            color: var(--gold);
+            border-top: 1px solid var(--gold);
+            font-size: 0.9rem;
+        }
+        
+        .page-photo {
+            width: 100%;
+            flex: 1;
+            object-fit: contain;
+            background: #f5f5f5;
+            margin-bottom: 1rem;
+            max-height: 60%;
+        }
+        
+        .page-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--dark-brown);
+            text-align: justify;
+        }
+        
+        .page-year {
+            font-size: 1.5rem;
+            color: var(--imperial-red);
+            text-align: center;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 0.5rem;
+        }
+        
+        .album-nav {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2rem;
+            z-index: 10;
+        }
+        
+        .nav-btn {
+            background: var(--gold);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            transform: scale(1.1);
+            background: var(--imperial-red);
+        }
+        
+        .close-album {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        /* 播放回忆按钮 */
+        .play-memories-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: var(--imperial-red);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px var(--shadow);
+            z-index: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .play-memories-btn:hover {
+            transform: scale(1.1) rotate(15deg);
+            background: #B01026;
+        }
+        
+        /* 轮播播放界面 */
+        .slideshow-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .slideshow-image {
+            max-width: 90%;
+            max-height: 80vh;
+            object-fit: contain;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        
+        .slideshow-image.active {
+            opacity: 1;
+        }
+        
+        .slideshow-info {
+            position: absolute;
+            bottom: 2rem;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 1rem;
+        }
+        
+        .slideshow-year {
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* 分享面板 */
+        .share-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .share-url {
+            background: var(--rice-paper);
+            padding: 1rem;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--gold);
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        /* 提示消息 */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--dark-brown);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 3000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* 春节装饰 */
+        .spring-festival-badge {
+            position: fixed;
+            top: 80px;
+            right: 10px;
+            background: linear-gradient(135deg, var(--imperial-red), #FF4444);
+            color: gold;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 99;
+            box-shadow: 0 4px 8px var(--shadow);
+            border: 2px solid gold;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .welcome-title {
+                font-size: 1.8rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .view-tabs {
+                justify-content: center;
+            }
+            
+            .header-title {
+                justify-content: center;
+            }
+            
+            .memory-detail {
+                padding: 1rem;
+            }
+            
+            .detail-year {
+                font-size: 1.5rem;
+            }
+            
+            .book-container {
+                width: 95%;
+                height: 70vh;
+            }
+            
+            .page-content {
+                padding: 1rem;
+            }
+            
+            .family-tree-container {
+                padding: 1rem;
+                min-height: 400px;
+            }
+            
+            #familyTreeSvg {
+                height: 400px;
+            }
+        }
+        
+        /* 打印样式 */
+        @media print {
+            .header, .timeline-container, .play-memories-btn, #plumCanvas {
+                display: none;
+            }
+            
+            .memory-detail {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 春节梅花 Canvas -->
+        <canvas id="plumCanvas" v-show="isSpringFestival"></canvas>
+        
+        <!-- 春节标识 -->
+        <div v-if="isSpringFestival" class="spring-festival-badge">
+            🧧 春节模式 🧧
+        </div>
+        
+        <!-- 欢迎界面 -->
+        <div v-if="showWelcome" class="welcome-screen">
+            <h1 class="welcome-title">家族回忆时间轴</h1>
+            <p class="welcome-subtitle">珍藏岁月，传承记忆</p>
+            <div class="welcome-buttons">
+                <button class="btn-primary" @click="createNewAlbum">新建相册</button>
+                <button class="btn-secondary" @click="importAlbum">导入相册</button>
+                <button class="btn-secondary" @click="joinCollaboration">加入协同</button>
+            </div>
+        </div>
+        
+        <!-- Loading 动画 -->
+        <div v-if="isLoading" class="loading-overlay">
+            <div class="lattice-loader">
+                <div class="lattice-cell"></div>
+                <div class="lattice-cell"></div>
+                <div class="lattice-cell"></div>
+                <div class="lattice-cell"></div>
+                <div class="lattice-cell"></div>
+            </div>
+            <div class="loading-text">生成回忆中...</div>
+        </div>
+        
+        <!-- 主应用 -->
+        <div v-if="!showWelcome" class="app-container">
+            <!-- 头部 -->
+            <header class="header">
+                <div class="header-content">
+                    <h1 class="header-title">
+                        <span>❖</span>
+                        <span>家族回忆时间轴</span>
+                        <span v-if="roomId" style="font-size: 0.6em; color: var(--gold); margin-left: 0.5rem;">[房间: {{roomId}}]</span>
+                    </h1>
+                    
+                    <div class="view-tabs">
+                        <button 
+                            class="tab-btn" 
+                            :class="{ active: currentView === 'timeline' }"
+                            @click="currentView = 'timeline'"
+                        >
+                            时间轴
+                        </button>
+                        <button 
+                            class="tab-btn" 
+                            :class="{ active: currentView === 'album' }"
+                            @click="currentView = 'album'"
+                        >
+                            相册
+                        </button>
+                        <button 
+                            class="tab-btn" 
+                            :class="{ active: currentView === 'tree' }"
+                            @click="currentView = 'tree'"
+                        >
+                            家族树
+                        </button>
+                    </div>
+                    
+                    <div class="header-actions">
+                        <button class="icon-btn" @click="showCollabModal" title="协同编辑">👥</button>
+                        <button class="icon-btn" @click="showShareModal" title="分享">🔗</button>
+                        <button class="icon-btn" @click="exportData" title="导出">💾</button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- 横向时间轴（仅在时间轴视图显示） -->
+            <div class="timeline-container" v-if="currentView === 'timeline'">
+                <div class="timeline">
+                    <div 
+                        v-for="year in yearRange" 
+                        :key="year"
+                        class="year-item"
+                        :class="{ 
+                            'active': selectedYear === year,
+                            'has-memory': hasMemory(year)
+                        }"
+                        @click="selectYear(year)"
+                    >
+                        {{ year }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 主内容区 -->
+            <main class="main-content">
+                <!-- 时间轴视图 -->
+                <div v-if="currentView === 'timeline'">
+                    <div class="memory-detail">
+                        <div class="detail-header">
+                            <h2 class="detail-year">{{ selectedYear }}年</h2>
+                            <div class="detail-actions">
+                                <button class="btn-text" @click="triggerUpload">添加照片</button>
+                                <input 
+                                    type="file" 
+                                    ref="fileInput" 
+                                    accept="image/*" 
+                                    style="display: none" 
+                                    @change="handleFileSelect"
+                                    multiple
+                                >
+                            </div>
+                        </div>
+                        
+                        <!-- 上传区域 -->
+                        <div 
+                            class="upload-zone"
+                            @click="triggerUpload"
+                            @drop.prevent="handleDrop"
+                            @dragover.prevent="isDragging = true"
+                            @dragleave="isDragging = false"
+                            :class="{ 'dragover': isDragging }"
+                        >
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-text">点击或拖拽上传照片</div>
+                            <div class="upload-hint">支持 JPG、PNG 格式，单张最大 5MB</div>
+                        </div>
+                        
+                        <!-- 照片列表 -->
+                        <div v-if="currentMemories.length > 0" class="photo-gallery">
+                            <div 
+                                v-for="(memory, index) in currentMemories" 
+                                :key="index"
+                                class="photo-card"
+                                @click="editMemory(index)"
+                            >
+                                <div class="photo-wrapper">
+                                    <img 
+                                        :src="memory.photo" 
+                                        :class="{ 'sepia': memory.filter === 'sepia' }"
+                                        alt="回忆照片"
+                                    >
+                                </div>
+                                <div class="photo-info">
+                                    <p class="photo-text">{{ memory.text || '无描述' }}</p>
+                                    <div class="photo-tags" v-if="memory.people && memory.people.length > 0">
+                                        <span v-for="person in memory.people.slice(0, 2)" :key="person" class="tag">{{ person }}</span>
+                                        <span v-if="memory.people.length > 2" class="tag">+{{ memory.people.length - 2 }}</span>
+                                    </div>
+                                    <div class="photo-date">{{ formatDate(memory.date) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div v-else class="empty-state">
+                            <div class="empty-icon">🕐</div>
+                            <p>这一年还没有回忆，添加第一张照片吧</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 家族树视图 -->
+                <div v-else-if="currentView === 'tree'" class="family-tree-container">
+                    <div class="tree-controls">
+                        <button class="btn-text" @click="resetZoom">重置视图</button>
+                        <button class="btn-text" @click="refreshTree">刷新数据</button>
+                    </div>
+                    
+                    <div class="tree-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--imperial-red);"></div>
+                            <span>核心成员（多张照片）</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--gold);"></div>
+                            <span>普通成员</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #999;"></div>
+                            <span>连线粗细表示同框频率</span>
+                        </div>
+                    </div>
+                    
+                    <div id="familyTreeSvg"></div>
+                    
+                    <div v-if="familyTreeData.nodes.length === 0" class="empty-state" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                        <div class="empty-icon">🌳</div>
+                        <p>暂无家族数据，请在照片中添加人物标签</p>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- 3D 相册视图 -->
+            <div v-if="currentView === 'album'" class="album-view" @click.self="currentView = 'timeline'">
+                <button class="close-album" @click="currentView = 'timeline'">×</button>
+                <div class="book-container">
+                    <div 
+                        v-for="(page, index) in albumPages" 
+                        :key="index"
+                        class="book-page"
+                        :class="{ 'flipped': page.flipped }"
+                        :style="{ 
+                            'z-index': albumPages.length - index,
+                            'transform': page.flipped ? 'rotateY(-180deg)' : 'rotateY(0deg)'
+                        }"
+                    >
+                        <div class="page-content">
+                            <div class="page-year">{{ page.year }}年</div>
+                            <img v-if="page.photo" :src="page.photo" class="page-photo" :class="{ 'sepia': page.filter === 'sepia' }">
+                            <p class="page-text">{{ page.text || '这段时光没有留下文字，但照片记录了当时的美好...' }}</p>
+                            <div v-if="page.people && page.people.length > 0" style="margin-top: 1rem; text-align: center; color: var(--gold);">
+                                👥 {{ page.people.join(', ') }}
+                            </div>
+                        </div>
+                        <div class="page-number">{{ index + 1 }} / {{ albumPages.length }}</div>
+                    </div>
+                </div>
+                <div class="album-nav">
+                    <button class="nav-btn" @click.stop="prevPage">◀</button>
+                    <button class="nav-btn" @click.stop="nextPage">▶</button>
+                </div>
+            </div>
+            
+            <!-- 添加/编辑照片模态框 -->
+            <div v-if="showEditModal" class="modal" @click.self="closeEditModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">{{ editingIndex === -1 ? '添加回忆' : '编辑回忆' }}</h3>
+                        <button class="modal-close" @click="closeEditModal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">照片预览</label>
+                            <div style="max-height: 300px; overflow: hidden; border: 1px solid var(--gold); border-radius: 4px;">
+                                <img :src="editingMemory.photo" style="width: 100%; height: auto; display: block;" :class="{ 'sepia': editingMemory.filter === 'sepia' }">
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="sepia" v-model="isSepia">
+                                <label for="sepia">应用老照片滤镜（Sepia 色调）</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">人物标签（输入名字后按回车）</label>
+                            <div class="tags-input" @click="$refs.tagInput.focus()">
+                                <span v-for="(tag, idx) in editingMemory.people" :key="idx" class="tag-item">
+                                    {{ tag }}
+                                    <span class="tag-remove" @click.stop="removeTag(idx)">×</span>
+                                </span>
+                                <input 
+                                    ref="tagInput"
+                                    type="text" 
+                                    class="tag-input-field"
+                                    v-model="tagInput"
+                                    @keydown.enter.prevent="addTag"
+                                    @keydown.delete="removeLastTag"
+                                    placeholder="输入名字..."
+                                >
+                            </div>
+                            <small style="color: #999; margin-top: 0.3rem; display: block;">提示：标注人物后可自动生成家族关系图谱</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">故事描述（限200字）</label>
+                            <textarea 
+                                class="form-textarea" 
+                                v-model="editingMemory.text"
+                                maxlength="200"
+                                placeholder="记录下这张照片背后的故事..."
+                            ></textarea>
+                            <div class="char-count" :class="{ 'warning': editingMemory.text.length > 180 }">
+                                {{ editingMemory.text.length }}/200
+                            </div>
+                            <button 
+                                class="voice-input-btn" 
+                                :class="{ 'recording': isRecording }"
+                                @click="toggleVoiceInput"
+                            >
+                                <span>{{ isRecording ? '⏹️ 停止录音' : '🎤 语音输入' }}</span>
+                            </button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">具体日期（可选）</label>
+                            <input type="date" class="form-input" v-model="editingMemory.date">
+                        </div>
+                        
+                        <button class="btn-primary" @click="saveMemory" style="width: 100%; margin-top: 1rem;">
+                            保存回忆
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 协同编辑模态框 -->
+            <div v-if="showCollab" class="modal" @click.self="showCollab = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">家族协同编辑</h3>
+                        <button class="modal-close" @click="showCollab = false">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="collab-panel">
+                            <p v-if="!roomId">创建房间，邀请家人一起完善家族回忆</p>
+                            <p v-else>您当前在房间中，家人可通过下方二维码加入</p>
+                            
+                            <div v-if="roomId" class="room-code">{{ roomId }}</div>
+                            
+                            <div id="qrcode" v-show="roomId"></div>
+                            
+                            <div v-if="!roomId" style="margin: 1rem 0;">
+                                <button class="btn-primary" @click="createRoom">创建房间</button>
+                            </div>
+                            
+                            <div v-else style="margin: 1rem 0;">
+                                <button class="btn-secondary" @click="copyRoomLink">复制房间链接</button>
+                                <button class="btn-secondary" @click="leaveRoom" style="margin-left: 0.5rem;">离开房间</button>
+                            </div>
+                            
+                            <div class="collab-status" v-if="roomId">
+                                <div>在线成员 ({{ onlineUsers.length + 1 }})</div>
+                                <div class="collab-users">
+                                    <div class="user-avatar" title="我">我</div>
+                                    <div v-for="user in onlineUsers" :key="user" class="user-avatar" :title="user">{{ user[0] }}</div>
+                                </div>
+                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">
+                                    数据会自动同步到所有在线成员
+                                </div>
+                            </div>
+                            
+                            <hr style="border: none; border-top: 1px solid var(--gold); margin: 1.5rem 0;">
+                            
+                            <div v-if="!roomId">
+                                <p style="margin-bottom: 0.5rem;">已有房间号？</p>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input 
+                                        type="text" 
+                                        class="form-input" 
+                                        v-model="joinRoomId" 
+                                        placeholder="输入6位房间号"
+                                        maxlength="6"
+                                        style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase;"
+                                    >
+                                    <button class="btn-primary" @click="joinRoom">加入</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 加入协同模态框（欢迎页用） -->
+            <div v-if="showJoinModal" class="modal" @click.self="showJoinModal = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">加入家族协同</h3>
+                        <button class="modal-close" @click="showJoinModal = false">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="collab-panel">
+                            <p>输入家人分享的房间号</p>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="joinRoomId" 
+                                placeholder="6位房间号"
+                                maxlength="6"
+                                style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase; margin: 1rem 0;"
+                            >
+                            <button class="btn-primary" @click="joinRoomFromWelcome" style="width: 100%;">加入房间</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 分享模态框 -->
+            <div v-if="showSharePanel" class="modal" @click.self="showSharePanel = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">分享家族回忆</h3>
+                        <button class="modal-close" @click="showSharePanel = false">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="share-panel">
+                            <p>复制下方链接分享给家人：</p>
+                            <div class="share-url">{{ shareUrl }}</div>
+                            <div class="share-buttons">
+                                <button class="btn-primary" @click="copyUrl">复制链接</button>
+                                <button class="btn-secondary" @click="exportImage">导出长图</button>
+                                <button class="btn-secondary" @click="exportPDF">导出 PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 播放回忆 -->
+            <div v-if="isPlaying" class="slideshow-view" @click="stopSlideshow">
+                <img 
+                    v-for="(memory, index) in allMemories" 
+                    :key="index"
+                    :src="memory.photo" 
+                    class="slideshow-image"
+                    :class="{ 'active': currentSlide === index }"
+                    :style="{ filter: memory.filter === 'sepia' ? 'sepia(0.6)' : 'none' }"
+                >
+                <div class="slideshow-info" v-if="allMemories[currentSlide]">
+                    <div class="slideshow-year">{{ allMemories[currentSlide].year }}年</div>
+                    <div>{{ allMemories[currentSlide].text }}</div>
+                    <div v-if="allMemories[currentSlide].people" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">
+                        👥 {{ allMemories[currentSlide].people.join(', ') }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 播放按钮 -->
+            <button v-if="!showWelcome && currentView !== 'album' && !isPlaying" class="play-memories-btn" @click="startSlideshow" title="播放回忆">
+                ▶
+            </button>
+            
+            <!-- Toast 提示 -->
+            <div class="toast" :class="{ 'show': toastMessage }">{{ toastMessage }}</div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
+        
+        createApp({
+            setup() {
+                // 基础状态
+                const showWelcome = ref(true);
+                const isLoading = ref(false);
+                const currentView = ref('timeline');
+                const selectedYear = ref(new Date().getFullYear());
+                const memories = ref({});
+                const isDragging = ref(false);
+                const fileInput = ref(null);
+                const showEditModal = ref(false);
+                const showSharePanel = ref(false);
+                const showCollab = ref(false);
+                const showJoinModal = ref(false);
+                const editingIndex = ref(-1);
+                const editingMemory = ref({ photo: '', text: '', date: '', filter: 'none', year: '', people: [] });
+                const isSepia = ref(false);
+                const isRecording = ref(false);
+                const recognition = ref(null);
+                const toastMessage = ref('');
+                const tagInput = ref('');
+                const isPlaying = ref(false);
+                const currentSlide = ref(0);
+                let slideshowInterval = null;
+                
+                // 春节模式检测（2026.1.20-2.23）
+                const isSpringFestival = ref(false);
+                
+                // 协同编辑状态
+                const roomId = ref('');
+                const joinRoomId = ref('');
+                const onlineUsers = ref([]);
+                const broadcastChannel = ref(null);
+                
+                // 家族树相关
+                const familyTreeData = ref({ nodes: [], links: [] });
+                
+                // 相册分页
+                const albumPages = ref([]);
+                const currentPage = ref(0);
+                
+                // 计算属性
+                const yearRange = computed(() => {
+                    const years = [];
+                    for (let i = 2026; i >= 1930; i--) {
+                        years.push(i);
+                    }
+                    return years;
+                });
+                
+                const currentMemories = computed(() => {
+                    return memories.value[selectedYear.value] || [];
+                });
+                
+                const allMemories = computed(() => {
+                    const all = [];
+                    Object.keys(memories.value).sort().forEach(year => {
+                        memories.value[year].forEach(memory => {
+                            all.push({ ...memory, year });
+                        });
+                    });
+                    return all;
+                });
+                
+                const shareUrl = computed(() => {
+                    const data = encodeURIComponent(JSON.stringify(memories.value));
+                    return `${window.location.origin}${window.location.pathname}#data=${data}`;
+                });
+                
+                // 春节检测
+                const checkSpringFestival = () => {
+                    const now = new Date();
+                    const start = new Date('2026-01-20');
+                    const end = new Date('2026-02-23');
+                    isSpringFestival.value = now >= start && now <= end;
+                    
+                    if (isSpringFestival.value) {
+                        initPlumBlossoms();
+                    }
+                };
+                
+                // Canvas 梅花动画
+                const initPlumBlossoms = () => {
+                    const canvas = document.getElementById('plumCanvas');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    let width = window.innerWidth;
+                    let height = window.innerHeight;
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const flowers = [];
+                    const flowerCount = 30;
+                    
+                    class Flower {
+                        constructor() {
+                            this.reset();
+                        }
+                        
+                        reset() {
+                            this.x = Math.random() * width;
+                            this.y = -10;
+                            this.size = Math.random() * 5 + 3;
+                            this.speedY = Math.random() * 1 + 0.5;
+                            this.speedX = Math.random() * 0.5 - 0.25;
+                            this.rotation = Math.random() * 360;
+                            this.rotationSpeed = Math.random() * 2 - 1;
+                            this.opacity = Math.random() * 0.5 + 0.3;
+                            this.color = `rgba(255, ${200 + Math.random() * 55}, ${220 + Math.random() * 35}, ${this.opacity})`;
+                        }
+                        
+                        update() {
+                            this.y += this.speedY;
+                            this.x += Math.sin(this.y * 0.01) * 0.5 + this.speedX;
+                            this.rotation += this.rotationSpeed;
+                            
+                            if (this.y > height + 10) {
+                                this.reset();
+                            }
+                        }
+                        
+                        draw() {
+                            ctx.save();
+                            ctx.translate(this.x, this.y);
+                            ctx.rotate(this.rotation * Math.PI / 180);
+                            ctx.fillStyle = this.color;
+                            
+                            for (let i = 0; i < 5; i++) {
+                                ctx.beginPath();
+                                ctx.rotate((Math.PI * 2) / 5);
+                                ctx.ellipse(0, this.size, this.size * 0.6, this.size, 0, 0, Math.PI * 2);
+                                ctx.fill();
+                            }
+                            
+                            ctx.beginPath();
+                            ctx.arc(0, 0, this.size * 0.3, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(255, 215, 0, ${this.opacity})`;
+                            ctx.fill();
+                            
+                            ctx.restore();
+                        }
+                    }
+                    
+                    for (let i = 0; i < flowerCount; i++) {
+                        const flower = new Flower();
+                        flower.y = Math.random() * height;
+                        flowers.push(flower);
+                    }
+                    
+                    let animationId;
+                    const animate = () => {
+                        ctx.clearRect(0, 0, width, height);
+                        flowers.forEach(flower => {
+                            flower.update();
+                            flower.draw();
+                        });
+                        animationId = requestAnimationFrame(animate);
+                    };
+                    
+                    animate();
+                    
+                    window.addEventListener('resize', () => {
+                        width = window.innerWidth;
+                        height = window.innerHeight;
+                        canvas.width = width;
+                        canvas.height = height;
+                    });
+                    
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.hidden) {
+                            cancelAnimationFrame(animationId);
+                        } else {
+                            animate();
+                        }
+                    });
+                };
+                
+                // 家族树数据生成
+                const generateFamilyTreeData = () => {
+                    const peopleMap = new Map();
+                    const connections = new Map();
+                    
+                    allMemories.value.forEach(memory => {
+                        if (memory.people && memory.people.length > 0) {
+                            memory.people.forEach(person => {
+                                if (!peopleMap.has(person)) {
+                                    peopleMap.set(person, { 
+                                        id: person, 
+                                        name: person, 
+                                        count: 0,
+                                        years: new Set()
+                                    });
+                                }
+                                peopleMap.get(person).count++;
+                                peopleMap.get(person).years.add(memory.year);
+                            });
+                            
+                            if (memory.people.length > 1) {
+                                for (let i = 0; i < memory.people.length; i++) {
+                                    for (let j = i + 1; j < memory.people.length; j++) {
+                                        const key = [memory.people[i], memory.people[j]].sort().join('-');
+                                        if (!connections.has(key)) {
+                                            connections.set(key, 0);
+                                        }
+                                        connections.set(key, connections.get(key) + 1);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    
+                    const nodes = Array.from(peopleMap.values()).map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        value: p.count,
+                        years: Array.from(p.years),
+                        radius: Math.min(30, 10 + p.count * 3)
+                    }));
+                    
+                    const links = [];
+                    connections.forEach((strength, key) => {
+                        const [source, target] = key.split('-');
+                        links.push({
+                            source,
+                            target,
+                            value: strength
+                        });
+                    });
+                    
+                    familyTreeData.value = { nodes, links };
+                };
+                
+                // 绘制家族树
+                const drawFamilyTree = () => {
+                    if (currentView.value !== 'tree') return;
+                    
+                    nextTick(() => {
+                        const container = document.getElementById('familyTreeSvg');
+                        if (!container || familyTreeData.value.nodes.length === 0) return;
+                        
+                        container.innerHTML = '';
+                        
+                        const width = container.clientWidth;
+                        const height = container.clientHeight || 600;
+                        
+                        const svg = d3.select('#familyTreeSvg')
+                            .append('svg')
+                            .attr('width', width)
+                            .attr('height', height)
+                            .attr('viewBox', [0, 0, width, height]);
+                        
+                        const g = svg.append('g');
+                        
+                        const zoom = d3.zoom()
+                            .scaleExtent([0.1, 4])
+                            .on('zoom', (event) => {
+                                g.attr('transform', event.transform);
+                            });
+                        
+                        svg.call(zoom);
+                        
+                        const nodes = familyTreeData.value.nodes.map(d => ({...d}));
+                        const links = familyTreeData.value.links.map(d => ({...d}));
+                        
+                        const simulation = d3.forceSimulation(nodes)
+                            .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                            .force('charge', d3.forceManyBody().strength(-300))
+                            .force('center', d3.forceCenter(width / 2, height / 2))
+                            .force('collision', d3.forceCollide().radius(d => d.radius + 5));
+                        
+                        const link = g.append('g')
+                            .attr('class', 'links')
+                            .selectAll('line')
+                            .data(links)
+                            .enter().append('line')
+                            .attr('class', 'link')
+                            .attr('stroke-width', d => Math.sqrt(d.value) * 2);
+                        
+                        const node = g.append('g')
+                            .attr('class', 'nodes')
+                            .selectAll('g')
+                            .data(nodes)
+                            .enter().append('g')
+                            .attr('class', 'node')
+                            .call(d3.drag()
+                                .on('start', (event, d) => {
+                                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                                    d.fx = d.x;
+                                    d.fy = d.y;
+                                })
+                                .on('drag', (event, d) => {
+                                    d.fx = event.x;
+                                    d.fy = event.y;
+                                })
+                                .on('end', (event, d) => {
+                                    if (!event.active) simulation.alphaTarget(0);
+                                    d.fx = null;
+                                    d.fy = null;
+                                }));
+                        
+                        node.append('circle')
+                            .attr('r', d => d.radius)
+                            .attr('fill', d => d.value > 2 ? 'var(--imperial-red)' : 'var(--gold)')
+                            .attr('stroke', '#fff')
+                            .attr('stroke-width', 2);
+                        
+                        node.append('text')
+                            .attr('dy', d => d.radius + 15)
+                            .text(d => d.name)
+                            .style('font-size', '12px')
+                            .style('fill', 'var(--dark-brown)');
+                        
+                        const tooltip = d3.select('body').append('div')
+                            .style('position', 'fixed')
+                            .style('visibility', 'hidden')
+                            .style('background', 'rgba(255,255,255,0.95)')
+                            .style('border', '1px solid var(--gold)')
+                            .style('border-radius', '4px')
+                            .style('padding', '8px')
+                            .style('font-size', '12px')
+                            .style('box-shadow', '0 2px 8px rgba(0,0,0,0.2)')
+                            .style('pointer-events', 'none')
+                            .style('z-index', '1000');
+                        
+                        node.on('mouseover', (event, d) => {
+                            tooltip.html(`
+                                <strong>${d.name}</strong><br/>
+                                出现次数: ${d.value}<br/>
+                                年份: ${d.years.join(', ')}
+                            `)
+                            .style('visibility', 'visible')
+                            .style('left', (event.clientX + 10) + 'px')
+                            .style('top', (event.clientY - 10) + 'px');
+                        })
+                        .on('mouseout', () => {
+                            tooltip.style('visibility', 'hidden');
+                        });
+                        
+                        simulation.on('tick', () => {
+                            link
+                                .attr('x1', d => d.source.x)
+                                .attr('y1', d => d.source.y)
+                                .attr('x2', d => d.target.x)
+                                .attr('y2', d => d.target.y);
+                            
+                            node.attr('transform', d => `translate(${d.x},${d.y})`);
+                        });
+                    });
+                };
+                
+                const resetZoom = () => {
+                    drawFamilyTree();
+                };
+                
+                const refreshTree = () => {
+                    generateFamilyTreeData();
+                    drawFamilyTree();
+                };
+                
+                // 初始化语音识别
+                const initSpeechRecognition = () => {
+                    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                        recognition.value = new SpeechRecognition();
+                        recognition.value.lang = 'zh-CN';
+                        recognition.value.continuous = true;
+                        recognition.value.interimResults = true;
+                        
+                        recognition.value.onresult = (event) => {
+                            let finalTranscript = '';
+                            for (let i = event.resultIndex; i < event.results.length; i++) {
+                                if (event.results[i].isFinal) {
+                                    finalTranscript += event.results[i][0].transcript;
+                                }
+                            }
+                            if (finalTranscript) {
+                                editingMemory.value.text += finalTranscript;
+                            }
+                        };
+                        
+                        recognition.value.onerror = (event) => {
+                            console.error('语音识别错误:', event.error);
+                            showToast('语音识别出错，请重试');
+                            isRecording.value = false;
+                        };
+                        
+                        recognition.value.onend = () => {
+                            isRecording.value = false;
+                        };
+                    }
+                };
+                
+                const showToast = (msg) => {
+                    toastMessage.value = msg;
+                    setTimeout(() => {
+                        toastMessage.value = '';
+                    }, 3000);
+                };
+                
+                // 协同编辑功能
+                const generateRoomId = () => {
+                    return Math.random().toString(36).substring(2, 8).toUpperCase();
+                };
+                
+                const createRoom = () => {
+                    roomId.value = generateRoomId();
+                    
+                    if ('BroadcastChannel' in window) {
+                        broadcastChannel.value = new BroadcastChannel('family_memories_' + roomId.value);
+                        broadcastChannel.value.onmessage = (event) => {
+                            if (event.data.type === 'sync') {
+                                memories.value = event.data.data;
+                                showToast('收到新数据同步');
+                            } else if (event.data.type === 'join') {
+                                onlineUsers.value.push(event.data.user);
+                                broadcastChannel.value.postMessage({
+                                    type: 'sync',
+                                    data: memories.value
+                                });
+                            }
+                        };
+                    }
+                    
+                    nextTick(() => {
+                        const qrcodeDiv = document.getElementById('qrcode');
+                        if (qrcodeDiv) {
+                            qrcodeDiv.innerHTML = '';
+                            new QRCode(qrcodeDiv, {
+                                text: `${window.location.origin}${window.location.pathname}?room=${roomId.value}`,
+                                width: 128,
+                                height: 128,
+                                colorDark: '#C8102E',
+                                colorLight: '#F5F5DC',
+                                correctLevel: QRCode.CorrectLevel.M
+                            });
+                        }
+                    });
+                    
+                    showToast('房间创建成功');
+                };
+                
+                const joinRoom = () => {
+                    if (joinRoomId.value.length !== 6) {
+                        showToast('请输入6位房间号');
+                        return;
+                    }
+                    roomId.value = joinRoomId.value.toUpperCase();
+                    
+                    if ('BroadcastChannel' in window) {
+                        broadcastChannel.value = new BroadcastChannel('family_memories_' + roomId.value);
+                        broadcastChannel.value.postMessage({
+                            type: 'join',
+                            user: '用户' + Math.floor(Math.random() * 1000)
+                        });
+                        
+                        broadcastChannel.value.onmessage = (event) => {
+                            if (event.data.type === 'sync') {
+                                memories.value = event.data.data;
+                                showToast('已同步房间数据');
+                            }
+                        };
+                    }
+                    
+                    showCollab.value = false;
+                    showToast(`已加入房间 ${roomId.value}`);
+                };
+                
+                const joinRoomFromWelcome = () => {
+                    joinRoom();
+                    showJoinModal.value = false;
+                    showWelcome.value = false;
+                };
+                
+                const leaveRoom = () => {
+                    roomId.value = '';
+                    onlineUsers.value = [];
+                    if (broadcastChannel.value) {
+                        broadcastChannel.value.close();
+                        broadcastChannel.value = null;
+                    }
+                    showToast('已离开房间');
+                };
+                
+                const copyRoomLink = () => {
+                    const link = `${window.location.origin}${window.location.pathname}?room=${roomId.value}`;
+                    navigator.clipboard.writeText(link).then(() => {
+                        showToast('房间链接已复制');
+                    });
+                };
+                
+                const showCollabModal = () => {
+                    showCollab.value = true;
+                    if (roomId.value) {
+                        nextTick(() => {
+                            const qrcodeDiv = document.getElementById('qrcode');
+                            if (qrcodeDiv && qrcodeDiv.innerHTML === '') {
+                                new QRCode(qrcodeDiv, {
+                                    text: `${window.location.origin}${window.location.pathname}?room=${roomId.value}`,
+                                    width: 128,
+                                    height: 128,
+                                    colorDark: '#C8102E',
+                                    colorLight: '#F5F5DC',
+                                    correctLevel: QRCode.CorrectLevel.M
+                                });
+                            }
+                        });
+                    }
+                };
+                
+                // 基础功能
+                const createNewAlbum = () => {
+                    memories.value = {};
+                    saveToLocalStorage();
+                    showWelcome.value = false;
+                    checkUrlParams();
+                };
+                
+                const importAlbum = () => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.json';
+                    input.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                try {
+                                    memories.value = JSON.parse(event.target.result);
+                                    saveToLocalStorage();
+                                    showWelcome.value = false;
+                                    checkUrlParams();
+                                    showToast('导入成功');
+                                } catch (err) {
+                                    showToast('文件格式错误');
+                                }
+                            };
+                            reader.readAsText(file);
+                        }
+                    };
+                    input.click();
+                };
+                
+                const joinCollaboration = () => {
+                    showJoinModal.value = true;
+                };
+                
+                const loadFromLocalStorage = () => {
+                    const saved = localStorage.getItem('familyMemories');
+                    if (saved) {
+                        try {
+                            memories.value = JSON.parse(saved);
+                        } catch (e) {
+                            console.error('加载失败', e);
+                        }
+                    }
+                };
+                
+                const saveToLocalStorage = () => {
+                    localStorage.setItem('familyMemories', JSON.stringify(memories.value));
+                    if (broadcastChannel.value && roomId.value) {
+                        broadcastChannel.value.postMessage({
+                            type: 'sync',
+                            data: memories.value
+                        });
+                    }
+                };
+                
+                const checkUrlParams = () => {
+                    const url = new URL(window.location.href);
+                    const room = url.searchParams.get('room');
+                    if (room && room.length === 6) {
+                        joinRoomId.value = room;
+                        joinRoom();
+                    }
+                };
+                
+                const hasMemory = (year) => {
+                    return memories.value[year] && memories.value[year].length > 0;
+                };
+                
+                const selectYear = (year) => {
+                    selectedYear.value = year;
+                };
+                
+                const triggerUpload = () => {
+                    fileInput.value.click();
+                };
+                
+                const handleFileSelect = (event) => {
+                    const files = Array.from(event.target.files);
+                    processFiles(files);
+                    event.target.value = '';
+                };
+                
+                const handleDrop = (event) => {
+                    isDragging.value = false;
+                    const files = Array.from(event.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                    processFiles(files);
+                };
+                
+                const processFiles = (files) => {
+                    files.forEach(file => {
+                        if (file.size > 5 * 1024 * 1024) {
+                            showToast(`${file.name} 超过5MB限制`);
+                            return;
+                        }
+                        
+                        isLoading.value = true;
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            setTimeout(() => {
+                                editingMemory.value = {
+                                    photo: e.target.result,
+                                    text: '',
+                                    date: new Date().toISOString().split('T')[0],
+                                    filter: 'none',
+                                    year: selectedYear.value,
+                                    people: []
+                                };
+                                isSepia.value = false;
+                                tagInput.value = '';
+                                editingIndex.value = -1;
+                                showEditModal.value = true;
+                                isLoading.value = false;
+                            }, 800);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                };
+                
+                const editMemory = (index) => {
+                    editingIndex.value = index;
+                    editingMemory.value = JSON.parse(JSON.stringify(currentMemories.value[index]));
+                    isSepia.value = editingMemory.value.filter === 'sepia';
+                    showEditModal.value = true;
+                };
+                
+                const closeEditModal = () => {
+                    showEditModal.value = false;
+                    editingMemory.value = { photo: '', text: '', date: '', filter: 'none', year: '', people: [] };
+                    isSepia.value = false;
+                    tagInput.value = '';
+                };
+                
+                const saveMemory = () => {
+                    editingMemory.value.filter = isSepia.value ? 'sepia' : 'none';
+                    
+                    if (!memories.value[selectedYear.value]) {
+                        memories.value[selectedYear.value] = [];
+                    }
+                    
+                    if (editingIndex.value === -1) {
+                        memories.value[selectedYear.value].push({ ...editingMemory.value });
+                    } else {
+                        memories.value[selectedYear.value][editingIndex.value] = { ...editingMemory.value };
+                    }
+                    
+                    saveToLocalStorage();
+                    closeEditModal();
+                    showToast('保存成功');
+                    
+                    if (currentView.value === 'tree') {
+                        refreshTree();
+                    }
+                };
+                
+                const addTag = () => {
+                    const tag = tagInput.value.trim();
+                    if (tag && !editingMemory.value.people.includes(tag)) {
+                        editingMemory.value.people.push(tag);
+                    }
+                    tagInput.value = '';
+                };
+                
+                const removeTag = (index) => {
+                    editingMemory.value.people.splice(index, 1);
+                };
+                
+                const removeLastTag = () => {
+                    if (tagInput.value === '' && editingMemory.value.people.length > 0) {
+                        editingMemory.value.people.pop();
+                    }
+                };
+                
+                const toggleVoiceInput = () => {
+                    if (!recognition.value) {
+                        showToast('您的浏览器不支持语音识别');
+                        return;
+                    }
+                    
+                    if (isRecording.value) {
+                        recognition.value.stop();
+                        isRecording.value = false;
+                    } else {
+                        recognition.value.start();
+                        isRecording.value = true;
+                        showToast('请开始说话...');
+                    }
+                };
+                
+                const formatDate = (dateStr) => {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+                };
+                
+                const prepareAlbumPages = () => {
+                    albumPages.value = allMemories.value.map(m => ({
+                        ...m,
+                        flipped: false
+                    }));
+                    currentPage.value = 0;
+                };
+                
+                const nextPage = () => {
+                    if (currentPage.value < albumPages.value.length - 1) {
+                        albumPages.value[currentPage.value].flipped = true;
+                        currentPage.value++;
+                    }
+                };
+                
+                const prevPage = () => {
+                    if (currentPage.value > 0) {
+                        currentPage.value--;
+                        albumPages.value[currentPage.value].flipped = false;
+                    }
+                };
+                
+                const startSlideshow = () => {
+                    if (allMemories.value.length === 0) {
+                        showToast('没有可播放的回忆');
+                        return;
+                    }
+                    isPlaying.value = true;
+                    currentSlide.value = 0;
+                    slideshowInterval = setInterval(() => {
+                        currentSlide.value++;
+                        if (currentSlide.value >= allMemories.value.length) {
+                            currentSlide.value = 0;
+                        }
+                    }, 5000);
+                };
+                
+                const stopSlideshow = () => {
+                    isPlaying.value = false;
+                    if (slideshowInterval) {
+                        clearInterval(slideshowInterval);
+                        slideshowInterval = null;
+                    }
+                };
+                
+                const showShareModal = () => {
+                    showSharePanel.value = true;
+                };
+                
+                const copyUrl = () => {
+                    navigator.clipboard.writeText(shareUrl.value).then(() => {
+                        showToast('链接已复制');
+                    });
+                };
+                
+                const exportImage = async () => {
+                    showToast('正在生成图片...');
+                    const element = document.querySelector('.main-content');
+                    try {
+                        const canvas = await html2canvas(element, {
+                            backgroundColor: '#F5F5DC',
+                            scale: 2
+                        });
+                        const link = document.createElement('a');
+                        link.download = `家族回忆时间轴_${new Date().toLocaleDateString()}.png`;
+                        link.href = canvas.toDataURL();
+                        link.click();
+                        showToast('图片已保存');
+                    } catch (err) {
+                        showToast('生成失败');
+                    }
+                };
+                
+                const exportPDF = async () => {
+                    showToast('正在生成 PDF...');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    
+                    const allMems = allMemories.value;
+                    for (let i = 0; i < allMems.length; i++) {
+                        if (i > 0) pdf.addPage();
+                        
+                        const memory = allMems[i];
+                        pdf.setFontSize(20);
+                        pdf.text(`${memory.year}年`, 105, 20, { align: 'center' });
+                        
+                        if (memory.photo) {
+                            try {
+                                pdf.addImage(memory.photo, 'JPEG', 55, 30, 100, 100);
+                            } catch (e) {
+                                console.error('添加图片失败', e);
+                            }
+                        }
+                        
+                        pdf.setFontSize(12);
+                        const text = pdf.splitTextToSize(memory.text || '', 180);
+                        pdf.text(text, 15, 140);
+                        
+                        if (memory.people && memory.people.length > 0) {
+                            pdf.text(`人物: ${memory.people.join(', ')}`, 15, 180);
+                        }
+                    }
+                    
+                    pdf.save(`家族回忆时间轴_${new Date().toLocaleDateString()}.pdf`);
+                    showToast('PDF 已保存');
+                };
+                
+                const exportData = () => {
+                    const dataStr = JSON.stringify(memories.value, null, 2);
+                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `家族回忆备份_${new Date().toLocaleDateString()}.json`;
+                    link.click();
+                    showToast('备份文件已下载');
+                };
+                
+                watch(currentView, (newView) => {
+                    if (newView === 'album') {
+                        prepareAlbumPages();
+                    } else if (newView === 'tree') {
+                        refreshTree();
+                    }
+                });
+                
+                watch(memories, () => {
+                    saveToLocalStorage();
+                }, { deep: true });
+                
+                onMounted(() => {
+                    loadFromLocalStorage();
+                    checkSpringFestival();
+                    initSpeechRecognition();
+                    
+                    if (Object.keys(memories.value).length > 0) {
+                        showWelcome.value = false;
+                        checkUrlParams();
+                    }
+                });
+                
+                return {
+                    showWelcome,
+                    isLoading,
+                    currentView,
+                    selectedYear,
+                    memories,
+                    isDragging,
+                    fileInput,
+                    showEditModal,
+                    showSharePanel,
+                    showCollab,
+                    showJoinModal,
+                    editingIndex,
+                    editingMemory,
+                    isSepia,
+                    isRecording,
+                    isSpringFestival,
+                    roomId,
+                    joinRoomId,
+                    onlineUsers,
+                    familyTreeData,
+                    tagInput,
+                    albumPages,
+                    currentPage,
+                    isPlaying,
+                    currentSlide,
+                    yearRange,
+                    currentMemories,
+                    allMemories,
+                    shareUrl,
+                    createNewAlbum,
+                    importAlbum,
+                    joinCollaboration,
+                    hasMemory,
+                    selectYear,
+                    triggerUpload,
+                    handleFileSelect,
+                    handleDrop,
+                    editMemory,
+                    closeEditModal,
+                    saveMemory,
+                    addTag,
+                    removeTag,
+                    removeLastTag,
+                    toggleVoiceInput,
+                    formatDate,
+                    nextPage,
+                    prevPage,
+                    startSlideshow,
+                    stopSlideshow,
+                    showShareModal,
+                    copyUrl,
+                    exportImage,
+                    exportPDF,
+                    exportData,
+                    showCollabModal,
+                    createRoom,
+                    joinRoom,
+                    joinRoomFromWelcome,
+                    leaveRoom,
+                    copyRoomLink,
+                    resetZoom,
+                    refreshTree,
+                    showToast
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
