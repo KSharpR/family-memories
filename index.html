@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Family Memories Timeline | 家族回忆时间轴</title>
+    <title>家族回忆记录册 | Family Memories Record</title>
     
-    <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -40,7 +39,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* 语言切换器 */
         .lang-switcher {
             position: absolute;
             top: 20px;
@@ -71,7 +69,6 @@
             background: var(--light-gold);
         }
         
-        /* 开发者信息 */
         .developer-info {
             position: absolute;
             bottom: 20px;
@@ -90,7 +87,6 @@
             margin-left: 2px;
         }
         
-        /* 待开发区域样式 */
         .premium-section {
             background: var(--premium-bg);
             color: var(--gold);
@@ -141,7 +137,6 @@
             border-radius: 3px;
         }
         
-        /* 原有样式保留 */
         #plumCanvas {
             position: fixed;
             top: 0;
@@ -1101,6 +1096,33 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         
+        /* 返回首页按钮 - 相册页用 */
+        .back-to-home {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--dark-brown);
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .back-to-home:hover {
+            background: var(--imperial-red);
+            color: white;
+            transform: translateX(-5px);
+        }
+        
         .play-memories-btn {
             position: fixed;
             bottom: 2rem;
@@ -1246,10 +1268,11 @@
             #familyTreeSvg { height: 400px; }
             .lang-switcher { top: 10px; right: 10px; }
             .developer-info { bottom: 10px; right: 10px; font-size: 0.75rem; }
+            .back-to-home { top: 1rem; left: 1rem; padding: 0.5rem 1rem; font-size: 0.9rem; }
         }
         
         @media print {
-            .header, .timeline-container, .play-memories-btn, #plumCanvas, .lang-switcher, .developer-info {
+            .header, .timeline-container, .play-memories-btn, #plumCanvas, .lang-switcher, .developer-info, .back-to-home {
                 display: none;
             }
             .memory-detail {
@@ -1261,25 +1284,6 @@
 </head>
 <body>
     <div id="app">
-        <!-- 语言切换器（始终显示） -->
-        <div class="lang-switcher" v-if="showWelcome">
-            <button 
-                class="lang-btn" 
-                :class="{ active: currentLang === 'zh' }"
-                @click="switchLang('zh')"
-            >中文</button>
-            <button 
-                class="lang-btn" 
-                :class="{ active: currentLang === 'en' }"
-                @click="switchLang('en')"
-            >English</button>
-        </div>
-        
-        <!-- 开发者信息（始终显示） -->
-        <div class="developer-info" v-if="showWelcome">
-            KSharpR<span class="trademark">®</span>
-        </div>
-        
         <canvas id="plumCanvas" v-show="isSpringFestival"></canvas>
         
         <div v-if="isSpringFestival" class="spring-festival-badge">
@@ -1288,15 +1292,46 @@
         
         <!-- 欢迎界面 -->
         <div v-if="showWelcome" class="welcome-screen">
+            <!-- 语言切换 -->
+            <div class="lang-switcher">
+                <button class="lang-btn" :class="{ active: currentLang === 'zh' }" @click="switchLang('zh')">中文</button>
+                <button class="lang-btn" :class="{ active: currentLang === 'en' }" @click="switchLang('en')">English</button>
+            </div>
+            
+            <!-- 开发者信息 -->
+            <div class="developer-info">KSharpR<span class="trademark">®</span></div>
+            
             <h1 class="welcome-title">{{ t('title') }}</h1>
             <p class="welcome-subtitle">{{ t('subtitle') }}</p>
             <div class="welcome-buttons">
                 <button class="btn-primary" @click="createNewAlbum">{{ t('newAlbum') }}</button>
                 <button class="btn-secondary" @click="importAlbum">{{ t('importAlbum') }}</button>
                 <button class="btn-secondary" @click="joinCollaboration">{{ t('joinCollab') }}</button>
-                <button class="btn-premium" @click="showPremiumInfo">
-                    🔒 {{ t('premium') }}
-                </button>
+                <button class="btn-premium" @click="showPremiumInfo">🔒 {{ t('premium') }}</button>
+            </div>
+            
+            <!-- 加入协同模态框（放在欢迎页面内部，确保能显示） -->
+            <div v-if="showJoinModal" class="modal" @click.self="showJoinModal = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">{{ t('joinCollabTitle') }}</h3>
+                        <button class="modal-close" @click="showJoinModal = false">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="collab-panel">
+                            <p>{{ t('enterRoomCode') }}</p>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="joinRoomId" 
+                                placeholder="6位房间号 / 6-digit code"
+                                maxlength="6"
+                                style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase; margin: 1rem 0;"
+                            >
+                            <button class="btn-primary" @click="joinRoomFromWelcome" style="width: 100%;">{{ t('joinRoom') }}</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -1321,21 +1356,9 @@
                     </h1>
                     
                     <div class="view-tabs">
-                        <button 
-                            class="tab-btn" 
-                            :class="{ active: currentView === 'timeline' }"
-                            @click="currentView = 'timeline'"
-                        >{{ t('timeline') }}</button>
-                        <button 
-                            class="tab-btn" 
-                            :class="{ active: currentView === 'album' }"
-                            @click="currentView = 'album'"
-                        >{{ t('album') }}</button>
-                        <button 
-                            class="tab-btn" 
-                            :class="{ active: currentView === 'tree' }"
-                            @click="currentView = 'tree'"
-                        >{{ t('familyTree') }}</button>
+                        <button class="tab-btn" :class="{ active: currentView === 'timeline' }" @click="currentView = 'timeline'">{{ t('timeline') }}</button>
+                        <button class="tab-btn" :class="{ active: currentView === 'album' }" @click="currentView = 'album'">{{ t('album') }}</button>
+                        <button class="tab-btn" :class="{ active: currentView === 'tree' }" @click="currentView = 'tree'">{{ t('familyTree') }}</button>
                     </div>
                     
                     <div class="header-actions">
@@ -1348,35 +1371,15 @@
             
             <div class="timeline-container" v-if="currentView === 'timeline'">
                 <div class="timeline">
-                    <div 
-                        v-for="(year, index) in editableYears" 
-                        :key="year.id"
-                        class="year-item"
-                        :class="{ 
-                            'active': selectedYear === year.value,
-                            'has-memory': hasMemory(year.value)
-                        }"
-                    >
+                    <div v-for="(year, index) in editableYears" :key="year.id" class="year-item" :class="{ 'active': selectedYear === year.value, 'has-memory': hasMemory(year.value) }">
                         <span @click="selectYear(year.value)">{{ year.label }}</span>
                         <div class="year-edit-controls">
                             <button class="year-edit-btn" @click.stop="editYearLabel(index)" title="重命名">✏️</button>
                             <button class="year-edit-btn" @click.stop="removeYear(index)" title="删除">✕</button>
                         </div>
                     </div>
-                    
-                    <!-- 待开发年份 -->
-                    <div class="year-item premium" @click="showPremiumInfo">
-                        <span>+ {{ t('moreYears') }}</span>
-                    </div>
-                    
-                    <button 
-                        v-if="editableYears.length < 5" 
-                        class="btn-text" 
-                        @click="restoreDefaultYears"
-                        style="margin-left: 10px;"
-                    >
-                        {{ t('restoreYears') }}
-                    </button>
+                    <div class="year-item premium" @click="showPremiumInfo"><span>+ {{ t('moreYears') }}</span></div>
+                    <button v-if="editableYears.length < 5" class="btn-text" @click="restoreDefaultYears" style="margin-left: 10px;">{{ t('restoreYears') }}</button>
                 </div>
             </div>
             
@@ -1387,43 +1390,20 @@
                             <h2 class="detail-year">{{ selectedYear }}{{ t('year') }}</h2>
                             <div class="detail-actions">
                                 <button class="btn-text" @click="triggerUpload">{{ t('addPhoto') }}</button>
-                                <input 
-                                    type="file" 
-                                    ref="fileInput" 
-                                    accept="image/*" 
-                                    style="display: none" 
-                                    @change="handleFileSelect"
-                                    multiple
-                                >
+                                <input type="file" ref="fileInput" accept="image/*" style="display: none" @change="handleFileSelect" multiple>
                             </div>
                         </div>
                         
-                        <div 
-                            class="upload-zone"
-                            @click="triggerUpload"
-                            @drop.prevent="handleDrop"
-                            @dragover.prevent="isDragging = true"
-                            @dragleave="isDragging = false"
-                            :class="{ 'dragover': isDragging }"
-                        >
+                        <div class="upload-zone" @click="triggerUpload" @drop.prevent="handleDrop" @dragover.prevent="isDragging = true" @dragleave="isDragging = false" :class="{ 'dragover': isDragging }">
                             <div class="upload-icon">📷</div>
                             <div class="upload-text">{{ t('uploadText') }}</div>
                             <div class="upload-hint">{{ t('uploadHint') }}</div>
                         </div>
                         
                         <div v-if="currentMemories.length > 0" class="photo-gallery">
-                            <div 
-                                v-for="(memory, index) in currentMemories" 
-                                :key="index"
-                                class="photo-card"
-                                @click="editMemory(index)"
-                            >
+                            <div v-for="(memory, index) in currentMemories" :key="index" class="photo-card" @click="editMemory(index)">
                                 <div class="photo-wrapper">
-                                    <img 
-                                        :src="memory.photo" 
-                                        :class="{ 'sepia': memory.filter === 'sepia' }"
-                                        alt="Memory"
-                                    >
+                                    <img :src="memory.photo" :class="{ 'sepia': memory.filter === 'sepia' }" alt="Memory">
                                 </div>
                                 <div class="photo-info">
                                     <p class="photo-text">{{ memory.text || t('noDesc') }}</p>
@@ -1448,24 +1428,12 @@
                         <button class="btn-text" @click="resetZoom">{{ t('resetView') }}</button>
                         <button class="btn-text" @click="refreshTree">{{ t('refresh') }}</button>
                     </div>
-                    
                     <div class="tree-legend">
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: var(--imperial-red);"></div>
-                            <span>{{ t('coreMember') }}</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: var(--gold);"></div>
-                            <span>{{ t('normalMember') }}</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #999;"></div>
-                            <span>{{ t('relationStrength') }}</span>
-                        </div>
+                        <div class="legend-item"><div class="legend-color" style="background: var(--imperial-red);"></div><span>{{ t('coreMember') }}</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: var(--gold);"></div><span>{{ t('normalMember') }}</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #999;"></div><span>{{ t('relationStrength') }}</span></div>
                     </div>
-                    
                     <div id="familyTreeSvg"></div>
-                    
                     <div v-if="familyTreeData.nodes.length === 0" class="empty-state" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
                         <div class="empty-icon">🌳</div>
                         <p>{{ t('noTreeData') }}</p>
@@ -1473,26 +1441,17 @@
                 </div>
             </main>
             
-            <div v-if="currentView === 'album'" class="album-view" @click.self="currentView = 'timeline'">
+            <!-- 3D 相册视图 - 带返回首页按钮 -->
+            <div v-if="currentView === 'album'" class="album-view">
+                <button class="back-to-home" @click="backToHome">🏠 {{ t('backToHome') }}</button>
                 <button class="close-album" @click="currentView = 'timeline'">×</button>
                 <div class="book-container">
-                    <div 
-                        v-for="(page, index) in albumPages" 
-                        :key="index"
-                        class="book-page"
-                        :class="{ 'flipped': page.flipped }"
-                        :style="{ 
-                            'z-index': albumPages.length - index,
-                            'transform': page.flipped ? 'rotateY(-180deg)' : 'rotateY(0deg)'
-                        }"
-                    >
+                    <div v-for="(page, index) in albumPages" :key="index" class="book-page" :class="{ 'flipped': page.flipped }" :style="{ 'z-index': albumPages.length - index, 'transform': page.flipped ? 'rotateY(-180deg)' : 'rotateY(0deg)' }">
                         <div class="page-content">
                             <div class="page-year">{{ page.year }}{{ t('year') }}</div>
                             <img v-if="page.photo" :src="page.photo" class="page-photo" :class="{ 'sepia': page.filter === 'sepia' }">
                             <p class="page-text">{{ page.text || t('defaultText') }}</p>
-                            <div v-if="page.people && page.people.length > 0" style="margin-top: 1rem; text-align: center; color: var(--gold);">
-                                👥 {{ page.people.join(', ') }}
-                            </div>
+                            <div v-if="page.people && page.people.length > 0" style="margin-top: 1rem; text-align: center; color: var(--gold);">👥 {{ page.people.join(', ') }}</div>
                         </div>
                         <div class="page-number">{{ index + 1 }} / {{ albumPages.length }}</div>
                     </div>
@@ -1524,41 +1483,17 @@
                         <div class="form-group">
                             <label class="form-label">{{ t('peopleTags') }}</label>
                             <div class="tags-input" @click="$refs.tagInput.focus()">
-                                <span v-for="(tag, idx) in editingMemory.people" :key="idx" class="tag-item">
-                                    {{ tag }}
-                                    <span class="tag-remove" @click.stop="removeTag(idx)">×</span>
-                                </span>
-                                <input 
-                                    ref="tagInput"
-                                    type="text" 
-                                    class="tag-input-field"
-                                    v-model="tagInput"
-                                    @keydown.enter.prevent="addTag"
-                                    @keydown.delete="removeLastTag"
-                                    :placeholder="t('enterName')"
-                                >
+                                <span v-for="(tag, idx) in editingMemory.people" :key="idx" class="tag-item">{{ tag }}<span class="tag-remove" @click.stop="removeTag(idx)">×</span></span>
+                                <input ref="tagInput" type="text" class="tag-input-field" v-model="tagInput" @keydown.enter.prevent="addTag" @keydown.delete="removeLastTag" :placeholder="t('enterName')">
                             </div>
                             <small style="color: #999; margin-top: 0.3rem; display: block;">{{ t('tagHint') }}</small>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">{{ t('story') }} ({{ t('limit') }}200)</label>
-                            <textarea 
-                                class="form-textarea" 
-                                v-model="editingMemory.text"
-                                maxlength="200"
-                                :placeholder="t('storyPlaceholder')"
-                            ></textarea>
-                            <div class="char-count" :class="{ 'warning': editingMemory.text.length > 180 }">
-                                {{ editingMemory.text.length }}/200
-                            </div>
-                            <button 
-                                class="voice-input-btn" 
-                                :class="{ 'recording': isRecording }"
-                                @click="toggleVoiceInput"
-                            >
-                                <span>{{ isRecording ? t('stopRecord') : t('voiceInput') }}</span>
-                            </button>
+                            <textarea class="form-textarea" v-model="editingMemory.text" maxlength="200" :placeholder="t('storyPlaceholder')"></textarea>
+                            <div class="char-count" :class="{ 'warning': editingMemory.text.length > 180 }">{{ editingMemory.text.length }}/200</div>
+                            <button class="voice-input-btn" :class="{ 'recording': isRecording }" @click="toggleVoiceInput"><span>{{ isRecording ? t('stopRecord') : t('voiceInput') }}</span></button>
                         </div>
                         
                         <div class="form-group">
@@ -1566,14 +1501,11 @@
                             <input type="date" class="form-input" v-model="editingMemory.date">
                         </div>
                         
-                        <button class="btn-primary" @click="saveMemory" style="width: 100%; margin-top: 1rem;">
-                            {{ t('save') }}
-                        </button>
+                        <button class="btn-primary" @click="saveMemory" style="width: 100%; margin-top: 1rem;">{{ t('save') }}</button>
                     </div>
                 </div>
             </div>
             
-            <!-- 年份编辑模态框 -->
             <div v-if="showYearEditModal" class="modal" @click.self="showYearEditModal = false">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1583,24 +1515,14 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label class="form-label">{{ t('yearLabel') }}</label>
-                            <input 
-                                type="text" 
-                                class="form-input" 
-                                v-model="editingYearLabel"
-                                :placeholder="t('yearPlaceholder')"
-                            >
-                            <small style="color: #666; margin-top: 0.5rem; display: block;">
-                                {{ t('yearHint') }}
-                            </small>
+                            <input type="text" class="form-input" v-model="editingYearLabel" :placeholder="t('yearPlaceholder')">
+                            <small style="color: #666; margin-top: 0.5rem; display: block;">{{ t('yearHint') }}</small>
                         </div>
-                        <button class="btn-primary" @click="saveYearLabel" style="width: 100%;">
-                            {{ t('confirm') }}
-                        </button>
+                        <button class="btn-primary" @click="saveYearLabel" style="width: 100%;">{{ t('confirm') }}</button>
                     </div>
                 </div>
             </div>
             
-            <!-- 待开发提示模态框 -->
             <div v-if="showPremiumModal" class="modal" @click.self="showPremiumModal = false">
                 <div class="modal-content premium-section">
                     <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-bottom: 1px solid var(--gold);">
@@ -1610,22 +1532,16 @@
                     <div class="modal-body" style="text-align: center; padding: 2rem;">
                         <div class="premium-lock">🎆</div>
                         <h3 style="color: var(--gold); margin-bottom: 1rem;">{{ t('moreYears') }}</h3>
-                        <p style="color: #ccc; margin-bottom: 1.5rem; line-height: 1.6;">
-                            {{ t('premiumDesc') }}
-                        </p>
+                        <p style="color: #ccc; margin-bottom: 1.5rem; line-height: 1.6;">{{ t('premiumDesc') }}</p>
                         <ul style="text-align: left; color: #aaa; margin-bottom: 2rem; display: inline-block;">
                             <li>✨ {{ t('feature1') }}</li>
                             <li>✨ {{ t('feature2') }}</li>
                             <li>✨ {{ t('feature3') }}</li>
                         </ul>
                         <div style="background: rgba(212, 175, 55, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                            <span style="color: var(--gold); font-size: 1.2rem; font-weight: bold;">
-                                {{ t('contact') }}: KSharpR®
-                            </span>
+                            <span style="color: var(--gold); font-size: 1.2rem; font-weight: bold;">{{ t('contact') }}: KSharpR®</span>
                         </div>
-                        <button class="btn-primary" @click="showPremiumModal = false" style="background: var(--gold); color: #1a1a2e;">
-                            {{ t('gotIt') }}
-                        </button>
+                        <button class="btn-primary" @click="showPremiumModal = false" style="background: var(--gold); color: #1a1a2e;">{{ t('gotIt') }}</button>
                     </div>
                 </div>
             </div>
@@ -1640,70 +1556,31 @@
                         <div class="collab-panel">
                             <p v-if="!roomId">{{ t('createRoomDesc') }}</p>
                             <p v-else>{{ t('inRoomDesc') }}</p>
-                            
                             <div v-if="roomId" class="room-code">{{ roomId }}</div>
-                            
                             <div id="qrcode" v-show="roomId"></div>
-                            
                             <div v-if="!roomId" style="margin: 1rem 0;">
                                 <button class="btn-primary" @click="createRoom">{{ t('createRoom') }}</button>
                             </div>
-                            
                             <div v-else style="margin: 1rem 0;">
                                 <button class="btn-secondary" @click="copyRoomLink">{{ t('copyLink') }}</button>
                                 <button class="btn-secondary" @click="leaveRoom" style="margin-left: 0.5rem;">{{ t('leave') }}</button>
                             </div>
-                            
                             <div class="collab-status" v-if="roomId">
                                 <div>{{ t('onlineUsers') }} ({{ onlineUsers.length + 1 }})</div>
                                 <div class="collab-users">
-                                    <div class="user-avatar" :title="t('me')">{{ t('me')[0] }}</div>
+                                    <div class="user-avatar" :title="t('me')">{{ currentLang === 'zh' ? '我' : 'Me' }}</div>
                                     <div v-for="user in onlineUsers" :key="user" class="user-avatar" :title="user">{{ user[0] }}</div>
                                 </div>
-                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">
-                                    {{ t('autoSync') }}
-                                </div>
+                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #666;">{{ t('autoSync') }}</div>
                             </div>
-                            
                             <hr style="border: none; border-top: 1px solid var(--gold); margin: 1.5rem 0;">
-                            
                             <div v-if="!roomId">
                                 <p style="margin-bottom: 0.5rem;">{{ t('haveRoom') }}</p>
                                 <div style="display: flex; gap: 0.5rem;">
-                                    <input 
-                                        type="text" 
-                                        class="form-input" 
-                                        v-model="joinRoomId" 
-                                        :placeholder="t('enter6digits')"
-                                        maxlength="6"
-                                        style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase;"
-                                    >
+                                    <input type="text" class="form-input" v-model="joinRoomId" :placeholder="t('enter6digits')" maxlength="6" style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase;">
                                     <button class="btn-primary" @click="joinRoom">{{ t('join') }}</button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div v-if="showJoinModal" class="modal" @click.self="showJoinModal = false">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title">{{ t('joinCollabTitle') }}</h3>
-                        <button class="modal-close" @click="showJoinModal = false">×</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="collab-panel">
-                            <p>{{ t('enterRoomCode') }}</p>
-                            <input 
-                                type="text" 
-                                class="form-input" 
-                                v-model="joinRoomId" 
-                                :placeholder="t('6digitCode')"
-                                maxlength="6"
-                                style="text-align: center; letter-spacing: 0.3em; text-transform: uppercase; margin: 1rem 0;"
-                            >
-                            <button class="btn-primary" @click="joinRoomFromWelcome" style="width: 100%;">{{ t('joinRoom') }}</button>
                         </div>
                     </div>
                 </div>
@@ -1730,26 +1607,15 @@
             </div>
             
             <div v-if="isPlaying" class="slideshow-view" @click="stopSlideshow">
-                <img 
-                    v-for="(memory, index) in allMemories" 
-                    :key="index"
-                    :src="memory.photo" 
-                    class="slideshow-image"
-                    :class="{ 'active': currentSlide === index }"
-                    :style="{ filter: memory.filter === 'sepia' ? 'sepia(0.6)' : 'none' }"
-                >
+                <img v-for="(memory, index) in allMemories" :key="index" :src="memory.photo" class="slideshow-image" :class="{ 'active': currentSlide === index }" :style="{ filter: memory.filter === 'sepia' ? 'sepia(0.6)' : 'none' }">
                 <div class="slideshow-info" v-if="allMemories[currentSlide]">
                     <div class="slideshow-year">{{ allMemories[currentSlide].year }}{{ t('year') }}</div>
                     <div>{{ allMemories[currentSlide].text }}</div>
-                    <div v-if="allMemories[currentSlide].people" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">
-                        👥 {{ allMemories[currentSlide].people.join(', ') }}
-                    </div>
+                    <div v-if="allMemories[currentSlide].people" style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">👥 {{ allMemories[currentSlide].people.join(', ') }}</div>
                 </div>
             </div>
             
-            <button v-if="!showWelcome && currentView !== 'album' && !isPlaying" class="play-memories-btn" @click="startSlideshow" title="播放回忆">
-                ▶
-            </button>
+            <button v-if="!showWelcome && currentView !== 'album' && !isPlaying" class="play-memories-btn" @click="startSlideshow" title="播放回忆">▶</button>
             
             <div class="toast" :class="{ 'show': toastMessage }">{{ toastMessage }}</div>
         </div>
@@ -1760,18 +1626,17 @@
         
         createApp({
             setup() {
-                // 语言系统
                 const currentLang = ref('zh');
                 const i18n = {
                     zh: {
-                        title: '家族回忆时间轴',
-                        subtitle: '珍藏岁月，传承记忆',
+                        title: '家族回忆记录册',
+                        subtitle: '珍藏岁月，分享回忆',
                         newAlbum: '新建相册',
                         importAlbum: '导入相册',
                         joinCollab: '加入协同',
                         premium: '待开发',
                         loading: '生成回忆中...',
-                        appName: '家族回忆时间轴',
+                        appName: '家族回忆记录册',
                         room: '房间',
                         timeline: '时间轴',
                         album: '相册',
@@ -1831,23 +1696,25 @@
                         join: '加入',
                         joinCollabTitle: '加入家族协同',
                         enterRoomCode: '输入家人分享的房间号',
-                        '6digitCode': '6位房间号',
                         joinRoom: '加入房间',
                         shareTitle: '分享家族回忆',
                         copy: '复制链接',
                         exportImage: '导出长图',
                         exportPDF: '导出 PDF',
-                        springFestival: '春节模式'
+                        springFestival: '春节模式',
+                        backToHome: '返回首页',
+                        defaultText: '这段时光没有留下文字，但照片记录了当时的美好...',
+                        years: '年份'
                     },
                     en: {
-                        title: 'Family Memories Timeline',
-                        subtitle: 'Cherish Every Moment, Preserve Our Heritage',
+                        title: 'Family Memories Record Book',
+                        subtitle: 'Cherish Every Moment, Share Our Memories',
                         newAlbum: 'New Album',
                         importAlbum: 'Import Album',
                         joinCollab: 'Join Collaboration',
                         premium: 'Coming Soon',
                         loading: 'Generating memories...',
-                        appName: 'Family Memories',
+                        appName: 'Family Memories Record',
                         room: 'Room',
                         timeline: 'Timeline',
                         album: 'Album',
@@ -1907,26 +1774,25 @@
                         join: 'Join',
                         joinCollabTitle: 'Join Collaboration',
                         enterRoomCode: 'Enter the room code shared by family',
-                        '6digitCode': '6-digit code',
                         joinRoom: 'Join Room',
                         shareTitle: 'Share Family Memories',
                         copy: 'Copy Link',
                         exportImage: 'Export Image',
                         exportPDF: 'Export PDF',
-                        springFestival: 'Spring Festival Mode'
+                        springFestival: 'Spring Festival Mode',
+                        backToHome: 'Back to Home',
+                        defaultText: 'No words were left for this moment, but the photo captured the beauty of that time...',
+                        years: 'Years'
                     }
                 };
                 
-                const t = (key) => {
-                    return i18n[currentLang.value][key] || key;
-                };
+                const t = (key) => i18n[currentLang.value][key] || key;
                 
                 const switchLang = (lang) => {
                     currentLang.value = lang;
                     localStorage.setItem('familyMemoriesLang', lang);
                 };
                 
-                // 基础状态
                 const showWelcome = ref(true);
                 const isLoading = ref(false);
                 const currentView = ref('timeline');
@@ -1943,7 +1809,6 @@
                 const editingYearIndex = ref(-1);
                 const editingYearLabel = ref('');
                 
-                // 可编辑的年份列表（2024-2025默认）
                 const defaultYears = [
                     { id: 'y2024', value: 2024, label: '2024' },
                     { id: 'y2025', value: 2025, label: '2025' },
@@ -1973,16 +1838,12 @@
                 const albumPages = ref([]);
                 const currentPage = ref(0);
                 
-                const currentMemories = computed(() => {
-                    return memories.value[selectedYear.value] || [];
-                });
+                const currentMemories = computed(() => memories.value[selectedYear.value] || []);
                 
                 const allMemories = computed(() => {
                     const all = [];
                     Object.keys(memories.value).sort().forEach(year => {
-                        memories.value[year].forEach(memory => {
-                            all.push({ ...memory, year });
-                        });
+                        memories.value[year].forEach(memory => all.push({ ...memory, year }));
                     });
                     return all;
                 });
@@ -1990,11 +1851,6 @@
                 const shareUrl = computed(() => {
                     const data = encodeURIComponent(JSON.stringify(memories.value));
                     return `${window.location.origin}${window.location.pathname}#data=${data}`;
-                });
-                
-                // 检查是否包含所有默认年份
-                const hasAllDefaultYears = computed(() => {
-                    return editableYears.value.length === 5;
                 });
                 
                 const checkSpringFestival = () => {
@@ -2064,7 +1920,7 @@
                     let animationId;
                     const animate = () => {
                         ctx.clearRect(0, 0, width, height);
-                        flowers.forEach(flower => { flower.update(); flower.draw(); });
+                        flowers.forEach(f => { f.update(); f.draw(); });
                         animationId = requestAnimationFrame(animate);
                     };
                     animate();
@@ -2082,43 +1938,6 @@
                     });
                 };
                 
-                // 年份编辑功能
-                const editYearLabel = (index) => {
-                    editingYearIndex.value = index;
-                    editingYearLabel.value = editableYears.value[index].label;
-                    showYearEditModal.value = true;
-                };
-                
-                const saveYearLabel = () => {
-                    if (editingYearIndex.value !== -1 && editingYearLabel.value.trim()) {
-                        editableYears.value[editingYearIndex.value].label = editingYearLabel.value.trim();
-                        saveToLocalStorage();
-                    }
-                    showYearEditModal.value = false;
-                    editingYearIndex.value = -1;
-                    editingYearLabel.value = '';
-                };
-                
-                const removeYear = (index) => {
-                    if (confirm(currentLang.value === 'zh' ? '确定要删除这个年份吗？相关照片将被隐藏。' : 'Delete this year? Related photos will be hidden.')) {
-                        editableYears.value.splice(index, 1);
-                        // 如果删除的是当前选中的年份，切换到第一个可用年份
-                        if (selectedYear.value === editableYears.value[index]?.value && editableYears.value.length > 0) {
-                            selectedYear.value = editableYears.value[0].value;
-                        }
-                        saveToLocalStorage();
-                    }
-                };
-                
-                const restoreDefaultYears = () => {
-                    editableYears.value = JSON.parse(JSON.stringify(defaultYears));
-                    saveToLocalStorage();
-                };
-                
-                const showPremiumInfo = () => {
-                    showPremiumModal.value = true;
-                };
-                
                 const generateFamilyTreeData = () => {
                     const peopleMap = new Map();
                     const connections = new Map();
@@ -2127,12 +1946,7 @@
                         if (memory.people && memory.people.length > 0) {
                             memory.people.forEach(person => {
                                 if (!peopleMap.has(person)) {
-                                    peopleMap.set(person, { 
-                                        id: person, 
-                                        name: person, 
-                                        count: 0,
-                                        years: new Set()
-                                    });
+                                    peopleMap.set(person, { id: person, name: person, count: 0, years: new Set() });
                                 }
                                 peopleMap.get(person).count++;
                                 peopleMap.get(person).years.add(memory.year);
@@ -2151,10 +1965,7 @@
                     });
                     
                     const nodes = Array.from(peopleMap.values()).map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        value: p.count,
-                        years: Array.from(p.years),
+                        id: p.id, name: p.name, value: p.count, years: Array.from(p.years),
                         radius: Math.min(30, 10 + p.count * 3)
                     }));
                     
@@ -2177,16 +1988,10 @@
                         const width = container.clientWidth;
                         const height = container.clientHeight || 600;
                         
-                        const svg = d3.select('#familyTreeSvg')
-                            .append('svg')
-                            .attr('width', width)
-                            .attr('height', height)
-                            .attr('viewBox', [0, 0, width, height]);
-                        
+                        const svg = d3.select('#familyTreeSvg').append('svg').attr('width', width).attr('height', height).attr('viewBox', [0, 0, width, height]);
                         const g = svg.append('g');
-                        const zoom = d3.zoom()
-                            .scaleExtent([0.1, 4])
-                            .on('zoom', (event) => { g.attr('transform', event.transform); });
+                        
+                        const zoom = d3.zoom().scaleExtent([0.1, 4]).on('zoom', (e) => g.attr('transform', e.transform));
                         svg.call(zoom);
                         
                         const nodes = familyTreeData.value.nodes.map(d => ({...d}));
@@ -2198,60 +2003,39 @@
                             .force('center', d3.forceCenter(width / 2, height / 2))
                             .force('collision', d3.forceCollide().radius(d => d.radius + 5));
                         
-                        const link = g.append('g').attr('class', 'links').selectAll('line')
-                            .data(links).enter().append('line')
-                            .attr('class', 'link')
-                            .attr('stroke-width', d => Math.sqrt(d.value) * 2);
+                        const link = g.append('g').attr('class', 'links').selectAll('line').data(links).enter().append('line')
+                            .attr('class', 'link').attr('stroke-width', d => Math.sqrt(d.value) * 2);
                         
-                        const node = g.append('g').attr('class', 'nodes').selectAll('g')
-                            .data(nodes).enter().append('g')
+                        const node = g.append('g').attr('class', 'nodes').selectAll('g').data(nodes).enter().append('g')
                             .attr('class', 'node')
                             .call(d3.drag()
-                                .on('start', (event, d) => {
-                                    if (!event.active) simulation.alphaTarget(0.3).restart();
-                                    d.fx = d.x; d.fy = d.y;
-                                })
-                                .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
-                                .on('end', (event, d) => {
-                                    if (!event.active) simulation.alphaTarget(0);
-                                    d.fx = null; d.fy = null;
-                                }));
+                                .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+                                .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+                                .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
                         
-                        node.append('circle')
-                            .attr('r', d => d.radius)
-                            .attr('fill', d => d.value > 2 ? 'var(--imperial-red)' : 'var(--gold)')
-                            .attr('stroke', '#fff')
-                            .attr('stroke-width', 2);
-                        
-                        node.append('text')
-                            .attr('dy', d => d.radius + 15)
-                            .text(d => d.name)
-                            .style('font-size', '12px')
-                            .style('fill', 'var(--dark-brown)');
+                        node.append('circle').attr('r', d => d.radius).attr('fill', d => d.value > 2 ? 'var(--imperial-red)' : 'var(--gold)')
+                            .attr('stroke', '#fff').attr('stroke-width', 2);
+                        node.append('text').attr('dy', d => d.radius + 15).text(d => d.name).style('font-size', '12px').style('fill', 'var(--dark-brown)');
                         
                         const tooltip = d3.select('body').append('div')
                             .style('position', 'fixed').style('visibility', 'hidden')
                             .style('background', 'rgba(255,255,255,0.95)').style('border', '1px solid var(--gold)')
-                            .style('border-radius', '4px').style('padding', '8px')
-                            .style('font-size', '12px').style('box-shadow', '0 2px 8px rgba(0,0,0,0.2)')
-                            .style('pointer-events', 'none').style('z-index', '1000');
+                            .style('border-radius', '4px').style('padding', '8px').style('font-size', '12px')
+                            .style('box-shadow', '0 2px 8px rgba(0,0,0,0.2)').style('pointer-events', 'none').style('z-index', '1000');
                         
-                        node.on('mouseover', (event, d) => {
-                            tooltip.html(`<strong>${d.name}</strong><br/>${t('count') || 'Count'}: ${d.value}<br/>${t('years') || 'Years'}: ${d.years.join(', ')}`)
-                                .style('visibility', 'visible')
-                                .style('left', (event.clientX + 10) + 'px')
-                                .style('top', (event.clientY - 10) + 'px');
+                        node.on('mouseover', (e, d) => {
+                            tooltip.html(`<strong>${d.name}</strong><br/>${t('years')}: ${d.years.join(', ')}`)
+                                .style('visibility', 'visible').style('left', (e.clientX + 10) + 'px').style('top', (e.clientY - 10) + 'px');
                         }).on('mouseout', () => tooltip.style('visibility', 'hidden'));
                         
                         simulation.on('tick', () => {
-                            link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-                                .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+                            link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
                             node.attr('transform', d => `translate(${d.x},${d.y})`);
                         });
                     });
                 };
                 
-                const resetZoom = () => { drawFamilyTree(); };
+                const resetZoom = () => drawFamilyTree();
                 const refreshTree = () => { generateFamilyTreeData(); drawFamilyTree(); };
                 
                 const initSpeechRecognition = () => {
@@ -2262,10 +2046,10 @@
                         recognition.value.continuous = true;
                         recognition.value.interimResults = true;
                         
-                        recognition.value.onresult = (event) => {
+                        recognition.value.onresult = (e) => {
                             let finalTranscript = '';
-                            for (let i = event.resultIndex; i < event.results.length; i++) {
-                                if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+                            for (let i = e.resultIndex; i < e.results.length; i++) {
+                                if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
                             }
                             if (finalTranscript) editingMemory.value.text += finalTranscript;
                         };
@@ -2279,25 +2063,18 @@
                 
                 const showToast = (msg) => {
                     toastMessage.value = msg;
-                    setTimeout(() => { toastMessage.value = ''; }, 3000);
+                    setTimeout(() => toastMessage.value = '', 3000);
                 };
                 
-                const generateRoomId = () => {
-                    return Math.random().toString(36).substring(2, 8).toUpperCase();
-                };
+                const generateRoomId = () => Math.random().toString(36).substring(2, 8).toUpperCase();
                 
                 const createRoom = () => {
                     roomId.value = generateRoomId();
                     if ('BroadcastChannel' in window) {
                         broadcastChannel.value = new BroadcastChannel('family_memories_' + roomId.value);
-                        broadcastChannel.value.onmessage = (event) => {
-                            if (event.data.type === 'sync') {
-                                memories.value = event.data.data;
-                                showToast(t('syncReceived'));
-                            } else if (event.data.type === 'join') {
-                                onlineUsers.value.push(event.data.user);
-                                broadcastChannel.value.postMessage({ type: 'sync', data: memories.value });
-                            }
+                        broadcastChannel.value.onmessage = (e) => {
+                            if (e.data.type === 'sync') { memories.value = e.data.data; showToast(t('syncReceived')); }
+                            else if (e.data.type === 'join') { onlineUsers.value.push(e.data.user); broadcastChannel.value.postMessage({ type: 'sync', data: memories.value }); }
                         };
                     }
                     nextTick(() => {
@@ -2306,9 +2083,7 @@
                             qrcodeDiv.innerHTML = '';
                             new QRCode(qrcodeDiv, {
                                 text: `${window.location.origin}${window.location.pathname}?room=${roomId.value}`,
-                                width: 128, height: 128,
-                                colorDark: '#C8102E', colorLight: '#F5F5DC',
-                                correctLevel: QRCode.CorrectLevel.M
+                                width: 128, height: 128, colorDark: '#C8102E', colorLight: '#F5F5DC', correctLevel: QRCode.CorrectLevel.M
                             });
                         }
                     });
@@ -2316,20 +2091,12 @@
                 };
                 
                 const joinRoom = () => {
-                    if (joinRoomId.value.length !== 6) {
-                        showToast(t('enter6digits'));
-                        return;
-                    }
+                    if (joinRoomId.value.length !== 6) { showToast(t('enter6digits')); return; }
                     roomId.value = joinRoomId.value.toUpperCase();
                     if ('BroadcastChannel' in window) {
                         broadcastChannel.value = new BroadcastChannel('family_memories_' + roomId.value);
                         broadcastChannel.value.postMessage({ type: 'join', user: 'User' + Math.floor(Math.random() * 1000) });
-                        broadcastChannel.value.onmessage = (event) => {
-                            if (event.data.type === 'sync') {
-                                memories.value = event.data.data;
-                                showToast(t('synced'));
-                            }
-                        };
+                        broadcastChannel.value.onmessage = (e) => { if (e.data.type === 'sync') { memories.value = e.data.data; showToast(t('synced')); }};
                     }
                     showCollab.value = false;
                     showToast(`${t('joined')}: ${roomId.value}`);
@@ -2342,12 +2109,8 @@
                 };
                 
                 const leaveRoom = () => {
-                    roomId.value = '';
-                    onlineUsers.value = [];
-                    if (broadcastChannel.value) {
-                        broadcastChannel.value.close();
-                        broadcastChannel.value = null;
-                    }
+                    roomId.value = ''; onlineUsers.value = [];
+                    if (broadcastChannel.value) { broadcastChannel.value.close(); broadcastChannel.value = null; }
                     showToast(t('left'));
                 };
                 
@@ -2364,9 +2127,7 @@
                             if (qrcodeDiv && qrcodeDiv.innerHTML === '') {
                                 new QRCode(qrcodeDiv, {
                                     text: `${window.location.origin}${window.location.pathname}?room=${roomId.value}`,
-                                    width: 128, height: 128,
-                                    colorDark: '#C8102E', colorLight: '#F5F5DC',
-                                    correctLevel: QRCode.CorrectLevel.M
+                                    width: 128, height: 128, colorDark: '#C8102E', colorLight: '#F5F5DC', correctLevel: QRCode.CorrectLevel.M
                                 });
                             }
                         });
@@ -2383,15 +2144,14 @@
                 
                 const importAlbum = () => {
                     const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = '.json';
+                    input.type = 'file'; input.accept = '.json';
                     input.onchange = (e) => {
                         const file = e.target.files[0];
                         if (file) {
                             const reader = new FileReader();
-                            reader.onload = (event) => {
+                            reader.onload = (ev) => {
                                 try {
-                                    const data = JSON.parse(event.target.result);
+                                    const data = JSON.parse(ev.target.result);
                                     memories.value = data.memories || data;
                                     if (data.years) editableYears.value = data.years;
                                     saveToLocalStorage();
@@ -2408,80 +2168,59 @@
                 
                 const joinCollaboration = () => { showJoinModal.value = true; };
                 
+                const backToHome = () => {
+                    showWelcome.value = true;
+                    currentView.value = 'timeline';
+                };
+                
                 const loadFromLocalStorage = () => {
                     const saved = localStorage.getItem('familyMemories');
                     const savedLang = localStorage.getItem('familyMemoriesLang');
                     const savedYears = localStorage.getItem('familyMemoriesYears');
                     
-                    if (saved) {
-                        try { memories.value = JSON.parse(saved); } catch (e) {}
-                    }
+                    if (saved) { try { memories.value = JSON.parse(saved); } catch (e) {} }
                     if (savedLang) currentLang.value = savedLang;
-                    if (savedYears) {
-                        try { editableYears.value = JSON.parse(savedYears); } catch (e) {}
-                    }
+                    if (savedYears) { try { editableYears.value = JSON.parse(savedYears); } catch (e) {} }
                 };
                 
                 const saveToLocalStorage = () => {
                     localStorage.setItem('familyMemories', JSON.stringify(memories.value));
                     localStorage.setItem('familyMemoriesYears', JSON.stringify(editableYears.value));
-                    if (broadcastChannel.value && roomId.value) {
-                        broadcastChannel.value.postMessage({ type: 'sync', data: memories.value });
-                    }
+                    if (broadcastChannel.value && roomId.value) broadcastChannel.value.postMessage({ type: 'sync', data: memories.value });
                 };
                 
                 const checkUrlParams = () => {
                     const url = new URL(window.location.href);
                     const room = url.searchParams.get('room');
-                    if (room && room.length === 6) {
-                        joinRoomId.value = room;
-                        joinRoom();
-                    }
+                    if (room && room.length === 6) { joinRoomId.value = room; joinRoom(); }
                 };
                 
-                const hasMemory = (year) => {
-                    return memories.value[year] && memories.value[year].length > 0;
-                };
-                
+                const hasMemory = (year) => memories.value[year] && memories.value[year].length > 0;
                 const selectYear = (year) => { selectedYear.value = year; };
-                
                 const triggerUpload = () => { fileInput.value.click(); };
                 
-                const handleFileSelect = (event) => {
-                    const files = Array.from(event.target.files);
+                const handleFileSelect = (e) => {
+                    const files = Array.from(e.target.files);
                     processFiles(files);
-                    event.target.value = '';
+                    e.target.value = '';
                 };
                 
-                const handleDrop = (event) => {
+                const handleDrop = (e) => {
                     isDragging.value = false;
-                    const files = Array.from(event.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
                     processFiles(files);
                 };
                 
                 const processFiles = (files) => {
                     files.forEach(file => {
-                        if (file.size > 5 * 1024 * 1024) {
-                            showToast(`${file.name} ${t('tooLarge') || 'too large'}`);
-                            return;
-                        }
+                        if (file.size > 5 * 1024 * 1024) { showToast(`${file.name} too large`); return; }
                         isLoading.value = true;
                         const reader = new FileReader();
                         reader.onload = (e) => {
                             setTimeout(() => {
-                                editingMemory.value = {
-                                    photo: e.target.result,
-                                    text: '',
-                                    date: new Date().toISOString().split('T')[0],
-                                    filter: 'none',
-                                    year: selectedYear.value,
-                                    people: []
-                                };
-                                isSepia.value = false;
-                                tagInput.value = '';
-                                editingIndex.value = -1;
-                                showEditModal.value = true;
-                                isLoading.value = false;
+                                editingMemory.value = { photo: e.target.result, text: '', date: new Date().toISOString().split('T')[0], filter: 'none', year: selectedYear.value, people: [] };
+                                isSepia.value = false; tagInput.value = ''; editingIndex.value = -1;
+                                showEditModal.value = true; isLoading.value = false;
                             }, 800);
                         };
                         reader.readAsDataURL(file);
@@ -2498,23 +2237,50 @@
                 const closeEditModal = () => {
                     showEditModal.value = false;
                     editingMemory.value = { photo: '', text: '', date: '', filter: 'none', year: '', people: [] };
-                    isSepia.value = false;
-                    tagInput.value = '';
+                    isSepia.value = false; tagInput.value = '';
                 };
                 
                 const saveMemory = () => {
                     editingMemory.value.filter = isSepia.value ? 'sepia' : 'none';
                     if (!memories.value[selectedYear.value]) memories.value[selectedYear.value] = [];
-                    if (editingIndex.value === -1) {
-                        memories.value[selectedYear.value].push({ ...editingMemory.value });
-                    } else {
-                        memories.value[selectedYear.value][editingIndex.value] = { ...editingMemory.value };
-                    }
+                    if (editingIndex.value === -1) memories.value[selectedYear.value].push({ ...editingMemory.value });
+                    else memories.value[selectedYear.value][editingIndex.value] = { ...editingMemory.value };
                     saveToLocalStorage();
                     closeEditModal();
                     showToast(t('saved'));
                     if (currentView.value === 'tree') refreshTree();
                 };
+                
+                const editYearLabel = (index) => {
+                    editingYearIndex.value = index;
+                    editingYearLabel.value = editableYears.value[index].label;
+                    showYearEditModal.value = true;
+                };
+                
+                const saveYearLabel = () => {
+                    if (editingYearIndex.value !== -1 && editingYearLabel.value.trim()) {
+                        editableYears.value[editingYearIndex.value].label = editingYearLabel.value.trim();
+                        saveToLocalStorage();
+                    }
+                    showYearEditModal.value = false;
+                    editingYearIndex.value = -1;
+                    editingYearLabel.value = '';
+                };
+                
+                const removeYear = (index) => {
+                    if (confirm(currentLang.value === 'zh' ? '确定要删除这个年份吗？相关照片将被隐藏。' : 'Delete this year? Related photos will be hidden.')) {
+                        editableYears.value.splice(index, 1);
+                        if (selectedYear.value === editableYears.value[index]?.value && editableYears.value.length > 0) selectedYear.value = editableYears.value[0].value;
+                        saveToLocalStorage();
+                    }
+                };
+                
+                const restoreDefaultYears = () => {
+                    editableYears.value = JSON.parse(JSON.stringify(defaultYears));
+                    saveToLocalStorage();
+                };
+                
+                const showPremiumInfo = () => { showPremiumModal.value = true; };
                 
                 const addTag = () => {
                     const tag = tagInput.value.trim();
@@ -2524,33 +2290,18 @@
                 
                 const removeTag = (index) => { editingMemory.value.people.splice(index, 1); };
                 
-                const removeLastTag = () => {
-                    if (tagInput.value === '' && editingMemory.value.people.length > 0) {
-                        editingMemory.value.people.pop();
-                    }
-                };
+                const removeLastTag = () => { if (tagInput.value === '' && editingMemory.value.people.length > 0) editingMemory.value.people.pop(); };
                 
                 const toggleVoiceInput = () => {
-                    if (!recognition.value) {
-                        showToast(t('notSupported'));
-                        return;
-                    }
-                    if (isRecording.value) {
-                        recognition.value.stop();
-                        isRecording.value = false;
-                    } else {
-                        recognition.value.start();
-                        isRecording.value = true;
-                        showToast(t('speakNow'));
-                    }
+                    if (!recognition.value) { showToast(t('notSupported')); return; }
+                    if (isRecording.value) { recognition.value.stop(); isRecording.value = false; }
+                    else { recognition.value.start(); isRecording.value = true; showToast(t('speakNow')); }
                 };
                 
                 const formatDate = (dateStr) => {
                     if (!dateStr) return '';
                     const date = new Date(dateStr);
-                    return currentLang.value === 'zh' 
-                        ? `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
-                        : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+                    return currentLang.value === 'zh' ? `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日` : `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
                 };
                 
                 const prepareAlbumPages = () => {
@@ -2573,31 +2324,19 @@
                 };
                 
                 const startSlideshow = () => {
-                    if (allMemories.value.length === 0) {
-                        showToast(t('noMemories'));
-                        return;
-                    }
-                    isPlaying.value = true;
-                    currentSlide.value = 0;
-                    slideshowInterval = setInterval(() => {
-                        currentSlide.value++;
-                        if (currentSlide.value >= allMemories.value.length) currentSlide.value = 0;
-                    }, 5000);
+                    if (allMemories.value.length === 0) { showToast(t('noMemories')); return; }
+                    isPlaying.value = true; currentSlide.value = 0;
+                    slideshowInterval = setInterval(() => { currentSlide.value++; if (currentSlide.value >= allMemories.value.length) currentSlide.value = 0; }, 5000);
                 };
                 
                 const stopSlideshow = () => {
                     isPlaying.value = false;
-                    if (slideshowInterval) {
-                        clearInterval(slideshowInterval);
-                        slideshowInterval = null;
-                    }
+                    if (slideshowInterval) { clearInterval(slideshowInterval); slideshowInterval = null; }
                 };
                 
                 const showShareModal = () => { showSharePanel.value = true; };
                 
-                const copyUrl = () => {
-                    navigator.clipboard.writeText(shareUrl.value).then(() => showToast(t('copied')));
-                };
+                const copyUrl = () => { navigator.clipboard.writeText(shareUrl.value).then(() => showToast(t('copied'))); };
                 
                 const exportImage = async () => {
                     showToast(t('generating'));
@@ -2622,26 +2361,18 @@
                         const memory = allMems[i];
                         pdf.setFontSize(20);
                         pdf.text(`${memory.year}${t('year')}`, 105, 20, { align: 'center' });
-                        if (memory.photo) {
-                            try { pdf.addImage(memory.photo, 'JPEG', 55, 30, 100, 100); } catch (e) {}
-                        }
+                        if (memory.photo) { try { pdf.addImage(memory.photo, 'JPEG', 55, 30, 100, 100); } catch (e) {} }
                         pdf.setFontSize(12);
                         const text = pdf.splitTextToSize(memory.text || '', 180);
                         pdf.text(text, 15, 140);
-                        if (memory.people && memory.people.length > 0) {
-                            pdf.text(`${t('people')}: ${memory.people.join(', ')}`, 15, 180);
-                        }
+                        if (memory.people && memory.people.length > 0) pdf.text(`${t('people')}: ${memory.people.join(', ')}`, 15, 180);
                     }
                     pdf.save(`family_memories_${new Date().toLocaleDateString()}.pdf`);
                     showToast(t('saved'));
                 };
                 
                 const exportData = () => {
-                    const exportObj = {
-                        memories: memories.value,
-                        years: editableYears.value,
-                        exportDate: new Date().toISOString()
-                    };
+                    const exportObj = { memories: memories.value, years: editableYears.value, exportDate: new Date().toISOString() };
                     const dataStr = JSON.stringify(exportObj, null, 2);
                     const blob = new Blob([dataStr], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
@@ -2652,25 +2383,15 @@
                     showToast(t('downloaded'));
                 };
                 
-                watch(currentView, (newView) => {
-                    if (newView === 'album') prepareAlbumPages();
-                    else if (newView === 'tree') refreshTree();
-                });
-                
-                watch(memories, () => { saveToLocalStorage(); }, { deep: true });
-                
-                watch(currentLang, (newLang) => {
-                    if (recognition.value) recognition.value.lang = newLang === 'zh' ? 'zh-CN' : 'en-US';
-                });
+                watch(currentView, (newView) => { if (newView === 'album') prepareAlbumPages(); else if (newView === 'tree') refreshTree(); });
+                watch(memories, () => saveToLocalStorage(), { deep: true });
+                watch(currentLang, (newLang) => { if (recognition.value) recognition.value.lang = newLang === 'zh' ? 'zh-CN' : 'en-US'; });
                 
                 onMounted(() => {
                     loadFromLocalStorage();
                     checkSpringFestival();
                     initSpeechRecognition();
-                    if (Object.keys(memories.value).length > 0) {
-                        showWelcome.value = false;
-                        checkUrlParams();
-                    }
+                    if (Object.keys(memories.value).length > 0) { showWelcome.value = false; checkUrlParams(); }
                 });
                 
                 return {
@@ -2683,8 +2404,8 @@
                     toastMessage, tagInput, isPlaying, currentSlide,
                     isSpringFestival, roomId, joinRoomId, onlineUsers,
                     familyTreeData, albumPages, currentPage,
-                    currentMemories, allMemories, shareUrl, hasAllDefaultYears,
-                    createNewAlbum, importAlbum, joinCollaboration,
+                    currentMemories, allMemories, shareUrl,
+                    createNewAlbum, importAlbum, joinCollaboration, backToHome,
                     editYearLabel, saveYearLabel, removeYear, restoreDefaultYears, showPremiumInfo,
                     hasMemory, selectYear, triggerUpload, handleFileSelect, handleDrop,
                     editMemory, closeEditModal, saveMemory, addTag, removeTag, removeLastTag,
