@@ -39,6 +39,35 @@
             -webkit-tap-highlight-color: transparent;
         }
         
+        /* 返回首页按钮 - 确保在最上层 */
+        .back-to-home {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: white;
+            border: 2px solid var(--gold);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--dark-brown);
+            z-index: 2001; /* 确保最高层级 */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-weight: 600;
+        }
+        
+        .back-to-home:hover {
+            background: var(--imperial-red);
+            color: white;
+            border-color: var(--imperial-red);
+            transform: translateX(-5px) scale(1.05);
+        }
+        
         .lang-switcher {
             position: absolute;
             top: 20px;
@@ -1096,33 +1125,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         
-        /* 返回首页按钮 - 相册页用 */
-        .back-to-home {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
-            background: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1rem;
-            color: var(--dark-brown);
-            z-index: 10;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-        
-        .back-to-home:hover {
-            background: var(--imperial-red);
-            color: white;
-            transform: translateX(-5px);
-        }
-        
         .play-memories-btn {
             position: fixed;
             bottom: 2rem;
@@ -1256,6 +1258,13 @@
         }
         
         @media (max-width: 768px) {
+            .back-to-home { 
+                top: 1rem; 
+                left: 1rem; 
+                padding: 0.6rem 1rem; 
+                font-size: 0.9rem;
+                z-index: 2002;
+            }
             .welcome-title { font-size: 1.8rem; }
             .header-content { flex-direction: column; align-items: stretch; }
             .view-tabs { justify-content: center; }
@@ -1268,7 +1277,6 @@
             #familyTreeSvg { height: 400px; }
             .lang-switcher { top: 10px; right: 10px; }
             .developer-info { bottom: 10px; right: 10px; font-size: 0.75rem; }
-            .back-to-home { top: 1rem; left: 1rem; padding: 0.5rem 1rem; font-size: 0.9rem; }
         }
         
         @media print {
@@ -1292,13 +1300,11 @@
         
         <!-- 欢迎界面 -->
         <div v-if="showWelcome" class="welcome-screen">
-            <!-- 语言切换 -->
             <div class="lang-switcher">
                 <button class="lang-btn" :class="{ active: currentLang === 'zh' }" @click="switchLang('zh')">中文</button>
                 <button class="lang-btn" :class="{ active: currentLang === 'en' }" @click="switchLang('en')">English</button>
             </div>
             
-            <!-- 开发者信息 -->
             <div class="developer-info">KSharpR<span class="trademark">®</span></div>
             
             <h1 class="welcome-title">{{ t('title') }}</h1>
@@ -1310,7 +1316,6 @@
                 <button class="btn-premium" @click="showPremiumInfo">🔒 {{ t('premium') }}</button>
             </div>
             
-            <!-- 加入协同模态框（放在欢迎页面内部，确保能显示） -->
             <div v-if="showJoinModal" class="modal" @click.self="showJoinModal = false">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1347,6 +1352,11 @@
         </div>
         
         <div v-if="!showWelcome" class="app-container">
+            <!-- 返回首页按钮 - 在时间轴和家族树页面也显示，但主要在相册页使用 -->
+            <button v-if="currentView !== 'album'" class="back-to-home" @click="backToHome" style="position: fixed; top: 80px; left: 20px; z-index: 99;">
+                🏠 {{ t('backToHome') }}
+            </button>
+
             <header class="header">
                 <div class="header-content">
                     <h1 class="header-title">
@@ -1443,7 +1453,9 @@
             
             <!-- 3D 相册视图 - 带返回首页按钮 -->
             <div v-if="currentView === 'album'" class="album-view">
+                <!-- 返回首页按钮 - 在相册视图左上角 -->
                 <button class="back-to-home" @click="backToHome">🏠 {{ t('backToHome') }}</button>
+                
                 <button class="close-album" @click="currentView = 'timeline'">×</button>
                 <div class="book-container">
                     <div v-for="(page, index) in albumPages" :key="index" class="book-page" :class="{ 'flipped': page.flipped }" :style="{ 'z-index': albumPages.length - index, 'transform': page.flipped ? 'rotateY(-180deg)' : 'rotateY(0deg)' }">
@@ -1704,7 +1716,7 @@
                         springFestival: '春节模式',
                         backToHome: '返回首页',
                         defaultText: '这段时光没有留下文字，但照片记录了当时的美好...',
-                        years: '年份'
+                        people: '人物'
                     },
                     en: {
                         title: 'Family Memories Record Book',
@@ -1782,7 +1794,7 @@
                         springFestival: 'Spring Festival Mode',
                         backToHome: 'Back to Home',
                         defaultText: 'No words were left for this moment, but the photo captured the beauty of that time...',
-                        years: 'Years'
+                        people: 'People'
                     }
                 };
                 
