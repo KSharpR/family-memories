@@ -1,0 +1,58 @@
+:root {
+  font-family: "Noto Serif SC", "Songti SC", "Microsoft YaHei", serif;
+  color: #33281f;
+  background: #f6efe2;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.welcome-panel {
+  max-width: 720px;
+  padding: 32px;
+  border: 1px solid #dfcfb5;
+  border-radius: 8px;
+  background: rgba(255, 251, 242, 0.92);
+  box-shadow: 0 18px 45px rgba(68, 49, 28, 0.12);
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #9f2634;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.welcome-panel h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.1;
+}
+
+.welcome-panel p {
+  line-height: 1.7;
+}
