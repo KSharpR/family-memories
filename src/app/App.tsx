@@ -29,19 +29,42 @@ export function App() {
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [queuedPhotos, setQueuedPhotos] = useState<QueuedPhoto[]>([]);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const uploadIdRef = useRef(0);
 
   async function handleExport() {
     try {
-      await controller.exportAlbum();
-      showToast("相册已准备导出，文件保存将在后续任务接入");
+      const serialized = await controller.exportAlbum();
+      const blob = new Blob([serialized], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `family-memories-${formatDateForFilename(new Date())}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      showToast("已导出备份文件");
     } catch (error) {
       showToast(error instanceof Error ? error.message : "相册导出失败");
     }
   }
 
-  function handleImport() {
-    showToast("导入文件选择将在后续任务接入");
+  async function handleImportInputChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const serialized = await readFileAsText(file);
+      await controller.importAlbum(serialized);
+      showToast("已导入相册备份");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "导入失败");
+    } finally {
+      input.value = "";
+    }
   }
 
   async function readPhotos(files: FileList | File[]): Promise<string[]> {
@@ -169,7 +192,7 @@ export function App() {
       memoryCount={controller.memories.length}
       onChangeView={setActiveView}
       onAddPhotos={() => photoInputRef.current?.click()}
-      onImport={handleImport}
+      onImport={() => importInputRef.current?.click()}
       onExport={() => {
         void handleExport();
       }}
@@ -182,6 +205,15 @@ export function App() {
         multiple
         onChange={(event) => {
           void handlePhotoInputChange(event);
+        }}
+      />
+      <input
+        ref={importInputRef}
+        className="visually-hidden"
+        type="file"
+        accept="application/json,.json"
+        onChange={(event) => {
+          void handleImportInputChange(event);
         }}
       />
 
@@ -205,4 +237,28 @@ export function App() {
       ) : null}
     </AppShell>
   );
+}
+
+function formatDateForFilename(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function readFileAsText(file: File): Promise<string> {
+  if ("text" in file && typeof file.text === "function") {
+    return file.text();
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      resolve(String(reader.result ?? ""));
+    });
+    reader.addEventListener("error", () => {
+      reject(reader.error ?? new Error("文件读取失败"));
+    });
+    reader.readAsText(file);
+  });
 }
