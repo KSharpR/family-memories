@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "./App";
 
@@ -45,5 +46,55 @@ describe("App", () => {
       "true"
     );
     expect(screen.getByText("还没有照片")).toBeInTheDocument();
+  });
+
+  it("opens queued editors for every selected photo", async () => {
+    const { container } = render(<App />);
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+
+    expect(fileInput).not.toBeNull();
+    fireEvent.change(fileInput!, {
+      target: {
+        files: [
+          new File(["first"], "first.png", { type: "image/png" }),
+          new File(["second"], "second.png", { type: "image/png" })
+        ]
+      }
+    });
+
+    expect(await screen.findByRole("dialog", { name: "记录新回忆" })).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText("故事"), "第一张");
+    await userEvent.click(screen.getByRole("button", { name: "保存回忆" }));
+
+    expect(await screen.findByRole("dialog", { name: "记录新回忆" })).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText("故事"), "第二张");
+    await userEvent.click(screen.getByRole("button", { name: "保存回忆" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("第一张")).toBeInTheDocument();
+    expect(screen.getByText("第二张")).toBeInTheDocument();
+  });
+
+  it("resets editor form state for queued photos with identical data", async () => {
+    const { container } = render(<App />);
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');
+    const duplicatePayload = "same-image-bytes";
+
+    fireEvent.change(fileInput!, {
+      target: {
+        files: [
+          new File([duplicatePayload], "first.png", { type: "image/png" }),
+          new File([duplicatePayload], "second.png", { type: "image/png" })
+        ]
+      }
+    });
+
+    await userEvent.type(await screen.findByLabelText("故事"), "第一张");
+    await userEvent.click(screen.getByRole("button", { name: "保存回忆" }));
+
+    expect(await screen.findByRole("dialog", { name: "记录新回忆" })).toBeInTheDocument();
+    expect(screen.getByLabelText("故事")).toHaveValue("");
   });
 });
