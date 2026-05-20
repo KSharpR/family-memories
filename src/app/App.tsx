@@ -5,6 +5,7 @@ import { FamilyTreeView } from "../features/family-tree/FamilyTreeView";
 import { MemoryEditor } from "../features/memories/MemoryEditor";
 import { TimelineView } from "../features/memories/TimelineView";
 import { readFileAsDataUrl, validateImageFile } from "../features/memories/fileValidation";
+import { SlideshowView } from "../features/slideshow/SlideshowView";
 import { createLocalMemoryRepository } from "../storage/localMemoryRepository";
 import { AppShell } from "./AppShell";
 import type { ViewMode } from "./appState";
@@ -145,11 +146,7 @@ export function App() {
     }
 
     if (activeView === "slideshow") {
-      return (
-        <section className="panel-state">
-          这个视图会在后续任务接入。
-        </section>
-      );
+      return <SlideshowView memories={controller.memories} />;
     }
 
     return (
