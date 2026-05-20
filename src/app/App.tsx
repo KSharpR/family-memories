@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { MemoryItem, NewMemoryInput, UpdateMemoryInput } from "../domain/memory";
+import { AlbumView } from "../features/album/AlbumView";
 import { MemoryEditor } from "../features/memories/MemoryEditor";
 import { TimelineView } from "../features/memories/TimelineView";
 import { readFileAsDataUrl, validateImageFile } from "../features/memories/fileValidation";
@@ -132,6 +133,10 @@ export function App() {
           </button>
         </section>
       );
+    }
+
+    if (activeView === "album") {
+      return <AlbumView memories={controller.memories} />;
     }
 
     if (activeView !== "timeline") {

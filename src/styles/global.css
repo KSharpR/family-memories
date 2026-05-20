@@ -258,6 +258,92 @@ button {
   min-height: 220px;
 }
 
+.album-view {
+  display: grid;
+  gap: 18px;
+}
+
+.album-empty {
+  min-height: 420px;
+}
+
+.album-page {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(280px, 1fr);
+  gap: 28px;
+  align-items: stretch;
+  min-height: 560px;
+  padding: 28px;
+  border: 1px solid #dfcfb5;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 250, 240, 0.96), rgba(255, 251, 242, 0.9)),
+    #fffaf0;
+  box-shadow: 0 20px 52px rgba(68, 49, 28, 0.14);
+}
+
+.album-page-photo-frame {
+  min-height: 360px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #d8c8ad;
+  border-radius: 8px;
+  background: #f6efe2;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.album-page-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #eadcc5;
+}
+
+.album-page-body {
+  display: grid;
+  gap: 22px;
+  align-content: center;
+  padding: 12px;
+}
+
+.album-page-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: #9f2634;
+  font-weight: 700;
+}
+
+.album-page-meta p,
+.album-page-story,
+.album-page-people {
+  margin: 0;
+}
+
+.album-page-count {
+  color: #66594b;
+}
+
+.album-page-story {
+  color: #33281f;
+  font-size: clamp(1.35rem, 3vw, 2.15rem);
+  line-height: 1.78;
+}
+
+.album-page-people {
+  color: #4f4236;
+  line-height: 1.6;
+}
+
+.album-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .timeline-months {
   display: grid;
   gap: 24px;
@@ -475,11 +561,31 @@ button {
 
   .upload-dropzone,
   .timeline-month-group,
+  .album-page,
   .memory-editor,
   .memory-editor-heading,
   .editor-field-grid {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .album-page {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .album-page-photo-frame {
+    min-height: 260px;
+  }
+
+  .album-page-meta,
+  .album-controls {
+    align-items: stretch;
+  }
+
+  .album-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .timeline-month-heading {
