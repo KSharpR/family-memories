@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { MemoryItem, NewMemoryInput, UpdateMemoryInput } from "../domain/memory";
 import { AlbumView } from "../features/album/AlbumView";
+import { FamilyTreeView } from "../features/family-tree/FamilyTreeView";
 import { MemoryEditor } from "../features/memories/MemoryEditor";
 import { TimelineView } from "../features/memories/TimelineView";
 import { readFileAsDataUrl, validateImageFile } from "../features/memories/fileValidation";
@@ -139,7 +140,11 @@ export function App() {
       return <AlbumView memories={controller.memories} />;
     }
 
-    if (activeView !== "timeline") {
+    if (activeView === "family-tree") {
+      return <FamilyTreeView memories={controller.memories} />;
+    }
+
+    if (activeView === "slideshow") {
       return (
         <section className="panel-state">
           这个视图会在后续任务接入。
