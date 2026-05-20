@@ -5,6 +5,7 @@ export default defineConfig({
   base: "/family-memories/",
   plugins: [react()],
   test: {
+    exclude: ["**/.worktrees/**", "**/node_modules/**", "**/dist/**"],
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts"
   }
