@@ -47,6 +47,46 @@
   min-width: 260px;
 }
 
+.language-switcher {
+  position: relative;
+}
+
+.language-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  display: grid;
+  min-width: 148px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: 0 18px 42px rgba(68, 49, 28, 0.16);
+}
+
+.language-menu-item {
+  min-height: 38px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-ink);
+  font-weight: 700;
+  text-align: left;
+}
+
+.language-menu-item:hover,
+.language-menu-item:focus-visible,
+.language-menu-item[aria-current="true"] {
+  background: var(--color-paper);
+}
+
 .button,
 .view-tab {
   min-height: 42px;
@@ -675,6 +715,11 @@
   .app-actions {
     justify-content: flex-start;
     min-width: 0;
+  }
+
+  .language-menu {
+    right: auto;
+    left: 0;
   }
 
   .upload-dropzone,

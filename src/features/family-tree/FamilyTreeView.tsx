@@ -1,9 +1,11 @@
 import { useMemo } from "react";
+import { translations, type AppCopy } from "../../app/i18n";
 import type { MemoryItem } from "../../domain/memory";
 import { buildPeopleGraph, type PeopleGraphNode } from "./graph";
 
 interface FamilyTreeViewProps {
   memories: MemoryItem[];
+  copy?: AppCopy["familyTree"];
 }
 
 interface PositionedNode extends PeopleGraphNode {
@@ -18,7 +20,10 @@ const centerY = svgHeight / 2;
 const minGraphRadius = 155;
 const maxGraphRadius = 210;
 
-export function FamilyTreeView({ memories }: FamilyTreeViewProps) {
+export function FamilyTreeView({
+  memories,
+  copy = translations.zh.familyTree
+}: FamilyTreeViewProps) {
   const graph = useMemo(() => buildPeopleGraph(memories), [memories]);
   const radius = nodeRadius(graph.nodes.length);
   const graphRadius = layoutRadius(graph.nodes.length, radius);
@@ -32,8 +37,8 @@ export function FamilyTreeView({ memories }: FamilyTreeViewProps) {
   if (graph.nodes.length === 0) {
     return (
       <section className="empty-state family-tree-empty">
-        <h2>还没有人物关系</h2>
-        <p>在照片中添加人物标签后，这里会显示同框关系。</p>
+        <h2>{copy.emptyTitle}</h2>
+        <p>{copy.emptyCopy}</p>
       </section>
     );
   }
@@ -41,19 +46,19 @@ export function FamilyTreeView({ memories }: FamilyTreeViewProps) {
   return (
     <section className="family-tree-view">
       <div className="family-tree-intro">
-        <h2>人物同框关系</h2>
-        <p>这里根据照片中的人物标签整理同框次数，只表示共同出现在照片中，不代表法律或家庭关系。</p>
+        <h2>{copy.title}</h2>
+        <p>{copy.intro}</p>
       </div>
 
       <div className="family-tree-graph-frame">
         <svg
           className="family-tree-graph"
           role="img"
-          aria-label="人物同框关系图"
+          aria-label={copy.graphLabel}
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         >
-          <title>人物同框关系图</title>
-          <desc>{describeGraph(graph.nodes.length, graph.links.length)}</desc>
+          <title>{copy.graphLabel}</title>
+          <desc>{copy.describeGraph(graph.nodes.length, graph.links.length)}</desc>
           <g className="family-tree-links">
             {graph.links.map((link) => {
               const source = nodeById.get(link.source);
@@ -103,16 +108,14 @@ export function FamilyTreeView({ memories }: FamilyTreeViewProps) {
       </div>
 
       <div className="family-tree-summary">
-        <h3>同框摘要</h3>
-        <ul aria-label="人物同框关系摘要">
+        <h3>{copy.summaryTitle}</h3>
+        <ul aria-label={copy.summaryLabel}>
           {graph.nodes.map((node) => (
-            <li key={`node-${node.id}`}>
-              {node.label}：{node.count} 张照片
-            </li>
+            <li key={`node-${node.id}`}>{copy.nodeSummary(node.label, node.count)}</li>
           ))}
           {graph.links.map((link) => (
             <li key={`link-${relationshipKey(link.source, link.target)}`}>
-              {link.source} 和 {link.target}：{link.count} 次同框
+              {copy.linkSummary(link.source, link.target, link.count)}
             </li>
           ))}
         </ul>
@@ -148,10 +151,6 @@ function nodeRadius(nodeCount: number): number {
     return 24;
   }
   return 38;
-}
-
-function describeGraph(nodeCount: number, linkCount: number): string {
-  return `共有 ${nodeCount} 个人物节点和 ${linkCount} 条同框关系。详细关系见图下方同框摘要。`;
 }
 
 function layoutRadius(nodeCount: number, radius: number): number {

@@ -1,13 +1,15 @@
+import type { AppCopy } from "../../app/i18n";
 import type { MemoryItem } from "../../domain/memory";
 
 interface MemoryCardProps {
   memory: MemoryItem;
+  copy: AppCopy["memoryCard"];
   onEdit(memory: MemoryItem): void;
   onDelete(id: string): void;
 }
 
-export function MemoryCard({ memory, onEdit, onDelete }: MemoryCardProps) {
-  const story = memory.story.length > 0 ? memory.story : "这段回忆还没有文字。";
+export function MemoryCard({ memory, copy, onEdit, onDelete }: MemoryCardProps) {
+  const story = memory.story.length > 0 ? memory.story : copy.fallbackStory;
 
   return (
     <article className="memory-card">
@@ -17,10 +19,10 @@ export function MemoryCard({ memory, onEdit, onDelete }: MemoryCardProps) {
         alt={story}
       />
       <div className="memory-card-body">
-        <p className="memory-card-date">{memory.date ?? "未注明日期"}</p>
+        <p className="memory-card-date">{memory.date ?? copy.fallbackDate}</p>
         <p className="memory-card-story">{story}</p>
         {memory.people.length > 0 ? (
-          <div className="memory-card-people" aria-label="照片中的人物">
+          <div className="memory-card-people" aria-label={copy.peopleLabel}>
             {memory.people.map((person) => (
               <span className="person-tag" key={person}>
                 {person}
@@ -30,10 +32,10 @@ export function MemoryCard({ memory, onEdit, onDelete }: MemoryCardProps) {
         ) : null}
         <div className="memory-card-actions">
           <button type="button" className="button" onClick={() => onEdit(memory)}>
-            编辑
+            {copy.edit}
           </button>
           <button type="button" className="button button-danger" onClick={() => onDelete(memory.id)}>
-            删除
+            {copy.delete}
           </button>
         </div>
       </div>

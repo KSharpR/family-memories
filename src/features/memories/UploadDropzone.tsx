@@ -1,12 +1,28 @@
 import { useRef, useState } from "react";
-import { readFileAsDataUrl, validateImageFile } from "./fileValidation";
+import type { AppCopy } from "../../app/i18n";
+import {
+  IMAGE_READ_ERROR_MESSAGE,
+  IMAGE_TOO_LARGE_MESSAGE,
+  INVALID_IMAGE_TYPE_MESSAGE,
+  readFileAsDataUrl,
+  validateImageFile
+} from "./fileValidation";
 
 interface UploadDropzoneProps {
+  copy: AppCopy["upload"];
+  errors: AppCopy["errors"];
+  actions: AppCopy["actions"];
   onPhotosReady(photos: string[]): void;
   onError(message: string): void;
 }
 
-export function UploadDropzone({ onPhotosReady, onError }: UploadDropzoneProps) {
+export function UploadDropzone({
+  copy,
+  errors,
+  actions,
+  onPhotosReady,
+  onError
+}: UploadDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isReading, setIsReading] = useState(false);
@@ -24,14 +40,18 @@ export function UploadDropzone({ onPhotosReady, onError }: UploadDropzoneProps) 
     for (const file of files) {
       const validation = validateImageFile(file);
       if (!validation.ok) {
-        onError(validation.message);
+        onError(translateImageError(validation.message, errors));
         continue;
       }
 
       try {
         photos.push(await readFileAsDataUrl(file));
       } catch (error) {
-        onError(error instanceof Error ? error.message : "图片读取失败");
+        onError(
+          error instanceof Error
+            ? translateImageError(error.message, errors)
+            : errors.readImageFailed
+        );
       }
     }
 
@@ -84,8 +104,8 @@ export function UploadDropzone({ onPhotosReady, onError }: UploadDropzoneProps) 
         }}
       />
       <div>
-        <p className="upload-dropzone-title">把照片拖到这里</p>
-        <p className="upload-dropzone-copy">支持 JPG、PNG、WebP、GIF，单张不超过 10MB。</p>
+        <p className="upload-dropzone-title">{copy.title}</p>
+        <p className="upload-dropzone-copy">{copy.copy}</p>
       </div>
       <button
         type="button"
@@ -96,8 +116,21 @@ export function UploadDropzone({ onPhotosReady, onError }: UploadDropzoneProps) 
           inputRef.current?.click();
         }}
       >
-        {isReading ? "读取中..." : "添加照片"}
+        {isReading ? copy.reading : actions.addPhotos}
       </button>
     </section>
   );
+}
+
+function translateImageError(message: string, errors: AppCopy["errors"]): string {
+  if (message === INVALID_IMAGE_TYPE_MESSAGE) {
+    return errors.invalidImageType;
+  }
+  if (message === IMAGE_TOO_LARGE_MESSAGE) {
+    return errors.imageTooLarge;
+  }
+  if (message === IMAGE_READ_ERROR_MESSAGE) {
+    return errors.readImageFailed;
+  }
+  return message;
 }

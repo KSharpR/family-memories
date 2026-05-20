@@ -215,6 +215,61 @@ describe("App", () => {
 
     expect(await screen.findByText(/Album import file is not compatible|导入失败/)).toBeInTheDocument();
   });
+
+  it("switches functional UI copy to English while preserving user content", async () => {
+    storage.setItem(
+      "family-memories:album:v1",
+      serializeAlbum({
+        ...createTestAlbum(),
+        memories: [
+          {
+            id: "memory-1",
+            photoDataUrl: "data:image/png;base64,YWJj",
+            story: "春节合影",
+            date: "2026-02-17",
+            people: ["妈妈"],
+            filter: "none",
+            createdAt: "2026-02-17T00:00:00.000Z",
+            updatedAt: "2026-02-17T00:00:00.000Z"
+          }
+        ]
+      })
+    );
+
+    render(<App />);
+    await screen.findByRole("heading", { name: "家族回忆记录册" });
+
+    await userEvent.click(screen.getByRole("button", { name: "语言 / Language" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "English" }));
+
+    expect(screen.getByRole("heading", { name: "Family Memory Album" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Add Photos" })).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Timeline" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(screen.getByText("1 photo recorded")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
+    expect(screen.getByText("春节合影")).toBeInTheDocument();
+    expect(screen.getByText("妈妈")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Album" }));
+    expect(screen.getByLabelText("Page-style album")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous Page" })).toBeInTheDocument();
+    expect(screen.getByText("春节合影")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "People Graph" }));
+    expect(screen.getByRole("img", { name: "People co-appearance graph" })).toBeInTheDocument();
+    expect(screen.getByText("妈妈: 1 photo")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Slideshow" }));
+    expect(screen.getByLabelText("Slideshow playback")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous" })).toBeInTheDocument();
+    expect(screen.getByText("春节合影")).toBeInTheDocument();
+    expect(screen.getByText("妈妈")).toBeInTheDocument();
+    expect(window.localStorage.getItem("family-memories:language")).toBe("en");
+  });
 });
 
 function createTestAlbum(): Album {

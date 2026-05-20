@@ -1,6 +1,6 @@
 import type { Album, MemoryFilter, MemoryItem } from "../domain/memory";
 
-const IMPORT_ERROR = "Album import file is not compatible";
+export const IMPORT_ERROR_MESSAGE = "Album import file is not compatible";
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const IMAGE_DATA_URL_PATTERN =
   /^data:image\/(jpeg|jpg|png|webp|gif);base64,([A-Za-z0-9+/]+={0,2})$/;
@@ -46,16 +46,16 @@ export function parseAlbumJson(serialized: string): Album {
     const parsed: unknown = JSON.parse(serialized);
     return coerceAlbum(parsed);
   } catch (error) {
-    if (error instanceof Error && error.message === IMPORT_ERROR) {
+    if (error instanceof Error && error.message === IMPORT_ERROR_MESSAGE) {
       throw error;
     }
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
 }
 
 function coerceAlbum(value: unknown): Album {
   if (!isRecord(value) || !Array.isArray(value.memories)) {
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
 
   const now = new Date().toISOString();
@@ -80,19 +80,19 @@ function coerceAlbum(value: unknown): Album {
 
 function coerceMemory(value: unknown, seenMemoryIds: Set<string>): MemoryItem {
   if (!isRecord(value)) {
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
 
   const id = readRequiredString(value.id).trim();
   if (seenMemoryIds.has(id)) {
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
   seenMemoryIds.add(id);
 
   const photoDataUrl = readString(value.photoDataUrl ?? value.photo, "");
 
   if (!isAllowedImageDataUrl(photoDataUrl)) {
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
 
   const now = new Date().toISOString();
@@ -119,7 +119,7 @@ function readString(value: unknown, fallback: string): string {
 
 function readRequiredString(value: unknown): string {
   if (typeof value !== "string" || value.trim().length === 0) {
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
   return value;
 }
@@ -129,12 +129,12 @@ function readDate(value: unknown): string | null {
     return null;
   }
   if (typeof value !== "string" || !DATE_PATTERN.test(value)) {
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
 
   const parsed = new Date(`${value}T00:00:00.000Z`);
   if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
 
   return value;
@@ -145,7 +145,7 @@ function readPeople(value: unknown): string[] {
     return [];
   }
   if (!Array.isArray(value) || !value.every((person) => typeof person === "string")) {
-    throw new Error(IMPORT_ERROR);
+    throw new Error(IMPORT_ERROR_MESSAGE);
   }
   return normalizePeople(value);
 }

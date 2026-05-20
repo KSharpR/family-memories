@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { sortMemories } from "../../app/appState";
+import { translations, type AppCopy } from "../../app/i18n";
 import type { MemoryItem } from "../../domain/memory";
 
 interface SlideshowViewProps {
   memories: MemoryItem[];
+  copy?: AppCopy["slideshow"];
 }
 
-export function SlideshowView({ memories }: SlideshowViewProps) {
+export function SlideshowView({
+  memories,
+  copy = translations.zh.slideshow
+}: SlideshowViewProps) {
   const sortedMemories = useMemo(() => sortMemories(memories), [memories]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -38,17 +43,17 @@ export function SlideshowView({ memories }: SlideshowViewProps) {
   if (sortedMemories.length === 0) {
     return (
       <section className="empty-state slideshow-empty">
-        <h2>还没有可播放的照片</h2>
-        <p>回到时间线添加照片后，可以在这里播放回忆。</p>
+        <h2>{copy.emptyTitle}</h2>
+        <p>{copy.emptyCopy}</p>
       </section>
     );
   }
 
-  const story = currentMemory.story.length > 0 ? currentMemory.story : "照片记录了这段时光。";
+  const story = currentMemory.story.length > 0 ? currentMemory.story : copy.fallbackStory;
   const people = currentMemory.people.join("、");
 
   return (
-    <section className="slideshow-view" aria-label="幻灯片播放">
+    <section className="slideshow-view" aria-label={copy.ariaLabel}>
       <figure className="slideshow-stage">
         <img
           className={`slideshow-photo${currentMemory.filter === "sepia" ? " photo-filter-sepia" : ""}`}
@@ -56,29 +61,29 @@ export function SlideshowView({ memories }: SlideshowViewProps) {
           alt={story}
         />
       </figure>
-      <div className="slideshow-caption" aria-label="幻灯片说明">
+      <div className="slideshow-caption" aria-label={copy.captionLabel}>
         <div className="slideshow-meta">
-          <p className="slideshow-date">{currentMemory.date ?? "未标注日期"}</p>
-          <p className="slideshow-count" aria-label="幻灯片页码">
+          <p className="slideshow-date">{currentMemory.date ?? copy.fallbackDate}</p>
+          <p className="slideshow-count" aria-label={copy.pageNumberLabel}>
             {currentSlideIndex + 1} / {sortedMemories.length}
           </p>
         </div>
         <p className="slideshow-story">{story}</p>
         {people.length > 0 ? (
-          <p className="slideshow-people" aria-label="照片中的人物">
+          <p className="slideshow-people" aria-label={copy.peopleLabel}>
             {people}
           </p>
         ) : null}
       </div>
 
-      <div className="slideshow-controls" aria-label="幻灯片控制">
+      <div className="slideshow-controls" aria-label={copy.controlsLabel}>
         <button
           type="button"
           className="button"
           disabled={currentSlideIndex === 0}
           onClick={() => setCurrentIndex((index) => Math.max(index - 1, 0))}
         >
-          上一张
+          {copy.previous}
         </button>
         <button
           type="button"
@@ -86,7 +91,7 @@ export function SlideshowView({ memories }: SlideshowViewProps) {
           disabled={!canPlay}
           onClick={() => setIsPlaying((playing) => !playing)}
         >
-          {isActivelyPlaying ? "暂停" : "播放"}
+          {isActivelyPlaying ? copy.pause : copy.play}
         </button>
         <button
           type="button"
@@ -94,7 +99,7 @@ export function SlideshowView({ memories }: SlideshowViewProps) {
           disabled={currentSlideIndex === lastIndex}
           onClick={() => setCurrentIndex((index) => Math.min(index + 1, lastIndex))}
         >
-          下一张
+          {copy.next}
         </button>
       </div>
     </section>

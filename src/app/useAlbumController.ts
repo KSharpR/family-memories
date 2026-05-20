@@ -3,6 +3,8 @@ import type { Album, MemoryItem, NewMemoryInput, UpdateMemoryInput } from "../do
 import type { MemoryRepository } from "../domain/repository";
 import { createEmptyAlbum } from "../storage/serializers";
 
+export const ALBUM_LOAD_ERROR_MESSAGE = "相册数据加载失败";
+
 export interface AlbumController {
   album: Album;
   memories: MemoryItem[];
@@ -91,5 +93,5 @@ export function useAlbumController(repository: MemoryRepository): AlbumControlle
 }
 
 function readErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "相册数据加载失败";
+  return error instanceof Error ? error.message : ALBUM_LOAD_ERROR_MESSAGE;
 }

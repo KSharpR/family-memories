@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { translations, type AppCopy } from "../../app/i18n";
 import type { MemoryFilter, MemoryItem, NewMemoryInput, UpdateMemoryInput } from "../../domain/memory";
 
 type EditorMode =
@@ -7,6 +8,8 @@ type EditorMode =
 
 interface MemoryEditorProps {
   mode: EditorMode;
+  copy?: AppCopy["editor"];
+  saveErrorMessage?: string;
   onSaveNew(input: NewMemoryInput): Promise<void>;
   onSaveEdit(id: string, input: UpdateMemoryInput): Promise<void>;
   onCancel(): void;
@@ -15,6 +18,8 @@ interface MemoryEditorProps {
 
 export function MemoryEditor({
   mode,
+  copy = translations.zh.editor,
+  saveErrorMessage = translations.zh.errors.saveFailed,
   onSaveNew,
   onSaveEdit,
   onCancel,
@@ -55,7 +60,7 @@ export function MemoryEditor({
       }
       onCancel();
     } catch (error) {
-      onError(error instanceof Error ? error.message : "回忆保存失败");
+      onError(error instanceof Error ? error.message : saveErrorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -103,25 +108,25 @@ export function MemoryEditor({
         </div>
         <form className="memory-editor-form" onSubmit={(event) => void handleSubmit(event)}>
           <div className="memory-editor-heading">
-            <h2 id="memory-editor-title">{mode.type === "new" ? "记录新回忆" : "编辑回忆"}</h2>
+            <h2 id="memory-editor-title">{mode.type === "new" ? copy.newTitle : copy.editTitle}</h2>
             <button type="button" className="button" onClick={requestClose} disabled={isSaving}>
-              关闭
+              {copy.close}
             </button>
           </div>
 
           <label className="field-group">
-            <span>故事</span>
+            <span>{copy.story}</span>
             <textarea
               value={story}
               rows={5}
-              placeholder="写下这张照片背后的故事"
+              placeholder={copy.storyPlaceholder}
               onChange={(event) => setStory(event.currentTarget.value)}
             />
           </label>
 
           <div className="editor-field-grid">
             <label className="field-group">
-              <span>日期</span>
+              <span>{copy.date}</span>
               <input
                 type="date"
                 value={date}
@@ -129,33 +134,33 @@ export function MemoryEditor({
               />
             </label>
             <label className="field-group">
-              <span>滤镜</span>
+              <span>{copy.filter}</span>
               <select
                 value={filter}
                 onChange={(event) => setFilter(event.currentTarget.value as MemoryFilter)}
               >
-                <option value="none">原图</option>
-                <option value="sepia">怀旧</option>
+                <option value="none">{copy.filterNone}</option>
+                <option value="sepia">{copy.filterSepia}</option>
               </select>
             </label>
           </div>
 
           <label className="field-group">
-            <span>人物</span>
+            <span>{copy.people}</span>
             <textarea
               value={people}
               rows={3}
-              placeholder="用逗号、中文逗号或换行分隔"
+              placeholder={copy.peoplePlaceholder}
               onChange={(event) => setPeople(event.currentTarget.value)}
             />
           </label>
 
           <div className="memory-editor-actions">
             <button type="button" className="button" onClick={requestClose} disabled={isSaving}>
-              取消
+              {copy.cancel}
             </button>
             <button type="submit" className="button button-primary" disabled={isSaving}>
-              {isSaving ? "保存中..." : "保存回忆"}
+              {isSaving ? copy.saving : copy.save}
             </button>
           </div>
         </form>

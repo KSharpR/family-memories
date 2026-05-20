@@ -4,12 +4,26 @@ import { AlbumView } from "../features/album/AlbumView";
 import { FamilyTreeView } from "../features/family-tree/FamilyTreeView";
 import { MemoryEditor } from "../features/memories/MemoryEditor";
 import { TimelineView } from "../features/memories/TimelineView";
-import { readFileAsDataUrl, validateImageFile } from "../features/memories/fileValidation";
+import {
+  IMAGE_READ_ERROR_MESSAGE,
+  IMAGE_TOO_LARGE_MESSAGE,
+  INVALID_IMAGE_TYPE_MESSAGE,
+  readFileAsDataUrl,
+  validateImageFile
+} from "../features/memories/fileValidation";
 import { SlideshowView } from "../features/slideshow/SlideshowView";
 import { createLocalMemoryRepository } from "../storage/localMemoryRepository";
+import { IMPORT_ERROR_MESSAGE } from "../storage/serializers";
 import { AppShell } from "./AppShell";
 import type { ViewMode } from "./appState";
-import { useAlbumController } from "./useAlbumController";
+import {
+  readStoredLanguage,
+  translations,
+  writeStoredLanguage,
+  type AppCopy,
+  type Language
+} from "./i18n";
+import { ALBUM_LOAD_ERROR_MESSAGE, useAlbumController } from "./useAlbumController";
 import { useToast } from "./useToast";
 
 type EditorState =
@@ -25,6 +39,8 @@ export function App() {
   const repository = useMemo(() => createLocalMemoryRepository(), []);
   const controller = useAlbumController(repository);
   const { message, showToast } = useToast();
+  const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
+  const copy = translations[language];
   const [activeView, setActiveView] = useState<ViewMode>("timeline");
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [queuedPhotos, setQueuedPhotos] = useState<QueuedPhoto[]>([]);
@@ -42,9 +58,11 @@ export function App() {
       anchor.download = `family-memories-${formatDateForFilename(new Date())}.json`;
       anchor.click();
       URL.revokeObjectURL(url);
-      showToast("已导出备份文件");
+      showToast(copy.toasts.exportSuccess);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "相册导出失败");
+      showToast(
+        error instanceof Error ? translateExportError(error.message, copy) : copy.errors.exportFailed
+      );
     }
   }
 
@@ -57,11 +75,13 @@ export function App() {
     }
 
     try {
-      const serialized = await readFileAsText(file);
+      const serialized = await readFileAsText(file, copy.errors.importFailed);
       await controller.importAlbum(serialized);
-      showToast("已导入相册备份");
+      showToast(copy.toasts.importSuccess);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "导入失败");
+      showToast(
+        error instanceof Error ? translateImportError(error.message, copy) : copy.errors.importFailed
+      );
     } finally {
       input.value = "";
     }
@@ -73,14 +93,18 @@ export function App() {
     for (const file of Array.from(files)) {
       const validation = validateImageFile(file);
       if (!validation.ok) {
-        showToast(validation.message);
+        showToast(translateImageError(validation.message, copy));
         continue;
       }
 
       try {
         photos.push(await readFileAsDataUrl(file));
       } catch (error) {
-        showToast(error instanceof Error ? error.message : "图片读取失败");
+        showToast(
+          error instanceof Error
+            ? translateImageError(error.message, copy)
+            : copy.errors.readImageFailed
+        );
       }
     }
 
@@ -123,28 +147,33 @@ export function App() {
 
   async function handleSaveNew(input: NewMemoryInput) {
     await controller.addMemory(input);
-    showToast("已保存回忆");
+    showToast(copy.toasts.saveNew);
   }
 
   async function handleSaveEdit(id: string, input: UpdateMemoryInput) {
     await controller.updateMemory(id, input);
-    showToast("已更新回忆");
+    showToast(copy.toasts.saveEdit);
   }
 
   async function handleDelete(id: string) {
     try {
       await controller.deleteMemory(id);
-      showToast("已删除回忆");
+      showToast(copy.toasts.delete);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "删除回忆失败");
+      showToast(error instanceof Error ? error.message : copy.errors.deleteFailed);
     }
+  }
+
+  function handleLanguageChange(nextLanguage: Language) {
+    setLanguage(nextLanguage);
+    writeStoredLanguage(nextLanguage);
   }
 
   function renderContent() {
     if (controller.isLoading) {
       return (
         <section className="panel-state" aria-live="polite">
-          正在整理相册...
+          {copy.states.loading}
         </section>
       );
     }
@@ -152,29 +181,30 @@ export function App() {
     if (controller.error) {
       return (
         <section className="panel-state panel-state-error" role="alert">
-          {controller.error}
+          {translateControllerError(controller.error, copy)}
           <button type="button" className="button" onClick={() => void controller.reload()}>
-            重试
+            {copy.states.retry}
           </button>
         </section>
       );
     }
 
     if (activeView === "album") {
-      return <AlbumView memories={controller.memories} />;
+      return <AlbumView memories={controller.memories} copy={copy.album} />;
     }
 
     if (activeView === "family-tree") {
-      return <FamilyTreeView memories={controller.memories} />;
+      return <FamilyTreeView memories={controller.memories} copy={copy.familyTree} />;
     }
 
     if (activeView === "slideshow") {
-      return <SlideshowView memories={controller.memories} />;
+      return <SlideshowView memories={controller.memories} copy={copy.slideshow} />;
     }
 
     return (
       <TimelineView
         memories={controller.memories}
+        copy={copy}
         onPhotosReady={openNewEditor}
         onUploadError={showToast}
         onEdit={(memory) => setEditor({ type: "edit", memory })}
@@ -187,10 +217,13 @@ export function App() {
 
   return (
     <AppShell
-      title={controller.album.title}
+      title={resolveAlbumTitle(controller.album.title, copy.appTitle)}
       activeView={activeView}
       memoryCount={controller.memories.length}
+      language={language}
+      copy={copy}
       onChangeView={setActiveView}
+      onChangeLanguage={handleLanguageChange}
       onAddPhotos={() => photoInputRef.current?.click()}
       onImport={() => importInputRef.current?.click()}
       onExport={() => {
@@ -223,6 +256,8 @@ export function App() {
         <MemoryEditor
           key={editor.type === "new" ? editor.uploadId : editor.memory.id}
           mode={editor}
+          copy={copy.editor}
+          saveErrorMessage={copy.errors.saveFailed}
           onSaveNew={handleSaveNew}
           onSaveEdit={handleSaveEdit}
           onCancel={closeEditor}
@@ -246,7 +281,7 @@ function formatDateForFilename(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function readFileAsText(file: File): Promise<string> {
+function readFileAsText(file: File, fallbackErrorMessage: string): Promise<string> {
   if ("text" in file && typeof file.text === "function") {
     return file.text();
   }
@@ -257,8 +292,40 @@ function readFileAsText(file: File): Promise<string> {
       resolve(String(reader.result ?? ""));
     });
     reader.addEventListener("error", () => {
-      reject(reader.error ?? new Error("文件读取失败"));
+      reject(reader.error ?? new Error(fallbackErrorMessage));
     });
     reader.readAsText(file);
   });
+}
+
+function resolveAlbumTitle(albumTitle: string, defaultTitle: string): string {
+  return albumTitle === translations.zh.appTitle ? defaultTitle : albumTitle;
+}
+
+function translateImageError(message: string, copy: AppCopy): string {
+  if (message === INVALID_IMAGE_TYPE_MESSAGE) {
+    return copy.errors.invalidImageType;
+  }
+  if (message === IMAGE_TOO_LARGE_MESSAGE) {
+    return copy.errors.imageTooLarge;
+  }
+  if (message === IMAGE_READ_ERROR_MESSAGE) {
+    return copy.errors.readImageFailed;
+  }
+  return message;
+}
+
+function translateImportError(message: string, copy: AppCopy): string {
+  return message === IMPORT_ERROR_MESSAGE ? copy.errors.importFailed : message;
+}
+
+function translateExportError(message: string, copy: AppCopy): string {
+  return message === IMPORT_ERROR_MESSAGE ? copy.errors.exportFailed : message;
+}
+
+function translateControllerError(message: string, copy: AppCopy): string {
+  if (message === IMPORT_ERROR_MESSAGE || message === ALBUM_LOAD_ERROR_MESSAGE) {
+    return copy.errors.loadFailed;
+  }
+  return message;
 }
