@@ -86,13 +86,18 @@ final class MemoryFileStore {
 
     private func validateRelativePath(_ path: String, expectedDirectory: String) throws {
         let components = path.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
+        let fileName = components.last ?? ""
+        var isDirectory: ObjCBool = false
+        let exists = fileManager.fileExists(atPath: url(forRelativePath: path).path, isDirectory: &isDirectory)
         guard
             path.isEmpty == false,
             path.contains("..") == false,
             path.hasPrefix("/") == false,
             components.count == 2,
             components.first == expectedDirectory,
-            components.last?.isEmpty == false
+            fileName.isEmpty == false,
+            URL(fileURLWithPath: fileName).pathExtension.isEmpty == false,
+            (exists == false || isDirectory.boolValue == false)
         else {
             throw MemoryFileStoreError.invalidRelativePath(path)
         }

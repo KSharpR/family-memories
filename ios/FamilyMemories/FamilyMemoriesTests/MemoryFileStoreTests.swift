@@ -83,6 +83,42 @@ final class MemoryFileStoreTests: XCTestCase {
         XCTAssertTrue(isDirectory.boolValue)
     }
 
+    func testDeleteMemoryFilesRejectsNestedDirectoryRelativePaths() throws {
+        let nestedDirectory = store.originalsDirectory.appendingPathComponent("Thumbnails", isDirectory: true)
+        try FileManager.default.createDirectory(at: nestedDirectory, withIntermediateDirectories: true)
+
+        XCTAssertThrowsError(
+            try store.deleteMemoryFiles(
+                originalRelativePath: "Originals/Thumbnails",
+                thumbnailRelativePath: "Thumbnails/safe.jpg"
+            )
+        ) { error in
+            XCTAssertEqual(error as? MemoryFileStoreError, .invalidRelativePath("Originals/Thumbnails"))
+        }
+
+        var isDirectory: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(atPath: nestedDirectory.path, isDirectory: &isDirectory))
+        XCTAssertTrue(isDirectory.boolValue)
+    }
+
+    func testDeleteMemoryFilesRejectsDirectoryEvenWhenNameHasExtension() throws {
+        let directoryWithExtension = store.originalsDirectory.appendingPathComponent("folder.jpg", isDirectory: true)
+        try FileManager.default.createDirectory(at: directoryWithExtension, withIntermediateDirectories: true)
+
+        XCTAssertThrowsError(
+            try store.deleteMemoryFiles(
+                originalRelativePath: "Originals/folder.jpg",
+                thumbnailRelativePath: "Thumbnails/safe.jpg"
+            )
+        ) { error in
+            XCTAssertEqual(error as? MemoryFileStoreError, .invalidRelativePath("Originals/folder.jpg"))
+        }
+
+        var isDirectory: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(atPath: directoryWithExtension.path, isDirectory: &isDirectory))
+        XCTAssertTrue(isDirectory.boolValue)
+    }
+
     func testDeleteMemoryFilesValidatesAllPathsBeforeRemovingFiles() throws {
         let paths = try store.writeImageFiles(
             memoryID: "kept",
