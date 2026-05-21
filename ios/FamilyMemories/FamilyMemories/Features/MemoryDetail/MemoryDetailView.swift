@@ -4,6 +4,7 @@ struct MemoryDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var memory: FamilyMemory
     @State private var errorMessage: String?
+    @State private var isDeleteConfirmationPresented = false
 
     let repository: MemoryRepositoryProtocol
     let fileStore: MemoryFileStore
@@ -50,7 +51,7 @@ struct MemoryDetailView: View {
 
             Section {
                 Button(role: .destructive) {
-                    deleteMemory()
+                    isDeleteConfirmationPresented = true
                 } label: {
                     Label("memory.delete", systemImage: "trash")
                 }
@@ -61,6 +62,18 @@ struct MemoryDetailView: View {
             Button("common.save") {
                 saveMemory()
             }
+        }
+        .confirmationDialog(
+            "memory.delete.confirmation.title",
+            isPresented: $isDeleteConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button("memory.delete", role: .destructive) {
+                deleteMemory()
+            }
+            Button("common.cancel", role: .cancel) {}
+        } message: {
+            Text("memory.delete.confirmation.message")
         }
         .alert("common.error", isPresented: Binding(
             get: { errorMessage != nil },
@@ -85,11 +98,11 @@ struct MemoryDetailView: View {
 
     private func deleteMemory() {
         do {
-            try fileStore.deleteMemoryFiles(
+            try repository.delete(id: memory.id)
+            try? fileStore.deleteMemoryFiles(
                 originalRelativePath: memory.originalPath,
                 thumbnailRelativePath: memory.thumbnailPath
             )
-            try repository.delete(id: memory.id)
             onChange()
             dismiss()
         } catch {

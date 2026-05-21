@@ -27,9 +27,9 @@ final class AppEnvironment: ObservableObject {
             && processInfo.arguments.contains("-reset-data")
 
         if shouldResetData {
+            try Self.resetMetadata(in: modelContext)
             let existingStore = try MemoryFileStore(fileManager: fileManager)
             try? fileManager.removeItem(at: existingStore.rootURL)
-            try Self.resetMetadata(in: modelContext)
         }
 
         let fileStore = try MemoryFileStore(fileManager: fileManager)
