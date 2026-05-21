@@ -11,6 +11,11 @@
 		000000000000000000001202 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001102 /* AppRootView.swift */; };
 		000000000000000000001203 /* FamilyMemoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001103 /* FamilyMemoriesTests.swift */; };
 		000000000000000000001204 /* FamilyMemoriesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001104 /* FamilyMemoriesUITests.swift */; };
+		000000000000000000001205 /* DomainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001105 /* DomainTests.swift */; };
+		000000000000000000001206 /* FamilyMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001106 /* FamilyMemory.swift */; };
+		000000000000000000001207 /* MemoryDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001107 /* MemoryDraft.swift */; };
+		000000000000000000001208 /* PeopleTagNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001108 /* PeopleTagNormalizer.swift */; };
+		000000000000000000001209 /* TimelineGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001109 /* TimelineGrouping.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +43,11 @@
 		000000000000000000001102 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		000000000000000000001103 /* FamilyMemoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyMemoriesTests.swift; sourceTree = "<group>"; };
 		000000000000000000001104 /* FamilyMemoriesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyMemoriesUITests.swift; sourceTree = "<group>"; };
+		000000000000000000001105 /* DomainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainTests.swift; sourceTree = "<group>"; };
+		000000000000000000001106 /* FamilyMemory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyMemory.swift; sourceTree = "<group>"; };
+		000000000000000000001107 /* MemoryDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDraft.swift; sourceTree = "<group>"; };
+		000000000000000000001108 /* PeopleTagNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleTagNormalizer.swift; sourceTree = "<group>"; };
+		000000000000000000001109 /* TimelineGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineGrouping.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +100,7 @@
 			children = (
 				000000000000000000001101 /* FamilyMemoriesApp.swift */,
 				000000000000000000000013 /* App */,
+				000000000000000000000016 /* Domain */,
 			);
 			path = FamilyMemories;
 			sourceTree = "<group>";
@@ -102,10 +113,22 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		000000000000000000000016 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001106 /* FamilyMemory.swift */,
+				000000000000000000001107 /* MemoryDraft.swift */,
+				000000000000000000001108 /* PeopleTagNormalizer.swift */,
+				000000000000000000001109 /* TimelineGrouping.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
 			isa = PBXGroup;
 			children = (
 				000000000000000000001103 /* FamilyMemoriesTests.swift */,
+				000000000000000000001105 /* DomainTests.swift */,
 			);
 			path = FamilyMemoriesTests;
 			sourceTree = "<group>";
@@ -248,6 +271,10 @@
 			files = (
 				000000000000000000001201 /* FamilyMemoriesApp.swift in Sources */,
 				000000000000000000001202 /* AppRootView.swift in Sources */,
+				000000000000000000001206 /* FamilyMemory.swift in Sources */,
+				000000000000000000001207 /* MemoryDraft.swift in Sources */,
+				000000000000000000001208 /* PeopleTagNormalizer.swift in Sources */,
+				000000000000000000001209 /* TimelineGrouping.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,6 +283,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				000000000000000000001203 /* FamilyMemoriesTests.swift in Sources */,
+				000000000000000000001205 /* DomainTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
