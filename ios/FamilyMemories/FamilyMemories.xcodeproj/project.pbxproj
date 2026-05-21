@@ -18,6 +18,9 @@
 		000000000000000000001209 /* TimelineGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001109 /* TimelineGrouping.swift */; };
 		000000000000000000001210 /* MemoryFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001110 /* MemoryFileStore.swift */; };
 		000000000000000000001211 /* MemoryFileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001111 /* MemoryFileStoreTests.swift */; };
+		000000000000000000001212 /* MemoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001112 /* MemoryRecord.swift */; };
+		000000000000000000001213 /* MemoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001113 /* MemoryRepository.swift */; };
+		000000000000000000001214 /* MemoryRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001114 /* MemoryRepositoryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +55,9 @@
 		000000000000000000001109 /* TimelineGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineGrouping.swift; sourceTree = "<group>"; };
 		000000000000000000001110 /* MemoryFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryFileStore.swift; sourceTree = "<group>"; };
 		000000000000000000001111 /* MemoryFileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryFileStoreTests.swift; sourceTree = "<group>"; };
+		000000000000000000001112 /* MemoryRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryRecord.swift; sourceTree = "<group>"; };
+		000000000000000000001113 /* MemoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryRepository.swift; sourceTree = "<group>"; };
+		000000000000000000001114 /* MemoryRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryRepositoryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +111,7 @@
 				000000000000000000001101 /* FamilyMemoriesApp.swift */,
 				000000000000000000000013 /* App */,
 				000000000000000000000016 /* Domain */,
+				000000000000000000000018 /* Persistence */,
 				000000000000000000000017 /* Storage */,
 			);
 			path = FamilyMemories;
@@ -137,12 +144,22 @@
 			path = Storage;
 			sourceTree = "<group>";
 		};
+		000000000000000000000018 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001112 /* MemoryRecord.swift */,
+				000000000000000000001113 /* MemoryRepository.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
 			isa = PBXGroup;
 			children = (
 				000000000000000000001103 /* FamilyMemoriesTests.swift */,
 				000000000000000000001105 /* DomainTests.swift */,
 				000000000000000000001111 /* MemoryFileStoreTests.swift */,
+				000000000000000000001114 /* MemoryRepositoryTests.swift */,
 			);
 			path = FamilyMemoriesTests;
 			sourceTree = "<group>";
@@ -290,6 +307,8 @@
 				000000000000000000001208 /* PeopleTagNormalizer.swift in Sources */,
 				000000000000000000001209 /* TimelineGrouping.swift in Sources */,
 				000000000000000000001210 /* MemoryFileStore.swift in Sources */,
+				000000000000000000001212 /* MemoryRecord.swift in Sources */,
+				000000000000000000001213 /* MemoryRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -300,6 +319,7 @@
 				000000000000000000001203 /* FamilyMemoriesTests.swift in Sources */,
 				000000000000000000001205 /* DomainTests.swift in Sources */,
 				000000000000000000001211 /* MemoryFileStoreTests.swift in Sources */,
+				000000000000000000001214 /* MemoryRepositoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
