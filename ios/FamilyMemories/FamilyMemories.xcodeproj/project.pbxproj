@@ -32,6 +32,11 @@
 		000000000000000000001223 /* ImportReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001123 /* ImportReviewView.swift */; };
 		000000000000000000001224 /* MemoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001124 /* MemoryDetailView.swift */; };
 		000000000000000000001225 /* PhotosPickerAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001125 /* PhotosPickerAdapter.swift */; };
+		000000000000000000001226 /* BackupManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001126 /* BackupManifest.swift */; };
+		000000000000000000001227 /* BackupMemoryDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001127 /* BackupMemoryDTO.swift */; };
+		000000000000000000001228 /* BackupPackageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001128 /* BackupPackageService.swift */; };
+		000000000000000000001229 /* FamilyMemoriesUTTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001129 /* FamilyMemoriesUTTypes.swift */; };
+		000000000000000000001230 /* BackupPackageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001130 /* BackupPackageServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,6 +85,11 @@
 		000000000000000000001123 /* ImportReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportReviewView.swift; sourceTree = "<group>"; };
 		000000000000000000001124 /* MemoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDetailView.swift; sourceTree = "<group>"; };
 		000000000000000000001125 /* PhotosPickerAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosPickerAdapter.swift; sourceTree = "<group>"; };
+		000000000000000000001126 /* BackupManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManifest.swift; sourceTree = "<group>"; };
+		000000000000000000001127 /* BackupMemoryDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupMemoryDTO.swift; sourceTree = "<group>"; };
+		000000000000000000001128 /* BackupPackageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPackageService.swift; sourceTree = "<group>"; };
+		000000000000000000001129 /* FamilyMemoriesUTTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyMemoriesUTTypes.swift; sourceTree = "<group>"; };
+		000000000000000000001130 /* BackupPackageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPackageServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +147,8 @@
 					000000000000000000000017 /* Storage */,
 					000000000000000000000019 /* Importing */,
 					000000000000000000000020 /* Features */,
+					000000000000000000000024 /* Backup */,
+					000000000000000000000025 /* Resources */,
 				);
 			path = FamilyMemories;
 			sourceTree = "<group>";
@@ -224,10 +236,29 @@
 			path = MemoryDetail;
 			sourceTree = "<group>";
 		};
+		000000000000000000000024 /* Backup */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001126 /* BackupManifest.swift */,
+				000000000000000000001127 /* BackupMemoryDTO.swift */,
+				000000000000000000001128 /* BackupPackageService.swift */,
+			);
+			path = Backup;
+			sourceTree = "<group>";
+		};
+		000000000000000000000025 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001129 /* FamilyMemoriesUTTypes.swift */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
 			isa = PBXGroup;
 			children = (
 				000000000000000000001103 /* FamilyMemoriesTests.swift */,
+				000000000000000000001130 /* BackupPackageServiceTests.swift */,
 				000000000000000000001105 /* DomainTests.swift */,
 				000000000000000000001111 /* MemoryFileStoreTests.swift */,
 				000000000000000000001114 /* MemoryRepositoryTests.swift */,
@@ -391,6 +422,10 @@
 				000000000000000000001223 /* ImportReviewView.swift in Sources */,
 				000000000000000000001224 /* MemoryDetailView.swift in Sources */,
 				000000000000000000001225 /* PhotosPickerAdapter.swift in Sources */,
+				000000000000000000001226 /* BackupManifest.swift in Sources */,
+				000000000000000000001227 /* BackupMemoryDTO.swift in Sources */,
+				000000000000000000001228 /* BackupPackageService.swift in Sources */,
+				000000000000000000001229 /* FamilyMemoriesUTTypes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,6 +439,7 @@
 				000000000000000000001214 /* MemoryRepositoryTests.swift in Sources */,
 				000000000000000000001215 /* PhotoImportServiceTests.swift in Sources */,
 				000000000000000000001218 /* TimelineViewModelTests.swift in Sources */,
+				000000000000000000001230 /* BackupPackageServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
