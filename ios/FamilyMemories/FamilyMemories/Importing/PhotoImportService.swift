@@ -4,9 +4,17 @@ import UIKit
 
 final class PhotoImportService {
     private let fileStore: MemoryFileStore
+    private let idGenerator: () -> String
+    private let thumbnailGenerator: (Data) throws -> Data
 
-    init(fileStore: MemoryFileStore) {
+    init(
+        fileStore: MemoryFileStore,
+        idGenerator: @escaping () -> String = { UUID().uuidString },
+        thumbnailGenerator: @escaping (Data) throws -> Data = PhotoImportService.makeThumbnailJPEGData
+    ) {
         self.fileStore = fileStore
+        self.idGenerator = idGenerator
+        self.thumbnailGenerator = thumbnailGenerator
     }
 
     func importPhoto(_ pickedPhoto: PickedPhotoData) throws -> PhotoImportResult {
@@ -23,31 +31,35 @@ final class PhotoImportService {
                 continue
             }
 
-            let memoryID = UUID().uuidString
-            let thumbnailData = try makeThumbnailJPEGData(from: pickedPhoto.imageData)
-            let paths = try fileStore.writeImageFiles(
-                memoryID: memoryID,
-                originalFilename: pickedPhoto.filename,
-                originalData: pickedPhoto.imageData,
-                thumbnailData: thumbnailData
-            )
-
-            drafts.append(
-                MemoryDraft(
-                    id: memoryID,
+            do {
+                let memoryID = idGenerator()
+                let thumbnailData = try thumbnailGenerator(pickedPhoto.imageData)
+                let paths = try fileStore.writeImageFiles(
+                    memoryID: memoryID,
                     originalFilename: pickedPhoto.filename,
-                    originalPath: paths.originalRelativePath,
-                    thumbnailPath: paths.thumbnailRelativePath,
-                    sourceCreatedAt: pickedPhoto.sourceCreatedAt,
-                    sourceAssetIdentifier: pickedPhoto.sourceAssetIdentifier
+                    originalData: pickedPhoto.imageData,
+                    thumbnailData: thumbnailData
                 )
-            )
+
+                drafts.append(
+                    MemoryDraft(
+                        id: memoryID,
+                        originalFilename: pickedPhoto.filename,
+                        originalPath: paths.originalRelativePath,
+                        thumbnailPath: paths.thumbnailRelativePath,
+                        sourceCreatedAt: pickedPhoto.sourceCreatedAt,
+                        sourceAssetIdentifier: pickedPhoto.sourceAssetIdentifier
+                    )
+                )
+            } catch {
+                failures.append(ImportFailure(filename: pickedPhoto.filename, reason: error.localizedDescription))
+            }
         }
 
         return PhotoImportResult(drafts: drafts, failures: failures)
     }
 
-    private func makeThumbnailJPEGData(from data: Data) throws -> Data {
+    private static func makeThumbnailJPEGData(from data: Data) throws -> Data {
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceThumbnailMaxPixelSize: 420,

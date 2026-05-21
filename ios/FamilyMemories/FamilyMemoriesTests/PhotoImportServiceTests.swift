@@ -51,6 +51,50 @@ final class PhotoImportServiceTests: XCTestCase {
         XCTAssertEqual(result.failures.first?.filename, "bad.txt")
     }
 
+    func testReportsThumbnailFailureWithoutThrowingBatchAway() throws {
+        var thumbnailCalls = 0
+        let service = PhotoImportService(
+            fileStore: store,
+            idGenerator: { thumbnailCalls == 0 ? "first" : "second" },
+            thumbnailGenerator: { _ in
+                thumbnailCalls += 1
+                if thumbnailCalls == 2 {
+                    throw CocoaError(.fileReadCorruptFile)
+                }
+                return Self.onePixelJPEG()
+            }
+        )
+
+        let result = try service.importPhotos([
+            PickedPhotoData(filename: "first.jpg", imageData: Self.onePixelJPEG(), sourceCreatedAt: nil, sourceAssetIdentifier: nil),
+            PickedPhotoData(filename: "bad-thumbnail.jpg", imageData: Self.onePixelJPEG(), sourceCreatedAt: nil, sourceAssetIdentifier: nil)
+        ])
+
+        XCTAssertEqual(result.drafts.map(\.originalFilename), ["first.jpg"])
+        XCTAssertEqual(result.failures.count, 1)
+        XCTAssertEqual(result.failures.first?.filename, "bad-thumbnail.jpg")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: store.url(forRelativePath: "Originals/first.jpg").path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: store.url(forRelativePath: "Originals/second.jpg").path))
+    }
+
+    func testReportsFileStoreFailureWithoutThrowingBatchAway() throws {
+        var ids = ["first", "../escape"]
+        let service = PhotoImportService(
+            fileStore: store,
+            idGenerator: { ids.removeFirst() }
+        )
+
+        let result = try service.importPhotos([
+            PickedPhotoData(filename: "first.jpg", imageData: Self.onePixelJPEG(), sourceCreatedAt: nil, sourceAssetIdentifier: nil),
+            PickedPhotoData(filename: "unsafe-id.jpg", imageData: Self.onePixelJPEG(), sourceCreatedAt: nil, sourceAssetIdentifier: nil)
+        ])
+
+        XCTAssertEqual(result.drafts.map(\.originalFilename), ["first.jpg"])
+        XCTAssertEqual(result.failures.count, 1)
+        XCTAssertEqual(result.failures.first?.filename, "unsafe-id.jpg")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: store.url(forRelativePath: "Originals/first.jpg").path))
+    }
+
     private static func onePixelJPEG() -> Data {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
