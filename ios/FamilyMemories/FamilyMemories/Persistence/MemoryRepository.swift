@@ -2,7 +2,15 @@ import Foundation
 import SwiftData
 
 @MainActor
-final class MemoryRepository {
+protocol MemoryRepositoryProtocol {
+    func fetchAll() throws -> [FamilyMemory]
+    func fetch(id: String) throws -> FamilyMemory?
+    func save(_ memory: FamilyMemory) throws
+    func delete(id: String) throws
+}
+
+@MainActor
+final class MemoryRepository: MemoryRepositoryProtocol {
     private let context: ModelContext
 
     init(context: ModelContext) {

@@ -24,6 +24,9 @@
 		000000000000000000001215 /* PhotoImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001115 /* PhotoImportServiceTests.swift */; };
 		000000000000000000001216 /* ImportedPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001116 /* ImportedPhoto.swift */; };
 		000000000000000000001217 /* PhotoImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001117 /* PhotoImportService.swift */; };
+		000000000000000000001218 /* TimelineViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001118 /* TimelineViewModelTests.swift */; };
+		000000000000000000001219 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001119 /* AppEnvironment.swift */; };
+		000000000000000000001220 /* TimelineViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001120 /* TimelineViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +67,9 @@
 		000000000000000000001115 /* PhotoImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoImportServiceTests.swift; sourceTree = "<group>"; };
 		000000000000000000001116 /* ImportedPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedPhoto.swift; sourceTree = "<group>"; };
 		000000000000000000001117 /* PhotoImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoImportService.swift; sourceTree = "<group>"; };
+		000000000000000000001118 /* TimelineViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineViewModelTests.swift; sourceTree = "<group>"; };
+		000000000000000000001119 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		000000000000000000001120 /* TimelineViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,9 +124,10 @@
 				000000000000000000000013 /* App */,
 				000000000000000000000016 /* Domain */,
 				000000000000000000000018 /* Persistence */,
-				000000000000000000000017 /* Storage */,
-				000000000000000000000019 /* Importing */,
-			);
+					000000000000000000000017 /* Storage */,
+					000000000000000000000019 /* Importing */,
+					000000000000000000000020 /* Features */,
+				);
 			path = FamilyMemories;
 			sourceTree = "<group>";
 		};
@@ -128,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000001102 /* AppRootView.swift */,
+				000000000000000000001119 /* AppEnvironment.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -169,6 +177,22 @@
 			path = Importing;
 			sourceTree = "<group>";
 		};
+		000000000000000000000020 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000021 /* Timeline */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		000000000000000000000021 /* Timeline */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001120 /* TimelineViewModel.swift */,
+			);
+			path = Timeline;
+			sourceTree = "<group>";
+		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -177,6 +201,7 @@
 				000000000000000000001111 /* MemoryFileStoreTests.swift */,
 				000000000000000000001114 /* MemoryRepositoryTests.swift */,
 				000000000000000000001115 /* PhotoImportServiceTests.swift */,
+				000000000000000000001118 /* TimelineViewModelTests.swift */,
 			);
 			path = FamilyMemoriesTests;
 			sourceTree = "<group>";
@@ -328,6 +353,8 @@
 				000000000000000000001213 /* MemoryRepository.swift in Sources */,
 				000000000000000000001216 /* ImportedPhoto.swift in Sources */,
 				000000000000000000001217 /* PhotoImportService.swift in Sources */,
+				000000000000000000001219 /* AppEnvironment.swift in Sources */,
+				000000000000000000001220 /* TimelineViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,6 +367,7 @@
 				000000000000000000001211 /* MemoryFileStoreTests.swift in Sources */,
 				000000000000000000001214 /* MemoryRepositoryTests.swift in Sources */,
 				000000000000000000001215 /* PhotoImportServiceTests.swift in Sources */,
+				000000000000000000001218 /* TimelineViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
