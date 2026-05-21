@@ -31,6 +31,7 @@
 		000000000000000000001222 /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001122 /* TimelineView.swift */; };
 		000000000000000000001223 /* ImportReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001123 /* ImportReviewView.swift */; };
 		000000000000000000001224 /* MemoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001124 /* MemoryDetailView.swift */; };
+		000000000000000000001225 /* PhotosPickerAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001125 /* PhotosPickerAdapter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +79,7 @@
 		000000000000000000001122 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
 		000000000000000000001123 /* ImportReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportReviewView.swift; sourceTree = "<group>"; };
 		000000000000000000001124 /* MemoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDetailView.swift; sourceTree = "<group>"; };
+		000000000000000000001125 /* PhotosPickerAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosPickerAdapter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +183,7 @@
 			children = (
 				000000000000000000001116 /* ImportedPhoto.swift */,
 				000000000000000000001117 /* PhotoImportService.swift */,
+				000000000000000000001125 /* PhotosPickerAdapter.swift */,
 			);
 			path = Importing;
 			sourceTree = "<group>";
@@ -387,6 +390,7 @@
 				000000000000000000001222 /* TimelineView.swift in Sources */,
 				000000000000000000001223 /* ImportReviewView.swift in Sources */,
 				000000000000000000001224 /* MemoryDetailView.swift in Sources */,
+				000000000000000000001225 /* PhotosPickerAdapter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -5,6 +5,7 @@ struct AppRootView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var environment: AppEnvironment?
     @State private var selectedMemory: FamilyMemory?
+    @State private var presentedDrafts: [MemoryDraft] = []
     @State private var timelineReloadToken = UUID()
     @State private var environmentError: String?
 
@@ -16,8 +17,11 @@ struct AppRootView: View {
                         TimelineView(
                             repository: environment.repository,
                             fileStore: environment.fileStore,
+                            importService: environment.importService,
                             reloadToken: timelineReloadToken,
-                            onImport: {},
+                            onImportedDrafts: { drafts in
+                                presentedDrafts = drafts
+                            },
                             onOpenMemory: { selectedMemory = $0 }
                         )
                         .navigationDestination(item: $selectedMemory) { memory in
@@ -26,6 +30,19 @@ struct AppRootView: View {
                                 repository: environment.repository,
                                 fileStore: environment.fileStore,
                                 onChange: reloadTimeline
+                            )
+                        }
+                        .sheet(isPresented: Binding(
+                            get: { presentedDrafts.isEmpty == false },
+                            set: { if $0 == false { presentedDrafts = [] } }
+                        )) {
+                            ImportReviewView(
+                                drafts: presentedDrafts,
+                                repository: environment.repository,
+                                onSave: {
+                                    presentedDrafts = []
+                                    reloadTimeline()
+                                }
                             )
                         }
                     }

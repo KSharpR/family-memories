@@ -1,24 +1,30 @@
+import PhotosUI
 import SwiftUI
 
 struct TimelineView: View {
     @StateObject private var viewModel: TimelineViewModel
+    @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var importErrorMessage: String?
 
     let fileStore: MemoryFileStore
+    let importService: PhotoImportService
     let reloadToken: UUID
-    let onImport: () -> Void
+    let onImportedDrafts: ([MemoryDraft]) -> Void
     let onOpenMemory: (FamilyMemory) -> Void
 
     init(
         repository: MemoryRepositoryProtocol,
         fileStore: MemoryFileStore,
+        importService: PhotoImportService,
         reloadToken: UUID,
-        onImport: @escaping () -> Void,
+        onImportedDrafts: @escaping ([MemoryDraft]) -> Void,
         onOpenMemory: @escaping (FamilyMemory) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: TimelineViewModel(repository: repository))
         self.fileStore = fileStore
+        self.importService = importService
         self.reloadToken = reloadToken
-        self.onImport = onImport
+        self.onImportedDrafts = onImportedDrafts
         self.onOpenMemory = onOpenMemory
     }
 
@@ -32,7 +38,13 @@ struct TimelineView: View {
                 } description: {
                     Text("timeline.empty.body")
                 } actions: {
-                    Button("timeline.import", action: onImport)
+                    PhotosPicker(
+                        selection: $selectedItems,
+                        maxSelectionCount: 50,
+                        matching: .images
+                    ) {
+                        Text("timeline.import")
+                    }
                         .buttonStyle(.borderedProminent)
                 }
             } else if let errorMessage = viewModel.errorMessage {
@@ -88,12 +100,46 @@ struct TimelineView: View {
         }
         .navigationTitle("tab.timeline")
         .toolbar {
-            Button(action: onImport) {
+            PhotosPicker(
+                selection: $selectedItems,
+                maxSelectionCount: 50,
+                matching: .images
+            ) {
                 Label("timeline.import", systemImage: "plus")
             }
         }
         .task(id: reloadToken) {
             await viewModel.load()
+        }
+        .onChange(of: selectedItems) { _, newItems in
+            importSelectedItems(newItems)
+        }
+        .alert("common.error", isPresented: Binding(
+            get: { importErrorMessage != nil },
+            set: { if $0 == false { importErrorMessage = nil } }
+        )) {
+            Button("common.ok", role: .cancel) {}
+        } message: {
+            Text(importErrorMessage ?? "")
+        }
+    }
+
+    private func importSelectedItems(_ items: [PhotosPickerItem]) {
+        guard items.isEmpty == false else { return }
+
+        Task {
+            let pickedPhotos = await PhotosPickerAdapter.loadPickedPhotoData(from: items)
+            selectedItems = []
+
+            do {
+                let result = try importService.importPhotos(pickedPhotos)
+                if result.drafts.isEmpty, result.failures.isEmpty == false {
+                    importErrorMessage = result.failures.map(\.reason).joined(separator: "\n")
+                }
+                onImportedDrafts(result.drafts)
+            } catch {
+                importErrorMessage = error.localizedDescription
+            }
         }
     }
 }
