@@ -27,6 +27,10 @@
 		000000000000000000001218 /* TimelineViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001118 /* TimelineViewModelTests.swift */; };
 		000000000000000000001219 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001119 /* AppEnvironment.swift */; };
 		000000000000000000001220 /* TimelineViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001120 /* TimelineViewModel.swift */; };
+		000000000000000000001221 /* MemoryThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001121 /* MemoryThumbnailView.swift */; };
+		000000000000000000001222 /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001122 /* TimelineView.swift */; };
+		000000000000000000001223 /* ImportReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001123 /* ImportReviewView.swift */; };
+		000000000000000000001224 /* MemoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001124 /* MemoryDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +74,10 @@
 		000000000000000000001118 /* TimelineViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineViewModelTests.swift; sourceTree = "<group>"; };
 		000000000000000000001119 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		000000000000000000001120 /* TimelineViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineViewModel.swift; sourceTree = "<group>"; };
+		000000000000000000001121 /* MemoryThumbnailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryThumbnailView.swift; sourceTree = "<group>"; };
+		000000000000000000001122 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		000000000000000000001123 /* ImportReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportReviewView.swift; sourceTree = "<group>"; };
+		000000000000000000001124 /* MemoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +189,8 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000021 /* Timeline */,
+				000000000000000000000022 /* ImportReview */,
+				000000000000000000000023 /* MemoryDetail */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -189,8 +199,26 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000001120 /* TimelineViewModel.swift */,
+				000000000000000000001121 /* MemoryThumbnailView.swift */,
+				000000000000000000001122 /* TimelineView.swift */,
 			);
 			path = Timeline;
+			sourceTree = "<group>";
+		};
+		000000000000000000000022 /* ImportReview */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001123 /* ImportReviewView.swift */,
+			);
+			path = ImportReview;
+			sourceTree = "<group>";
+		};
+		000000000000000000000023 /* MemoryDetail */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001124 /* MemoryDetailView.swift */,
+			);
+			path = MemoryDetail;
 			sourceTree = "<group>";
 		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
@@ -355,6 +383,10 @@
 				000000000000000000001217 /* PhotoImportService.swift in Sources */,
 				000000000000000000001219 /* AppEnvironment.swift in Sources */,
 				000000000000000000001220 /* TimelineViewModel.swift in Sources */,
+				000000000000000000001221 /* MemoryThumbnailView.swift in Sources */,
+				000000000000000000001222 /* TimelineView.swift in Sources */,
+				000000000000000000001223 /* ImportReviewView.swift in Sources */,
+				000000000000000000001224 /* MemoryDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

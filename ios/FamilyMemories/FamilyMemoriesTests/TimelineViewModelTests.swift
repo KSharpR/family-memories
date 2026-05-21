@@ -4,14 +4,17 @@ import XCTest
 @MainActor
 final class TimelineViewModelTests: XCTestCase {
     func testLoadsTimelineSectionsFromRepository() async throws {
+        let older = Date(timeIntervalSince1970: 100)
+        let newer = Date(timeIntervalSince1970: 200)
         let repository = InMemoryMemoryRepository(memories: [
-            .fixture(id: "one", date: Date(timeIntervalSince1970: 100)),
-            .fixture(id: "two", date: Date(timeIntervalSince1970: 200))
+            .fixture(id: "one", date: older),
+            .fixture(id: "two", date: newer)
         ])
 
         let viewModel = TimelineViewModel(repository: repository, calendar: Calendar(identifier: .gregorian))
         await viewModel.load()
 
+        XCTAssertEqual(viewModel.sections.map(\.id), ["1970-01"])
         XCTAssertEqual(viewModel.sections.flatMap(\.memories).map(\.id), ["two", "one"])
         XCTAssertNil(viewModel.errorMessage)
     }
@@ -41,11 +44,11 @@ private final class InMemoryMemoryRepository: MemoryRepositoryProtocol {
         self.memories = memories
     }
 
-    func fetchAll() throws -> [FamilyMemory] {
-        memories.sorted { $0.date > $1.date }
+    func fetchAll() async throws -> [FamilyMemory] {
+        memories
     }
 
-    func fetch(id: String) throws -> FamilyMemory? {
+    func fetch(id: String) async throws -> FamilyMemory? {
         memories.first { $0.id == id }
     }
 
@@ -60,11 +63,11 @@ private final class InMemoryMemoryRepository: MemoryRepositoryProtocol {
 }
 
 private struct FailingMemoryRepository: MemoryRepositoryProtocol {
-    func fetchAll() throws -> [FamilyMemory] {
+    func fetchAll() async throws -> [FamilyMemory] {
         throw TestRepositoryError.unavailable
     }
 
-    func fetch(id: String) throws -> FamilyMemory? {
+    func fetch(id: String) async throws -> FamilyMemory? {
         throw TestRepositoryError.unavailable
     }
 

@@ -3,8 +3,8 @@ import SwiftData
 
 @MainActor
 protocol MemoryRepositoryProtocol {
-    func fetchAll() throws -> [FamilyMemory]
-    func fetch(id: String) throws -> FamilyMemory?
+    func fetchAll() async throws -> [FamilyMemory]
+    func fetch(id: String) async throws -> FamilyMemory?
     func save(_ memory: FamilyMemory) throws
     func delete(id: String) throws
 }
@@ -17,7 +17,7 @@ final class MemoryRepository: MemoryRepositoryProtocol {
         self.context = context
     }
 
-    func fetchAll() throws -> [FamilyMemory] {
+    func fetchAll() async throws -> [FamilyMemory] {
         let descriptor = FetchDescriptor<MemoryRecord>(
             sortBy: [
                 SortDescriptor(\.date, order: .reverse),
@@ -28,7 +28,7 @@ final class MemoryRepository: MemoryRepositoryProtocol {
         return try context.fetch(descriptor).map(\.domain)
     }
 
-    func fetch(id: String) throws -> FamilyMemory? {
+    func fetch(id: String) async throws -> FamilyMemory? {
         let descriptor = FetchDescriptor<MemoryRecord>(
             predicate: #Predicate { $0.id == id }
         )

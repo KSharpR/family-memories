@@ -21,10 +21,13 @@ final class TimelineViewModel: ObservableObject {
 
     func load() async {
         isLoading = true
+        errorMessage = nil
+        await Task.yield()
+
         defer { isLoading = false }
 
         do {
-            let memories = try repository.fetchAll()
+            let memories = try await repository.fetchAll()
             sections = TimelineGrouping.sections(for: memories, calendar: calendar)
             errorMessage = nil
         } catch {

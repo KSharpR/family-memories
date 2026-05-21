@@ -13,17 +13,18 @@ final class MemoryRepositoryTests: XCTestCase {
         repository = MemoryRepository(context: container.mainContext)
     }
 
-    func testSavesAndFetchesMemoriesDescendingByDate() throws {
+    func testSavesAndFetchesMemoriesDescendingByDate() async throws {
         let older = FamilyMemory.fixture(id: "older", date: Date(timeIntervalSince1970: 100))
         let newer = FamilyMemory.fixture(id: "newer", date: Date(timeIntervalSince1970: 200))
 
         try repository.save(older)
         try repository.save(newer)
 
-        XCTAssertEqual(try repository.fetchAll().map(\.id), ["newer", "older"])
+        let memoryIDs = try await repository.fetchAll().map(\.id)
+        XCTAssertEqual(memoryIDs, ["newer", "older"])
     }
 
-    func testUpdatesStoryPeopleAndDate() throws {
+    func testUpdatesStoryPeopleAndDate() async throws {
         var memory = FamilyMemory.fixture(id: "edit", date: Date(timeIntervalSince1970: 100))
         try repository.save(memory)
 
@@ -32,17 +33,19 @@ final class MemoryRepositoryTests: XCTestCase {
         memory.date = Date(timeIntervalSince1970: 300)
         try repository.save(memory)
 
-        let saved = try XCTUnwrap(repository.fetch(id: "edit"))
+        let fetched = try await repository.fetch(id: "edit")
+        let saved = try XCTUnwrap(fetched)
         XCTAssertEqual(saved.story, "A quiet afternoon")
         XCTAssertEqual(saved.people, ["Mom", "Dad"])
         XCTAssertEqual(saved.date, Date(timeIntervalSince1970: 300))
     }
 
-    func testDeletesMemoryRecord() throws {
+    func testDeletesMemoryRecord() async throws {
         try repository.save(FamilyMemory.fixture(id: "delete", date: Date()))
         try repository.delete(id: "delete")
 
-        XCTAssertNil(try repository.fetch(id: "delete"))
+        let deleted = try await repository.fetch(id: "delete")
+        XCTAssertNil(deleted)
     }
 }
 
