@@ -16,6 +16,8 @@
 		000000000000000000001207 /* MemoryDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001107 /* MemoryDraft.swift */; };
 		000000000000000000001208 /* PeopleTagNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001108 /* PeopleTagNormalizer.swift */; };
 		000000000000000000001209 /* TimelineGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001109 /* TimelineGrouping.swift */; };
+		000000000000000000001210 /* MemoryFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001110 /* MemoryFileStore.swift */; };
+		000000000000000000001211 /* MemoryFileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001111 /* MemoryFileStoreTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +50,8 @@
 		000000000000000000001107 /* MemoryDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryDraft.swift; sourceTree = "<group>"; };
 		000000000000000000001108 /* PeopleTagNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleTagNormalizer.swift; sourceTree = "<group>"; };
 		000000000000000000001109 /* TimelineGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineGrouping.swift; sourceTree = "<group>"; };
+		000000000000000000001110 /* MemoryFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryFileStore.swift; sourceTree = "<group>"; };
+		000000000000000000001111 /* MemoryFileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryFileStoreTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +105,7 @@
 				000000000000000000001101 /* FamilyMemoriesApp.swift */,
 				000000000000000000000013 /* App */,
 				000000000000000000000016 /* Domain */,
+				000000000000000000000017 /* Storage */,
 			);
 			path = FamilyMemories;
 			sourceTree = "<group>";
@@ -124,11 +129,20 @@
 			path = Domain;
 			sourceTree = "<group>";
 		};
+		000000000000000000000017 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001110 /* MemoryFileStore.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
 			isa = PBXGroup;
 			children = (
 				000000000000000000001103 /* FamilyMemoriesTests.swift */,
 				000000000000000000001105 /* DomainTests.swift */,
+				000000000000000000001111 /* MemoryFileStoreTests.swift */,
 			);
 			path = FamilyMemoriesTests;
 			sourceTree = "<group>";
@@ -275,6 +289,7 @@
 				000000000000000000001207 /* MemoryDraft.swift in Sources */,
 				000000000000000000001208 /* PeopleTagNormalizer.swift in Sources */,
 				000000000000000000001209 /* TimelineGrouping.swift in Sources */,
+				000000000000000000001210 /* MemoryFileStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +299,7 @@
 			files = (
 				000000000000000000001203 /* FamilyMemoriesTests.swift in Sources */,
 				000000000000000000001205 /* DomainTests.swift in Sources */,
+				000000000000000000001211 /* MemoryFileStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
