@@ -11,3 +11,8 @@ pnpm-debug.log*
 .env.*
 !.env.example
 .DS_Store
+
+# Xcode local state
+DerivedData/
+xcuserdata/
+*.xcuserstate
