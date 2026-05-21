@@ -7,6 +7,7 @@ struct StoredImagePaths: Equatable {
 
 enum MemoryFileStoreError: Error, Equatable {
     case invalidRelativePath(String)
+    case invalidMemoryID(String)
 }
 
 final class MemoryFileStore {
@@ -45,12 +46,21 @@ final class MemoryFileStore {
         originalData: Data,
         thumbnailData: Data
     ) throws -> StoredImagePaths {
+        try validateMemoryID(memoryID)
+
         let fileExtension = normalizedExtension(from: originalFilename)
         let originalRelativePath = "Originals/\(memoryID).\(fileExtension)"
         let thumbnailRelativePath = "Thumbnails/\(memoryID).jpg"
+        let originalURL = url(forRelativePath: originalRelativePath)
+        let thumbnailURL = url(forRelativePath: thumbnailRelativePath)
 
-        try originalData.write(to: url(forRelativePath: originalRelativePath), options: .atomic)
-        try thumbnailData.write(to: url(forRelativePath: thumbnailRelativePath), options: .atomic)
+        try originalData.write(to: originalURL, options: .atomic)
+        do {
+            try thumbnailData.write(to: thumbnailURL, options: .atomic)
+        } catch {
+            try? fileManager.removeItem(at: originalURL)
+            throw error
+        }
 
         return StoredImagePaths(
             originalRelativePath: originalRelativePath,
@@ -63,12 +73,10 @@ final class MemoryFileStore {
     }
 
     func deleteMemoryFiles(originalRelativePath: String, thumbnailRelativePath: String) throws {
-        let paths = [originalRelativePath, thumbnailRelativePath]
-        for path in paths {
-            try validateRelativePath(path)
-        }
+        try validateRelativePath(originalRelativePath, expectedDirectory: "Originals")
+        try validateRelativePath(thumbnailRelativePath, expectedDirectory: "Thumbnails")
 
-        for path in paths {
+        for path in [originalRelativePath, thumbnailRelativePath] {
             let url = url(forRelativePath: path)
             if fileManager.fileExists(atPath: url.path) {
                 try fileManager.removeItem(at: url)
@@ -76,9 +84,27 @@ final class MemoryFileStore {
         }
     }
 
-    private func validateRelativePath(_ path: String) throws {
-        guard path.contains("..") == false, path.hasPrefix("/") == false else {
+    private func validateRelativePath(_ path: String, expectedDirectory: String) throws {
+        let components = path.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
+        guard
+            path.isEmpty == false,
+            path.contains("..") == false,
+            path.hasPrefix("/") == false,
+            components.count == 2,
+            components.first == expectedDirectory,
+            components.last?.isEmpty == false
+        else {
             throw MemoryFileStoreError.invalidRelativePath(path)
+        }
+    }
+
+    private func validateMemoryID(_ memoryID: String) throws {
+        let allowedCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        guard
+            memoryID.isEmpty == false,
+            memoryID.rangeOfCharacter(from: allowedCharacters.inverted) == nil
+        else {
+            throw MemoryFileStoreError.invalidMemoryID(memoryID)
         }
     }
 

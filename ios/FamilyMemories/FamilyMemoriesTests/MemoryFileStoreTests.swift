@@ -68,6 +68,21 @@ final class MemoryFileStoreTests: XCTestCase {
         }
     }
 
+    func testDeleteMemoryFilesRejectsDirectoryRelativePaths() throws {
+        XCTAssertThrowsError(
+            try store.deleteMemoryFiles(
+                originalRelativePath: "Originals",
+                thumbnailRelativePath: "Thumbnails/safe.jpg"
+            )
+        ) { error in
+            XCTAssertEqual(error as? MemoryFileStoreError, .invalidRelativePath("Originals"))
+        }
+
+        var isDirectory: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(atPath: store.originalsDirectory.path, isDirectory: &isDirectory))
+        XCTAssertTrue(isDirectory.boolValue)
+    }
+
     func testDeleteMemoryFilesValidatesAllPathsBeforeRemovingFiles() throws {
         let paths = try store.writeImageFiles(
             memoryID: "kept",
@@ -87,5 +102,34 @@ final class MemoryFileStoreTests: XCTestCase {
 
         XCTAssertTrue(FileManager.default.fileExists(atPath: store.url(forRelativePath: paths.originalRelativePath).path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: store.url(forRelativePath: paths.thumbnailRelativePath).path))
+    }
+
+    func testWriteImageFilesRejectsUnsafeMemoryID() throws {
+        XCTAssertThrowsError(
+            try store.writeImageFiles(
+                memoryID: "../escape",
+                originalFilename: "photo.jpg",
+                originalData: Data([1]),
+                thumbnailData: Data([2])
+            )
+        ) { error in
+            XCTAssertEqual(error as? MemoryFileStoreError, .invalidMemoryID("../escape"))
+        }
+    }
+
+    func testWriteImageFilesRollsBackOriginalWhenThumbnailWriteFails() throws {
+        try FileManager.default.removeItem(at: store.thumbnailsDirectory)
+        try Data([0]).write(to: store.thumbnailsDirectory)
+
+        XCTAssertThrowsError(
+            try store.writeImageFiles(
+                memoryID: "partial",
+                originalFilename: "photo.jpg",
+                originalData: Data([1]),
+                thumbnailData: Data([2])
+            )
+        )
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: store.url(forRelativePath: "Originals/partial.jpg").path))
     }
 }
