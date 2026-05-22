@@ -37,6 +37,9 @@
 		000000000000000000001228 /* BackupPackageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001128 /* BackupPackageService.swift */; };
 		000000000000000000001229 /* FamilyMemoriesUTTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001129 /* FamilyMemoriesUTTypes.swift */; };
 		000000000000000000001230 /* BackupPackageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001130 /* BackupPackageServiceTests.swift */; };
+		000000000000000000001231 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001131 /* AppLanguage.swift */; };
+		000000000000000000001232 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001132 /* SettingsView.swift */; };
+		000000000000000000001233 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001133 /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,6 +93,10 @@
 		000000000000000000001128 /* BackupPackageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPackageService.swift; sourceTree = "<group>"; };
 		000000000000000000001129 /* FamilyMemoriesUTTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyMemoriesUTTypes.swift; sourceTree = "<group>"; };
 		000000000000000000001130 /* BackupPackageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPackageServiceTests.swift; sourceTree = "<group>"; };
+		000000000000000000001131 /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
+		000000000000000000001132 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		000000000000000000001133 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		000000000000000000001134 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +155,7 @@
 					000000000000000000000019 /* Importing */,
 					000000000000000000000020 /* Features */,
 					000000000000000000000024 /* Backup */,
+					000000000000000000000026 /* Localization */,
 					000000000000000000000025 /* Resources */,
 				);
 			path = FamilyMemories;
@@ -158,6 +166,7 @@
 			children = (
 				000000000000000000001102 /* AppRootView.swift */,
 				000000000000000000001119 /* AppEnvironment.swift */,
+				000000000000000000001134 /* Info.plist */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -206,6 +215,7 @@
 				000000000000000000000021 /* Timeline */,
 				000000000000000000000022 /* ImportReview */,
 				000000000000000000000023 /* MemoryDetail */,
+				000000000000000000000027 /* Settings */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -252,6 +262,23 @@
 				000000000000000000001129 /* FamilyMemoriesUTTypes.swift */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		000000000000000000000026 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001131 /* AppLanguage.swift */,
+				000000000000000000001133 /* Localizable.xcstrings */,
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
+		000000000000000000000027 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001132 /* SettingsView.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
@@ -361,6 +388,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				"zh-Hans",
 				Base,
 			);
 			mainGroup = 000000000000000000000010;
@@ -380,6 +408,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				000000000000000000001233 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,6 +455,8 @@
 				000000000000000000001227 /* BackupMemoryDTO.swift in Sources */,
 				000000000000000000001228 /* BackupPackageService.swift in Sources */,
 				000000000000000000001229 /* FamilyMemoriesUTTypes.swift in Sources */,
+				000000000000000000001231 /* AppLanguage.swift in Sources */,
+				000000000000000000001232 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -592,13 +623,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Family Memories";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FamilyMemories/App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -624,13 +650,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Family Memories";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FamilyMemories/App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

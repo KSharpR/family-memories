@@ -51,3 +51,28 @@ The Pages workflow in `.github/workflows/deploy.yml` builds the app on pushes to
 ## Legacy Prototype
 
 The earlier static prototype is preserved at `docs/legacy/index.html`.
+
+## iOS App
+
+The native iOS app lives in `ios/FamilyMemories`.
+
+### Requirements
+
+- Xcode 26.5 or newer for the current local setup
+- An available iPhone simulator
+- No account or server is required for local development
+
+### Build And Test
+
+```bash
+xcodebuild \
+  -project ios/FamilyMemories/FamilyMemories.xcodeproj \
+  -scheme FamilyMemories \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+  -derivedDataPath /Volumes/p310-1/DerivedData/FamilyMemories \
+  test
+```
+
+### Privacy Model
+
+The iOS app is local-first. It uses the system photo picker, copies only selected photos into app-private storage, and does not use app-owned servers or automatic cloud upload. Manual backups are created only when the user exports them.

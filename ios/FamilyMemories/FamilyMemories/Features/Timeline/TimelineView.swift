@@ -76,10 +76,17 @@ struct TimelineView: View {
                                                 .font(.caption)
                                                 .foregroundStyle(.secondary)
 
-                                            Text(memory.story.isEmpty ? String(localized: "memory.story.empty") : memory.story)
-                                                .font(.body)
-                                                .foregroundStyle(.primary)
-                                                .lineLimit(2)
+                                            if memory.story.isEmpty {
+                                                Text("memory.story.empty")
+                                                    .font(.body)
+                                                    .foregroundStyle(.primary)
+                                                    .lineLimit(2)
+                                            } else {
+                                                Text(verbatim: memory.story)
+                                                    .font(.body)
+                                                    .foregroundStyle(.primary)
+                                                    .lineLimit(2)
+                                            }
 
                                             if memory.people.isEmpty == false {
                                                 Text(memory.people.joined(separator: " · "))
