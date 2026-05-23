@@ -63,6 +63,32 @@ final class BackupPackageService {
     }
 
     func validateBackup(at url: URL) throws -> BackupSummary {
+        try readValidBackup(from: url).summary
+    }
+
+    func restoreBackup(at url: URL) throws -> BackupRestoreResult {
+        let backup = try readValidBackup(from: url)
+
+        for memory in backup.memories {
+            try restoreFile(
+                relativePath: memory.originalPath,
+                expectedDirectory: "Originals",
+                entries: backup.entries
+            )
+            try restoreFile(
+                relativePath: memory.thumbnailPath,
+                expectedDirectory: "Thumbnails",
+                entries: backup.entries
+            )
+        }
+
+        return BackupRestoreResult(
+            summary: backup.summary,
+            memories: backup.memories.map(\.domain)
+        )
+    }
+
+    private func readValidBackup(from url: URL) throws -> ParsedBackup {
         let entries = try StoredZipArchive.readEntries(from: url)
         guard let manifestData = entries["manifest.json"] else {
             throw BackupPackageError.missingManifest
@@ -91,11 +117,29 @@ final class BackupPackageService {
             }
         }
 
-        return BackupSummary(
+        let summary = BackupSummary(
             memoryCount: manifest.memoryCount,
             localeIdentifier: manifest.locale,
             createdAt: manifest.createdAt
         )
+
+        return ParsedBackup(
+            summary: summary,
+            memories: memories,
+            entries: entries
+        )
+    }
+
+    private func restoreFile(
+        relativePath: String,
+        expectedDirectory: String,
+        entries: [String: Data]
+    ) throws {
+        try validateRelativePath(relativePath, expectedDirectory: expectedDirectory)
+        guard let data = entries[relativePath] else {
+            throw BackupPackageError.missingFile(relativePath)
+        }
+        try data.write(to: fileStore.url(forRelativePath: relativePath), options: .atomic)
     }
 
     private func dataForRequiredFile(relativePath: String, expectedDirectory: String) throws -> Data {
@@ -129,6 +173,12 @@ final class BackupPackageService {
         formatter.formatOptions = [.withInternetDateTime]
         return formatter.string(from: Date()).replacingOccurrences(of: ":", with: "-")
     }
+}
+
+private struct ParsedBackup {
+    let summary: BackupSummary
+    let memories: [BackupMemoryDTO]
+    let entries: [String: Data]
 }
 
 private struct StoredZipEntry {

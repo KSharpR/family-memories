@@ -106,6 +106,56 @@ final class BackupPackageServiceTests: XCTestCase {
         XCTAssertThrowsError(try service.validateBackup(at: invalidURL))
     }
 
+    func testRestoreBackupWritesImageFilesAndReturnsMemories() throws {
+        let paths = try store.writeImageFiles(
+            memoryID: "memory-1",
+            originalFilename: "memory.jpg",
+            originalData: Data([1, 2, 3]),
+            thumbnailData: Data([4, 5, 6])
+        )
+        let memory = makeMemory(paths: paths)
+        let sourceService = BackupPackageService(fileStore: store)
+        let backupURL = try sourceService.exportBackup(memories: [memory], localeIdentifier: "zh-Hans")
+
+        let targetRootURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: targetRootURL) }
+
+        let targetStore = try MemoryFileStore(rootURL: targetRootURL)
+        let targetService = BackupPackageService(fileStore: targetStore)
+        let result = try targetService.restoreBackup(at: backupURL)
+
+        XCTAssertEqual(result.summary.memoryCount, 1)
+        XCTAssertEqual(result.memories, [memory])
+        XCTAssertEqual(try Data(contentsOf: targetStore.url(forRelativePath: paths.originalRelativePath)), Data([1, 2, 3]))
+        XCTAssertEqual(try Data(contentsOf: targetStore.url(forRelativePath: paths.thumbnailRelativePath)), Data([4, 5, 6]))
+    }
+
+    func testRestoreBackupOverwritesExistingFilesForSameMemoryID() throws {
+        let paths = try store.writeImageFiles(
+            memoryID: "memory-1",
+            originalFilename: "memory.jpg",
+            originalData: Data([1, 2, 3]),
+            thumbnailData: Data([4, 5, 6])
+        )
+        let sourceService = BackupPackageService(fileStore: store)
+        let backupURL = try sourceService.exportBackup(memories: [makeMemory(paths: paths)], localeIdentifier: "zh-Hans")
+
+        let targetRootURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: targetRootURL) }
+
+        let targetStore = try MemoryFileStore(rootURL: targetRootURL)
+        try Data([9]).write(to: targetStore.url(forRelativePath: paths.originalRelativePath), options: .atomic)
+        try Data([8]).write(to: targetStore.url(forRelativePath: paths.thumbnailRelativePath), options: .atomic)
+
+        let targetService = BackupPackageService(fileStore: targetStore)
+        _ = try targetService.restoreBackup(at: backupURL)
+
+        XCTAssertEqual(try Data(contentsOf: targetStore.url(forRelativePath: paths.originalRelativePath)), Data([1, 2, 3]))
+        XCTAssertEqual(try Data(contentsOf: targetStore.url(forRelativePath: paths.thumbnailRelativePath)), Data([4, 5, 6]))
+    }
+
     private func makeMemory(paths: StoredImagePaths) -> FamilyMemory {
         FamilyMemory(
             id: "memory-1",

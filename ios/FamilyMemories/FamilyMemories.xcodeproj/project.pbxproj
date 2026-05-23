@@ -40,6 +40,7 @@
 		000000000000000000001231 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001131 /* AppLanguage.swift */; };
 		000000000000000000001232 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001132 /* SettingsView.swift */; };
 		000000000000000000001233 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001133 /* Localizable.xcstrings */; };
+		000000000000000000001234 /* AlbumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001135 /* AlbumView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -97,6 +98,7 @@
 		000000000000000000001132 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		000000000000000000001133 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		000000000000000000001134 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		000000000000000000001135 /* AlbumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -216,6 +218,7 @@
 				000000000000000000000022 /* ImportReview */,
 				000000000000000000000023 /* MemoryDetail */,
 				000000000000000000000027 /* Settings */,
+				000000000000000000000028 /* Album */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -279,6 +282,14 @@
 				000000000000000000001132 /* SettingsView.swift */,
 			);
 			path = Settings;
+			sourceTree = "<group>";
+		};
+		000000000000000000000028 /* Album */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001135 /* AlbumView.swift */,
+			);
+			path = Album;
 			sourceTree = "<group>";
 		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
@@ -457,6 +468,7 @@
 				000000000000000000001229 /* FamilyMemoriesUTTypes.swift in Sources */,
 				000000000000000000001231 /* AppLanguage.swift in Sources */,
 				000000000000000000001232 /* SettingsView.swift in Sources */,
+				000000000000000000001234 /* AlbumView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

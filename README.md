@@ -10,7 +10,7 @@ Family Memories is a local-first web app for collecting and revisiting family ph
 - Read memories in a page-style album view.
 - Explore people connections in a lightweight family graph.
 - Play memories as a slideshow.
-- Import and export the album as a JSON backup file.
+- Import and export the album as a local backup package.
 
 ## Development
 
@@ -75,4 +75,4 @@ xcodebuild \
 
 ### Privacy Model
 
-The iOS app is local-first. It uses the system photo picker, copies only selected photos into app-private storage, and does not use app-owned servers or automatic cloud upload. Manual backups are created only when the user exports them.
+The iOS app is local-first. It uses the system photo picker, copies only selected photos into app-private storage, and does not use app-owned servers or automatic cloud upload. Manual `.familymemories` backups are created only when the user exports them and can be imported back into the local library.

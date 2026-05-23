@@ -56,7 +56,20 @@ struct AppRootView: View {
                     }
 
                     NavigationStack {
-                        ContentUnavailableView("album.empty.title", systemImage: "book.pages")
+                        AlbumView(
+                            repository: environment.repository,
+                            fileStore: environment.fileStore,
+                            reloadToken: timelineReloadToken,
+                            onOpenMemory: { selectedMemory = $0 }
+                        )
+                        .navigationDestination(item: $selectedMemory) { memory in
+                            MemoryDetailView(
+                                memory: memory,
+                                repository: environment.repository,
+                                fileStore: environment.fileStore,
+                                onChange: reloadTimeline
+                            )
+                        }
                     }
                     .tabItem {
                         Label("tab.album", systemImage: "book.pages")
@@ -204,10 +217,14 @@ struct AppRootView: View {
                 }
             }
 
-            _ = try environment.backupService.validateBackup(at: url)
+            let result = try environment.backupService.restoreBackup(at: url)
+            for memory in result.memories {
+                try environment.repository.save(memory)
+            }
+            reloadTimeline()
             backupAlert = .message(
-                title: "settings.import.valid.title",
-                message: "settings.import.valid.body"
+                title: "settings.import.restored.title",
+                message: "settings.import.restored.body"
             )
         } catch let error as CocoaError where error.code == .userCancelled {
             return

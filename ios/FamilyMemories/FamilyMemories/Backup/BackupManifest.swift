@@ -14,3 +14,8 @@ struct BackupSummary: Equatable {
     let localeIdentifier: String
     let createdAt: Date
 }
+
+struct BackupRestoreResult: Equatable {
+    let summary: BackupSummary
+    let memories: [FamilyMemory]
+}

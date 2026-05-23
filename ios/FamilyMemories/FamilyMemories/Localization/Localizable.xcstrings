@@ -17,6 +17,22 @@
         }
       }
     },
+    "album.empty.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imported photos will appear here as a browsable album."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入后的照片会在这里以相册网格展示。"
+          }
+        }
+      }
+    },
     "app.startup.error": {
       "localizations": {
         "en": {
@@ -390,13 +406,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This backup file is valid. Restore will be connected after the import confirmation flow is finished."
+            "value": "This backup file is valid."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "这个备份文件有效。恢复导入会在确认流程完成后接入。"
+            "value": "这个备份文件有效。"
           }
         }
       }
@@ -413,6 +429,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "备份已验证"
+          }
+        }
+      }
+    },
+    "settings.import.restored.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The backup was imported into this device and merged with your existing memories."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备份已经导入到这台设备，并与现有回忆合并。"
+          }
+        }
+      }
+    },
+    "settings.import.restored.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup imported"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备份已导入"
           }
         }
       }
