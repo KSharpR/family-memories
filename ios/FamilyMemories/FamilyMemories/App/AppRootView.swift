@@ -60,7 +60,8 @@ struct AppRootView: View {
                             repository: environment.repository,
                             fileStore: environment.fileStore,
                             reloadToken: timelineReloadToken,
-                            onOpenMemory: { selectedMemory = $0 }
+                            onOpenMemory: { selectedMemory = $0 },
+                            onChange: reloadTimeline
                         )
                         .navigationDestination(item: $selectedMemory) { memory in
                             MemoryDetailView(
@@ -138,6 +139,15 @@ struct AppRootView: View {
                             title: Text("common.error"),
                             message: Text(message),
                             dismissButton: .default(Text("common.ok"))
+                        )
+                    case let .confirm(request):
+                        Alert(
+                            title: Text("settings.import.confirm.title"),
+                            message: Text("settings.import.confirm.body"),
+                            primaryButton: .default(Text("settings.import.confirm.action")) {
+                                confirmBackupImport(request, using: environment)
+                            },
+                            secondaryButton: .cancel(Text("common.cancel"))
                         )
                     }
                 }
@@ -217,7 +227,30 @@ struct AppRootView: View {
                 }
             }
 
-            let result = try environment.backupService.restoreBackup(at: url)
+            let summary = try environment.backupService.validateBackup(at: url)
+            backupAlert = .confirm(BackupImportRequest(url: url, summary: summary))
+        } catch let error as CocoaError where error.code == .userCancelled {
+            return
+        } catch let error where isInvalidBackupImportError(error) {
+            backupAlert = .message(
+                title: "settings.import.invalid.title",
+                message: "settings.import.invalid.body"
+            )
+        } catch {
+            backupAlert = .error(error.localizedDescription)
+        }
+    }
+
+    private func confirmBackupImport(_ request: BackupImportRequest, using environment: AppEnvironment) {
+        do {
+            let didStartAccessing = request.url.startAccessingSecurityScopedResource()
+            defer {
+                if didStartAccessing {
+                    request.url.stopAccessingSecurityScopedResource()
+                }
+            }
+
+            let result = try environment.backupService.restoreBackup(at: request.url)
             for memory in result.memories {
                 try environment.repository.save(memory)
             }
@@ -226,8 +259,6 @@ struct AppRootView: View {
                 title: "settings.import.restored.title",
                 message: "settings.import.restored.body"
             )
-        } catch let error as CocoaError where error.code == .userCancelled {
-            return
         } catch let error where isInvalidBackupImportError(error) {
             backupAlert = .message(
                 title: "settings.import.invalid.title",
@@ -251,9 +282,19 @@ private struct ExportedBackup: Identifiable {
     var id: String { url.absoluteString }
 }
 
+private struct BackupImportRequest: Identifiable {
+    let url: URL
+    let summary: BackupSummary
+
+    var id: String {
+        "\(url.absoluteString)-\(summary.createdAt.timeIntervalSince1970)-\(summary.memoryCount)"
+    }
+}
+
 private enum BackupAlert: Identifiable {
     case message(title: LocalizedStringKey, message: LocalizedStringKey)
     case error(String)
+    case confirm(BackupImportRequest)
 
     var id: String {
         switch self {
@@ -261,6 +302,8 @@ private enum BackupAlert: Identifiable {
             return "\(title)-\(message)"
         case let .error(message):
             return message
+        case let .confirm(request):
+            return request.id
         }
     }
 }

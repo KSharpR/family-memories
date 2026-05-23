@@ -2,11 +2,20 @@ import SwiftUI
 
 struct AlbumView: View {
     @StateObject private var viewModel: TimelineViewModel
+    @State private var filter = AlbumFilterState()
+    @State private var previewMemory: FamilyMemory?
+    @State private var isSelectionMode = false
+    @State private var selectedMemoryIDs: Set<String> = []
+    @State private var isDeleteConfirmationPresented = false
+    @State private var errorMessage: String?
 
+    let repository: MemoryRepositoryProtocol
     let fileStore: MemoryFileStore
     let reloadToken: UUID
     let onOpenMemory: (FamilyMemory) -> Void
+    let onChange: () -> Void
 
+    private let calendar = Calendar.current
     private let columns = [
         GridItem(.adaptive(minimum: 108, maximum: 180), spacing: 8)
     ]
@@ -15,12 +24,15 @@ struct AlbumView: View {
         repository: MemoryRepositoryProtocol,
         fileStore: MemoryFileStore,
         reloadToken: UUID,
-        onOpenMemory: @escaping (FamilyMemory) -> Void
+        onOpenMemory: @escaping (FamilyMemory) -> Void,
+        onChange: @escaping () -> Void = {}
     ) {
         _viewModel = StateObject(wrappedValue: TimelineViewModel(repository: repository))
+        self.repository = repository
         self.fileStore = fileStore
         self.reloadToken = reloadToken
         self.onOpenMemory = onOpenMemory
+        self.onChange = onChange
     }
 
     var body: some View {
@@ -47,9 +59,98 @@ struct AlbumView: View {
                     .buttonStyle(.bordered)
                 }
             } else {
-                ScrollView {
+                albumContent
+            }
+        }
+        .navigationTitle("tab.album")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if allMemories.isEmpty == false {
+                    Button(isSelectionMode ? "common.done" : "album.select") {
+                        toggleSelectionMode()
+                    }
+                }
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isSelectionMode && allMemories.isEmpty == false {
+                AlbumSelectionBar(
+                    selectedCount: selectedMemoryIDs.count,
+                    allVisibleSelected: allVisibleSelected,
+                    canSelectVisible: visibleMemoryIDs.isEmpty == false,
+                    onToggleSelectAll: toggleSelectAllVisible,
+                    onDelete: {
+                        isDeleteConfirmationPresented = true
+                    }
+                )
+            }
+        }
+        .sheet(item: $previewMemory) { memory in
+            AlbumPreviewView(
+                memory: memory,
+                fileStore: fileStore,
+                onOpenDetails: {
+                    previewMemory = nil
+                    DispatchQueue.main.async {
+                        onOpenMemory(memory)
+                    }
+                }
+            )
+        }
+        .confirmationDialog(
+            "album.delete.confirmation.title",
+            isPresented: $isDeleteConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button("album.deleteSelected", role: .destructive) {
+                deleteSelectedMemories()
+            }
+            .disabled(selectedMemoryIDs.isEmpty)
+
+            Button("common.cancel", role: .cancel) {}
+        } message: {
+            Text("album.delete.confirmation.message")
+        }
+        .alert("common.error", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if $0 == false { errorMessage = nil } }
+        )) {
+            Button("common.ok", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
+        .task(id: reloadToken) {
+            await viewModel.load()
+        }
+    }
+
+    private var albumContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                AlbumFilterBar(
+                    filter: $filter,
+                    years: availableYears,
+                    people: availablePeople,
+                    onReset: clearFilters
+                )
+                .padding(.horizontal)
+
+                if filteredMemories.isEmpty {
+                    ContentUnavailableView {
+                        Label("album.filter.empty.title", systemImage: "line.3.horizontal.decrease.circle")
+                    } description: {
+                        Text("album.filter.empty.body")
+                    } actions: {
+                        Button("common.reset") {
+                            clearFilters()
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 70)
+                } else {
                     LazyVStack(alignment: .leading, spacing: 22) {
-                        ForEach(viewModel.sections) { section in
+                        ForEach(filteredSections) { section in
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("\(section.year).\(String(format: "%02d", section.month))")
                                     .font(.headline)
@@ -58,11 +159,13 @@ struct AlbumView: View {
                                 LazyVGrid(columns: columns, spacing: 8) {
                                     ForEach(section.memories) { memory in
                                         Button {
-                                            onOpenMemory(memory)
+                                            handleMemoryTap(memory)
                                         } label: {
                                             AlbumMemoryTile(
                                                 memory: memory,
-                                                imageURL: fileStore.url(forRelativePath: memory.thumbnailPath)
+                                                imageURL: fileStore.url(forRelativePath: memory.thumbnailPath),
+                                                isSelectionMode: isSelectionMode,
+                                                isSelected: selectedMemoryIDs.contains(memory.id)
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -72,20 +175,203 @@ struct AlbumView: View {
                             }
                         }
                     }
-                    .padding(.vertical)
+                }
+            }
+            .padding(.vertical)
+        }
+    }
+
+    private var allMemories: [FamilyMemory] {
+        viewModel.sections.flatMap(\.memories)
+    }
+
+    private var availableYears: [Int] {
+        AlbumFiltering.years(in: allMemories, calendar: calendar)
+    }
+
+    private var availablePeople: [String] {
+        AlbumFiltering.people(in: allMemories)
+    }
+
+    private var filteredMemories: [FamilyMemory] {
+        AlbumFiltering.filtered(allMemories, by: filter, calendar: calendar)
+    }
+
+    private var filteredSections: [TimelineSection] {
+        TimelineGrouping.sections(for: filteredMemories, calendar: calendar)
+    }
+
+    private var visibleMemoryIDs: Set<String> {
+        Set(filteredMemories.map(\.id))
+    }
+
+    private var allVisibleSelected: Bool {
+        visibleMemoryIDs.isEmpty == false && visibleMemoryIDs.isSubset(of: selectedMemoryIDs)
+    }
+
+    private func handleMemoryTap(_ memory: FamilyMemory) {
+        if isSelectionMode {
+            if selectedMemoryIDs.contains(memory.id) {
+                selectedMemoryIDs.remove(memory.id)
+            } else {
+                selectedMemoryIDs.insert(memory.id)
+            }
+        } else {
+            previewMemory = memory
+        }
+    }
+
+    private func toggleSelectionMode() {
+        isSelectionMode.toggle()
+        if isSelectionMode == false {
+            selectedMemoryIDs.removeAll()
+        }
+    }
+
+    private func toggleSelectAllVisible() {
+        if allVisibleSelected {
+            selectedMemoryIDs.subtract(visibleMemoryIDs)
+        } else {
+            selectedMemoryIDs.formUnion(visibleMemoryIDs)
+        }
+    }
+
+    private func clearFilters() {
+        filter = AlbumFilterState()
+    }
+
+    private func deleteSelectedMemories() {
+        let memoriesToDelete = allMemories.filter { selectedMemoryIDs.contains($0.id) }
+
+        do {
+            for memory in memoriesToDelete {
+                try repository.delete(id: memory.id)
+                try? fileStore.deleteMemoryFiles(
+                    originalRelativePath: memory.originalPath,
+                    thumbnailRelativePath: memory.thumbnailPath
+                )
+            }
+
+            selectedMemoryIDs.removeAll()
+            isSelectionMode = false
+            onChange()
+            Task {
+                await viewModel.load()
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+
+private struct AlbumFilterBar: View {
+    @Binding var filter: AlbumFilterState
+
+    let years: [Int]
+    let people: [String]
+    let onReset: () -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                Menu {
+                    Button("album.filter.allYears") {
+                        filter.year = nil
+                    }
+
+                    ForEach(years, id: \.self) { year in
+                        Button {
+                            filter.year = year
+                        } label: {
+                            Text(verbatim: String(year))
+                        }
+                    }
+                } label: {
+                    Label {
+                        if let year = filter.year {
+                            Text(verbatim: String(year))
+                        } else {
+                            Text("album.filter.allYears")
+                        }
+                    } icon: {
+                        Image(systemName: "calendar")
+                    }
+                }
+                .buttonStyle(.bordered)
+
+                Menu {
+                    Button("album.filter.allPeople") {
+                        filter.person = nil
+                    }
+
+                    ForEach(people, id: \.self) { person in
+                        Button {
+                            filter.person = person
+                        } label: {
+                            Text(verbatim: person)
+                        }
+                    }
+                } label: {
+                    Label {
+                        if let person = filter.person {
+                            Text(verbatim: person)
+                        } else {
+                            Text("album.filter.allPeople")
+                        }
+                    } icon: {
+                        Image(systemName: "person")
+                    }
+                }
+                .buttonStyle(.bordered)
+
+                if filter.isActive {
+                    Button("common.reset") {
+                        onReset()
+                    }
+                    .buttonStyle(.bordered)
                 }
             }
         }
-        .navigationTitle("tab.album")
-        .task(id: reloadToken) {
-            await viewModel.load()
+    }
+}
+
+private struct AlbumSelectionBar: View {
+    let selectedCount: Int
+    let allVisibleSelected: Bool
+    let canSelectVisible: Bool
+    let onToggleSelectAll: () -> Void
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text("album.selected.label")
+                .font(.subheadline)
+            Text(verbatim: String(selectedCount))
+                .font(.subheadline.weight(.semibold))
+
+            Spacer()
+
+            Button(allVisibleSelected ? "album.clearSelection" : "album.selectAll") {
+                onToggleSelectAll()
+            }
+            .disabled(canSelectVisible == false)
+
+            Button(role: .destructive, action: onDelete) {
+                Label("album.deleteSelected", systemImage: "trash")
+            }
+            .disabled(selectedCount == 0)
         }
+        .padding(.horizontal)
+        .padding(.vertical, 10)
+        .background(.bar)
     }
 }
 
 private struct AlbumMemoryTile: View {
     let memory: FamilyMemory
     let imageURL: URL
+    let isSelectionMode: Bool
+    let isSelected: Bool
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -113,6 +399,21 @@ private struct AlbumMemoryTile: View {
                 }
             }
             .padding(8)
+
+            if isSelectionMode {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(isSelected ? .white : .secondary, isSelected ? .blue : .white)
+                            .background(.thinMaterial, in: Circle())
+                    }
+                    Spacer()
+                }
+                .padding(8)
+            }
         }
         .aspectRatio(1, contentMode: .fit)
         .accessibilityLabel(accessibilityLabel)
@@ -123,6 +424,75 @@ private struct AlbumMemoryTile: View {
             Text(memory.date, style: .date)
         } else {
             Text(verbatim: memory.story)
+        }
+    }
+}
+
+private struct AlbumPreviewView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let memory: FamilyMemory
+    let fileStore: MemoryFileStore
+    let onOpenDetails: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    MemoryThumbnailView(
+                        imageURL: fileStore.url(forRelativePath: memory.originalPath),
+                        size: nil,
+                        cornerRadius: 12
+                    )
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 360)
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        LabeledContent("memory.date") {
+                            Text(memory.date, style: .date)
+                        }
+
+                        if memory.people.isEmpty == false {
+                            LabeledContent("memory.people") {
+                                Text(verbatim: memory.people.joined(separator: " · "))
+                            }
+                        }
+
+                        Divider()
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("memory.story")
+                                .font(.headline)
+
+                            if memory.story.isEmpty {
+                                Text("memory.story.empty")
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text(verbatim: memory.story)
+                                    .foregroundStyle(.primary)
+                            }
+                        }
+                    }
+                    .font(.body)
+                }
+                .padding()
+            }
+            .navigationTitle("album.preview.title")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.done") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("album.preview.openDetail") {
+                        dismiss()
+                        onOpenDetails()
+                    }
+                }
+            }
         }
     }
 }

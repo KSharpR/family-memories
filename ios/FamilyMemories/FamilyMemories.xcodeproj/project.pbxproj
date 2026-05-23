@@ -41,6 +41,8 @@
 		000000000000000000001232 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001132 /* SettingsView.swift */; };
 		000000000000000000001233 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001133 /* Localizable.xcstrings */; };
 		000000000000000000001234 /* AlbumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001135 /* AlbumView.swift */; };
+		000000000000000000001235 /* AlbumFiltering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001136 /* AlbumFiltering.swift */; };
+		000000000000000000001236 /* AlbumFilteringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001137 /* AlbumFilteringTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +101,8 @@
 		000000000000000000001133 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		000000000000000000001134 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000001135 /* AlbumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumView.swift; sourceTree = "<group>"; };
+		000000000000000000001136 /* AlbumFiltering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumFiltering.swift; sourceTree = "<group>"; };
+		000000000000000000001137 /* AlbumFilteringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumFilteringTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -288,6 +292,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000001135 /* AlbumView.swift */,
+				000000000000000000001136 /* AlbumFiltering.swift */,
 			);
 			path = Album;
 			sourceTree = "<group>";
@@ -297,6 +302,7 @@
 			children = (
 				000000000000000000001103 /* FamilyMemoriesTests.swift */,
 				000000000000000000001130 /* BackupPackageServiceTests.swift */,
+				000000000000000000001137 /* AlbumFilteringTests.swift */,
 				000000000000000000001105 /* DomainTests.swift */,
 				000000000000000000001111 /* MemoryFileStoreTests.swift */,
 				000000000000000000001114 /* MemoryRepositoryTests.swift */,
@@ -469,6 +475,7 @@
 				000000000000000000001231 /* AppLanguage.swift in Sources */,
 				000000000000000000001232 /* SettingsView.swift in Sources */,
 				000000000000000000001234 /* AlbumView.swift in Sources */,
+				000000000000000000001235 /* AlbumFiltering.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -483,6 +490,7 @@
 				000000000000000000001215 /* PhotoImportServiceTests.swift in Sources */,
 				000000000000000000001218 /* TimelineViewModelTests.swift in Sources */,
 				000000000000000000001230 /* BackupPackageServiceTests.swift in Sources */,
+				000000000000000000001236 /* AlbumFilteringTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
