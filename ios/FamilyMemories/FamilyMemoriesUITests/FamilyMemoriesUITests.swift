@@ -48,6 +48,17 @@ final class FamilyMemoriesUITests: XCTestCase {
     }
 
     @MainActor
+    func testSettingsShowsWebJsonImportAction() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing", "-reset-data"]
+        app.launch()
+
+        app.tabBars.buttons["设置"].tap()
+
+        XCTAssertTrue(app.buttons["导入 Web JSON"].waitForExistence(timeout: 2))
+    }
+
+    @MainActor
     func testSettingsResetShowsDestructiveConfirmation() throws {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-reset-data"]

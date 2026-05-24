@@ -83,7 +83,7 @@ iOS stores original image files and thumbnail files as separate package entries.
 
 The first iOS compatibility layer is `WebAlbumImportAdapter`.
 
-It currently parses Web JSON into import candidates and validates:
+It parses Web JSON into import candidates and validates:
 
 - Album has a `memories` array.
 - Memory IDs are non-empty, unique, and safe for iOS file paths.
@@ -91,12 +91,14 @@ It currently parses Web JSON into import candidates and validates:
 - Web date strings are valid.
 - Legacy `photo` and `text` fields are accepted.
 
-It does not yet expose this as a user-facing Settings import action. The next implementation step is to convert these candidates into saved iOS memories by:
+The user-facing Settings import action uses `WebAlbumImportService` to convert these candidates into saved iOS memories by:
 
 1. Writing decoded original image data through `MemoryFileStore`.
 2. Generating iOS JPEG thumbnails.
 3. Saving resulting `FamilyMemory` records through `MemoryRepository`.
-4. Showing a confirmation that this import merges into the current iOS library, unlike the current web import which replaces the entire web album.
+4. Showing completion feedback after import.
+
+This import merges into the current iOS library. If a Web memory has the same ID as an existing iOS memory, the current repository behavior updates that memory record.
 
 ## Thumbnail Decision
 
@@ -117,7 +119,7 @@ For users moving from web to iOS:
 1. Open the web app.
 2. Export the album JSON.
 3. Move the JSON file to the iPhone through Files, AirDrop, or another user-controlled location.
-4. Import it in the iOS app once the web JSON import action is exposed.
+4. Open iOS Settings and use Import web JSON.
 5. Export a `.familymemories` backup from iOS after import.
 
 For users moving from iOS to web:
@@ -138,7 +140,5 @@ For users moving from iOS to web:
 
 ## Open Follow-Ups
 
-- Add a Settings import path for web JSON.
-- Generate thumbnails during web JSON import.
 - Add a web-side `.familymemories` reader later if iOS-to-web migration becomes important.
 - Revisit unsafe web memory IDs if real legacy exports contain characters outside `[A-Za-z0-9_-]`.

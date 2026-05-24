@@ -56,6 +56,8 @@
 		000000000000000000001247 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001148 /* Assets.xcassets */; };
 		000000000000000000001248 /* WebAlbumImportAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001149 /* WebAlbumImportAdapterTests.swift */; };
 		000000000000000000001249 /* WebAlbumImportAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001150 /* WebAlbumImportAdapter.swift */; };
+		000000000000000000001250 /* WebAlbumImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001151 /* WebAlbumImportServiceTests.swift */; };
+		000000000000000000001251 /* WebAlbumImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001152 /* WebAlbumImportService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -129,6 +131,8 @@
 		000000000000000000001148 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		000000000000000000001149 /* WebAlbumImportAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAlbumImportAdapterTests.swift; sourceTree = "<group>"; };
 		000000000000000000001150 /* WebAlbumImportAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAlbumImportAdapter.swift; sourceTree = "<group>"; };
+		000000000000000000001151 /* WebAlbumImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAlbumImportServiceTests.swift; sourceTree = "<group>"; };
+		000000000000000000001152 /* WebAlbumImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAlbumImportService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -292,6 +296,7 @@
 				000000000000000000001127 /* BackupMemoryDTO.swift */,
 				000000000000000000001128 /* BackupPackageService.swift */,
 				000000000000000000001150 /* WebAlbumImportAdapter.swift */,
+				000000000000000000001152 /* WebAlbumImportService.swift */,
 			);
 			path = Backup;
 			sourceTree = "<group>";
@@ -363,6 +368,7 @@
 				000000000000000000001139 /* StorageUsageServiceTests.swift */,
 				000000000000000000001118 /* TimelineViewModelTests.swift */,
 				000000000000000000001149 /* WebAlbumImportAdapterTests.swift */,
+				000000000000000000001151 /* WebAlbumImportServiceTests.swift */,
 			);
 			path = FamilyMemoriesTests;
 			sourceTree = "<group>";
@@ -540,6 +546,7 @@
 				000000000000000000001245 /* LocalDataResetService.swift in Sources */,
 				000000000000000000001242 /* MemoryLibraryIntegrityService.swift in Sources */,
 				000000000000000000001249 /* WebAlbumImportAdapter.swift in Sources */,
+				000000000000000000001251 /* WebAlbumImportService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -559,6 +566,7 @@
 				000000000000000000001243 /* MemoryLibraryIntegrityServiceTests.swift in Sources */,
 				000000000000000000001244 /* LocalDataResetServiceTests.swift in Sources */,
 				000000000000000000001248 /* WebAlbumImportAdapterTests.swift in Sources */,
+				000000000000000000001250 /* WebAlbumImportServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

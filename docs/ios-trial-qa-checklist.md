@@ -107,6 +107,18 @@ This clears only the simulator app data. It does not change project source files
 - [ ] Confirm import completes and memories are still available.
 - [ ] Relaunch the app and confirm restored memories remain visible.
 
+## Web JSON Migration
+
+- [ ] Export a JSON album from the web app.
+- [ ] Move the JSON file to the simulator or real iPhone through Files, AirDrop, or another user-controlled location.
+- [ ] Open Settings in the iOS app.
+- [ ] Tap Import web JSON / 导入 Web JSON.
+- [ ] Select the exported `.json` file.
+- [ ] Confirm import completion feedback appears.
+- [ ] Confirm imported memories appear in Timeline and Album.
+- [ ] Confirm story text and people tags keep the user's original language.
+- [ ] Export a new `.familymemories` backup from iOS after migration.
+
 ## Partial Import Failure
 
 - [ ] Attempt an import batch with at least one valid image and one unsupported/corrupt file when possible.

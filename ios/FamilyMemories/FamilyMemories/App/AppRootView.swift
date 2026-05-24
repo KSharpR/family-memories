@@ -12,6 +12,7 @@ struct AppRootView: View {
     @State private var environmentError: String?
     @State private var exportedBackup: ExportedBackup?
     @State private var isImportingBackup = false
+    @State private var isImportingWebAlbum = false
     @State private var backupAlert: BackupAlert?
 
     var body: some View {
@@ -88,6 +89,9 @@ struct AppRootView: View {
                             onImportBackup: {
                                 isImportingBackup = true
                             },
+                            onImportWebAlbum: {
+                                isImportingWebAlbum = true
+                            },
                             onResetLocalData: {
                                 resetLocalData(using: environment)
                             }
@@ -131,6 +135,13 @@ struct AppRootView: View {
                     allowsMultipleSelection: false
                 ) { result in
                     importBackup(result, using: environment)
+                }
+                .fileImporter(
+                    isPresented: $isImportingWebAlbum,
+                    allowedContentTypes: [.json],
+                    allowsMultipleSelection: false
+                ) { result in
+                    importWebAlbum(result, using: environment)
                 }
                 .alert(item: $backupAlert) { alert in
                     switch alert {
@@ -261,6 +272,44 @@ struct AppRootView: View {
                 title: "settings.import.invalid.title",
                 message: "settings.import.invalid.body"
             )
+        } catch {
+            backupAlert = .error(error.localizedDescription)
+        }
+    }
+
+    private func importWebAlbum(_ result: Result<[URL], Error>, using environment: AppEnvironment) {
+        do {
+            let urls = try result.get()
+            guard let url = urls.first else { return }
+
+            Task {
+                await confirmWebAlbumImport(url, using: environment)
+            }
+        } catch let error as CocoaError where error.code == .userCancelled {
+            return
+        } catch {
+            backupAlert = .error(error.localizedDescription)
+        }
+    }
+
+    private func confirmWebAlbumImport(_ url: URL, using environment: AppEnvironment) async {
+        do {
+            let didStartAccessing = url.startAccessingSecurityScopedResource()
+            defer {
+                if didStartAccessing {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+
+            let data = try Data(contentsOf: url)
+            _ = try await environment.webAlbumImportService.importAlbumJSON(data)
+            reloadTimeline()
+            backupAlert = .message(
+                title: "settings.webImport.imported.title",
+                message: "settings.webImport.imported.body"
+            )
+        } catch let error as WebAlbumImportError {
+            backupAlert = .error(error.localizedDescription)
         } catch {
             backupAlert = .error(error.localizedDescription)
         }

@@ -59,7 +59,7 @@ final class PhotoImportService {
         return PhotoImportResult(drafts: drafts, failures: failures)
     }
 
-    private static func makeThumbnailJPEGData(from data: Data) throws -> Data {
+    static func makeThumbnailJPEGData(from data: Data) throws -> Data {
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceThumbnailMaxPixelSize: 420,

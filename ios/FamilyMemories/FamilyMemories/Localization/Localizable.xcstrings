@@ -1297,6 +1297,54 @@
         }
       }
     },
+    "settings.webImport.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import web JSON"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入 Web JSON"
+          }
+        }
+      }
+    },
+    "settings.webImport.imported.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The web album JSON has been imported into this local iOS library."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web 相册 JSON 已导入到此 iOS 本地资料库。"
+          }
+        }
+      }
+    },
+    "settings.webImport.imported.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web album imported"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web 相册已导入"
+          }
+        }
+      }
+    },
     "tab.album": {
       "localizations": {
         "en": {

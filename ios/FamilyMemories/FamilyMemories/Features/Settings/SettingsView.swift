@@ -10,6 +10,7 @@ struct SettingsView: View {
     let storageReloadToken: UUID
     let onExportBackup: () -> Void
     let onImportBackup: () -> Void
+    let onImportWebAlbum: () -> Void
     let onResetLocalData: () -> Void
 
     var body: some View {
@@ -30,6 +31,10 @@ struct SettingsView: View {
 
                 Button(action: onImportBackup) {
                     Label("settings.importBackup", systemImage: "square.and.arrow.down")
+                }
+
+                Button(action: onImportWebAlbum) {
+                    Label("settings.webImport.button", systemImage: "doc.badge.arrow.up")
                 }
 
                 Text("settings.backup.reminder")
@@ -129,6 +134,7 @@ struct SettingsView: View {
             storageReloadToken: UUID(),
             onExportBackup: {},
             onImportBackup: {},
+            onImportWebAlbum: {},
             onResetLocalData: {}
         )
     }
