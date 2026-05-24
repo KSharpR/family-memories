@@ -7,6 +7,8 @@ struct AlbumView: View {
     @State private var isSelectionMode = false
     @State private var selectedMemoryIDs: Set<String> = []
     @State private var isDeleteConfirmationPresented = false
+    @State private var isBatchTagSheetPresented = false
+    @State private var batchPeopleInput = ""
     @State private var errorMessage: String?
 
     let repository: MemoryRepositoryProtocol
@@ -79,22 +81,34 @@ struct AlbumView: View {
                     allVisibleSelected: allVisibleSelected,
                     canSelectVisible: visibleMemoryIDs.isEmpty == false,
                     onToggleSelectAll: toggleSelectAllVisible,
+                    onTag: {
+                        batchPeopleInput = ""
+                        isBatchTagSheetPresented = true
+                    },
                     onDelete: {
                         isDeleteConfirmationPresented = true
                     }
                 )
             }
         }
-        .sheet(item: $previewMemory) { memory in
-            AlbumPreviewView(
-                memory: memory,
+        .fullScreenCover(item: $previewMemory) { memory in
+            MemoryPhotoPagerView(
+                memories: filteredMemories,
+                initialMemoryID: memory.id,
                 fileStore: fileStore,
-                onOpenDetails: {
+                onOpenDetails: { selectedMemory in
                     previewMemory = nil
                     DispatchQueue.main.async {
-                        onOpenMemory(memory)
+                        onOpenMemory(selectedMemory)
                     }
                 }
+            )
+        }
+        .sheet(isPresented: $isBatchTagSheetPresented) {
+            AlbumBatchTagSheet(
+                selectedCount: selectedMemoryIDs.count,
+                peopleInput: $batchPeopleInput,
+                onApply: applyBatchPeopleTags
             )
         }
         .confirmationDialog(
@@ -127,7 +141,7 @@ struct AlbumView: View {
     private var albumContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                AlbumFilterBar(
+                MemoryFilterBar(
                     filter: $filter,
                     years: availableYears,
                     people: availablePeople,
@@ -262,75 +276,30 @@ struct AlbumView: View {
             errorMessage = error.localizedDescription
         }
     }
-}
 
-private struct AlbumFilterBar: View {
-    @Binding var filter: AlbumFilterState
+    private func applyBatchPeopleTags() {
+        let tags = PeopleTagNormalizer.normalizeText(batchPeopleInput)
+        guard tags.isEmpty == false else { return }
 
-    let years: [Int]
-    let people: [String]
-    let onReset: () -> Void
+        let memoriesToUpdate = allMemories.filter { selectedMemoryIDs.contains($0.id) }
 
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                Menu {
-                    Button("album.filter.allYears") {
-                        filter.year = nil
-                    }
-
-                    ForEach(years, id: \.self) { year in
-                        Button {
-                            filter.year = year
-                        } label: {
-                            Text(verbatim: String(year))
-                        }
-                    }
-                } label: {
-                    Label {
-                        if let year = filter.year {
-                            Text(verbatim: String(year))
-                        } else {
-                            Text("album.filter.allYears")
-                        }
-                    } icon: {
-                        Image(systemName: "calendar")
-                    }
-                }
-                .buttonStyle(.bordered)
-
-                Menu {
-                    Button("album.filter.allPeople") {
-                        filter.person = nil
-                    }
-
-                    ForEach(people, id: \.self) { person in
-                        Button {
-                            filter.person = person
-                        } label: {
-                            Text(verbatim: person)
-                        }
-                    }
-                } label: {
-                    Label {
-                        if let person = filter.person {
-                            Text(verbatim: person)
-                        } else {
-                            Text("album.filter.allPeople")
-                        }
-                    } icon: {
-                        Image(systemName: "person")
-                    }
-                }
-                .buttonStyle(.bordered)
-
-                if filter.isActive {
-                    Button("common.reset") {
-                        onReset()
-                    }
-                    .buttonStyle(.bordered)
-                }
+        do {
+            for var memory in memoriesToUpdate {
+                memory.people = PeopleTagNormalizer.merge(existing: memory.people, adding: tags)
+                memory.updatedAt = Date()
+                try repository.save(memory)
             }
+
+            batchPeopleInput = ""
+            selectedMemoryIDs.removeAll()
+            isSelectionMode = false
+            isBatchTagSheetPresented = false
+            onChange()
+            Task {
+                await viewModel.load()
+            }
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }
@@ -340,6 +309,7 @@ private struct AlbumSelectionBar: View {
     let allVisibleSelected: Bool
     let canSelectVisible: Bool
     let onToggleSelectAll: () -> Void
+    let onTag: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
@@ -356,6 +326,11 @@ private struct AlbumSelectionBar: View {
             }
             .disabled(canSelectVisible == false)
 
+            Button(action: onTag) {
+                Label("album.addTags", systemImage: "tag")
+            }
+            .disabled(selectedCount == 0)
+
             Button(role: .destructive, action: onDelete) {
                 Label("album.deleteSelected", systemImage: "trash")
             }
@@ -364,6 +339,58 @@ private struct AlbumSelectionBar: View {
         .padding(.horizontal)
         .padding(.vertical, 10)
         .background(.bar)
+    }
+}
+
+private struct AlbumBatchTagSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let selectedCount: Int
+    @Binding var peopleInput: String
+    let onApply: () -> Void
+
+    private var normalizedPeople: [String] {
+        PeopleTagNormalizer.normalizeText(peopleInput)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("album.batchTag.placeholder", text: $peopleInput, axis: .vertical)
+                        .lineLimit(2...4)
+
+                    Text("album.batchTag.helper")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } header: {
+                    Text("album.batchTag.section")
+                }
+
+                Section {
+                    LabeledContent("album.selected.label") {
+                        Text(verbatim: String(selectedCount))
+                    }
+                }
+            }
+            .navigationTitle("album.batchTag.title")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("album.batchTag.apply") {
+                        onApply()
+                    }
+                    .disabled(normalizedPeople.isEmpty || selectedCount == 0)
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 
@@ -424,75 +451,6 @@ private struct AlbumMemoryTile: View {
             Text(memory.date, style: .date)
         } else {
             Text(verbatim: memory.story)
-        }
-    }
-}
-
-private struct AlbumPreviewView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    let memory: FamilyMemory
-    let fileStore: MemoryFileStore
-    let onOpenDetails: () -> Void
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    MemoryThumbnailView(
-                        imageURL: fileStore.url(forRelativePath: memory.originalPath),
-                        size: nil,
-                        cornerRadius: 12
-                    )
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 360)
-
-                    VStack(alignment: .leading, spacing: 14) {
-                        LabeledContent("memory.date") {
-                            Text(memory.date, style: .date)
-                        }
-
-                        if memory.people.isEmpty == false {
-                            LabeledContent("memory.people") {
-                                Text(verbatim: memory.people.joined(separator: " · "))
-                            }
-                        }
-
-                        Divider()
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("memory.story")
-                                .font(.headline)
-
-                            if memory.story.isEmpty {
-                                Text("memory.story.empty")
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                Text(verbatim: memory.story)
-                                    .foregroundStyle(.primary)
-                            }
-                        }
-                    }
-                    .font(.body)
-                }
-                .padding()
-            }
-            .navigationTitle("album.preview.title")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("common.done") {
-                        dismiss()
-                    }
-                }
-
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("album.preview.openDetail") {
-                        dismiss()
-                        onOpenDetails()
-                    }
-                }
-            }
         }
     }
 }

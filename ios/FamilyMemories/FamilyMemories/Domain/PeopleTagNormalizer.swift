@@ -15,4 +15,12 @@ enum PeopleTagNormalizer {
 
         return normalized
     }
+
+    static func merge(existing: [String], adding newTags: [String]) -> [String] {
+        normalize(existing + newTags)
+    }
+
+    static func normalizeText(_ text: String) -> [String] {
+        normalize(text.components(separatedBy: CharacterSet(charactersIn: ",，")))
+    }
 }

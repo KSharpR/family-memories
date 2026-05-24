@@ -45,6 +45,8 @@
 		000000000000000000001236 /* AlbumFilteringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001137 /* AlbumFilteringTests.swift */; };
 		000000000000000000001237 /* StorageUsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001138 /* StorageUsageService.swift */; };
 		000000000000000000001238 /* StorageUsageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001139 /* StorageUsageServiceTests.swift */; };
+		000000000000000000001239 /* MemoryPhotoPagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001140 /* MemoryPhotoPagerView.swift */; };
+		000000000000000000001240 /* MemoryFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001141 /* MemoryFilterBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,6 +109,8 @@
 		000000000000000000001137 /* AlbumFilteringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumFilteringTests.swift; sourceTree = "<group>"; };
 		000000000000000000001138 /* StorageUsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageUsageService.swift; sourceTree = "<group>"; };
 		000000000000000000001139 /* StorageUsageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageUsageServiceTests.swift; sourceTree = "<group>"; };
+		000000000000000000001140 /* MemoryPhotoPagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryPhotoPagerView.swift; sourceTree = "<group>"; };
+		000000000000000000001141 /* MemoryFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryFilterBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -228,6 +232,8 @@
 				000000000000000000000023 /* MemoryDetail */,
 				000000000000000000000027 /* Settings */,
 				000000000000000000000028 /* Album */,
+				000000000000000000000029 /* MemoryPreview */,
+				000000000000000000000030 /* MemoryFiltering */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -300,6 +306,22 @@
 				000000000000000000001136 /* AlbumFiltering.swift */,
 			);
 			path = Album;
+			sourceTree = "<group>";
+		};
+		000000000000000000000029 /* MemoryPreview */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001140 /* MemoryPhotoPagerView.swift */,
+			);
+			path = MemoryPreview;
+			sourceTree = "<group>";
+		};
+		000000000000000000000030 /* MemoryFiltering */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000001141 /* MemoryFilterBar.swift */,
+			);
+			path = MemoryFiltering;
 			sourceTree = "<group>";
 		};
 		000000000000000000000014 /* FamilyMemoriesTests */ = {
@@ -483,6 +505,8 @@
 				000000000000000000001234 /* AlbumView.swift in Sources */,
 				000000000000000000001235 /* AlbumFiltering.swift in Sources */,
 				000000000000000000001237 /* StorageUsageService.swift in Sources */,
+				000000000000000000001239 /* MemoryPhotoPagerView.swift in Sources */,
+				000000000000000000001240 /* MemoryFilterBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

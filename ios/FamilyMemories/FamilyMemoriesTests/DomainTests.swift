@@ -15,6 +15,21 @@ final class DomainTests: XCTestCase {
         XCTAssertEqual(normalized, ["Mom", "Dad", "外婆"])
     }
 
+    func testPeopleTagsMergeExistingAndNewTags() {
+        let merged = PeopleTagNormalizer.merge(
+            existing: ["Mom", "Dad"],
+            adding: [" Dad ", "外婆", ""]
+        )
+
+        XCTAssertEqual(merged, ["Mom", "Dad", "外婆"])
+    }
+
+    func testPeopleTagsNormalizeCommaSeparatedText() {
+        let normalized = PeopleTagNormalizer.normalizeText(" Mom,爸爸， 外婆 ")
+
+        XCTAssertEqual(normalized, ["Mom", "爸爸", "外婆"])
+    }
+
     func testMemoryDraftUsesSourceDateUntilUserOverridesDate() {
         let sourceDate = Date(timeIntervalSince1970: 1_700_000_000)
         let manualDate = Date(timeIntervalSince1970: 1_710_000_000)

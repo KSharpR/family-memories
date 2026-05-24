@@ -5,6 +5,7 @@ struct MemoryDetailView: View {
     @State private var memory: FamilyMemory
     @State private var errorMessage: String?
     @State private var isDeleteConfirmationPresented = false
+    @State private var isPhotoPreviewPresented = false
 
     let repository: MemoryRepositoryProtocol
     let fileStore: MemoryFileStore
@@ -25,13 +26,26 @@ struct MemoryDetailView: View {
     var body: some View {
         Form {
             Section {
-                MemoryThumbnailView(
-                    imageURL: fileStore.url(forRelativePath: memory.originalPath),
-                    size: nil,
-                    cornerRadius: 10
-                )
-                .frame(maxWidth: .infinity)
-                .frame(height: 280)
+                Button {
+                    isPhotoPreviewPresented = true
+                } label: {
+                    MemoryThumbnailView(
+                        imageURL: fileStore.url(forRelativePath: memory.originalPath),
+                        size: nil,
+                        cornerRadius: 10
+                    )
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 280)
+                    .overlay(alignment: .bottomTrailing) {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(8)
+                            .background(.black.opacity(0.5), in: Circle())
+                            .padding(10)
+                    }
+                }
+                .buttonStyle(.plain)
             }
 
             Section("memory.metadata") {
@@ -62,6 +76,13 @@ struct MemoryDetailView: View {
             Button("common.save") {
                 saveMemory()
             }
+        }
+        .fullScreenCover(isPresented: $isPhotoPreviewPresented) {
+            MemoryPhotoPagerView(
+                memories: [memory],
+                initialMemoryID: memory.id,
+                fileStore: fileStore
+            )
         }
         .confirmationDialog(
             "memory.delete.confirmation.title",
