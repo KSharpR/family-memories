@@ -119,11 +119,11 @@ git commit -m "docs: add ios trial qa checklist"
 
 - [ ] Configure signing with the selected Apple Developer team.
 - [ ] Add app icon and launch screen polish.
-- [ ] Review `Info.plist` privacy strings and document actual photo/file behavior.
+- [x] Review `Info.plist` privacy strings and document actual photo/file behavior.
 - [ ] Run real-device import/export/restore testing.
 - [ ] Create an Archive build.
-- [ ] Prepare TestFlight internal testing notes.
-- [ ] Add a release checklist covering privacy, backup, restore, and destructive actions.
+- [x] Prepare TestFlight internal testing notes.
+- [x] Add a release checklist covering privacy, backup, restore, and destructive actions.
 
 ### Phase 5: Web Compatibility And Migration
 

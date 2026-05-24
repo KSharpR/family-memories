@@ -77,6 +77,10 @@ xcodebuild \
 
 Use `docs/ios-trial-qa-checklist.md` before handing the app to a small trial group. It covers simulator setup, real-device photo import, backup export/import, language switching, destructive actions, and known Simulator recovery steps.
 
+### Release Checklist
+
+Use `docs/ios-release-checklist.md` before creating a private TestFlight build. It covers signing prerequisites, privacy review, TestFlight notes, and archive readiness.
+
 ### Backup Format
 
 The current `.familymemories` package contract is documented in `docs/backup-format.md`.
