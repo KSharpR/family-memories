@@ -73,6 +73,10 @@ xcodebuild \
   test
 ```
 
+### Trial QA
+
+Use `docs/ios-trial-qa-checklist.md` before handing the app to a small trial group. It covers simulator setup, real-device photo import, backup export/import, language switching, destructive actions, and known Simulator recovery steps.
+
 ### Privacy Model
 
 The iOS app is local-first. It uses the system photo picker, copies only selected photos into app-private storage, and does not use app-owned servers or automatic cloud upload. Manual `.familymemories` backups are created only when the user exports them and can be imported back into the local library.
