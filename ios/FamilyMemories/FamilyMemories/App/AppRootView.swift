@@ -222,6 +222,18 @@ struct AppRootView: View {
             let urls = try result.get()
             guard let url = urls.first else { return }
 
+            Task {
+                await prepareBackupImport(url, using: environment)
+            }
+        } catch let error as CocoaError where error.code == .userCancelled {
+            return
+        } catch {
+            backupAlert = .error(error.localizedDescription)
+        }
+    }
+
+    private func prepareBackupImport(_ url: URL, using environment: AppEnvironment) async {
+        do {
             let didStartAccessing = url.startAccessingSecurityScopedResource()
             defer {
                 if didStartAccessing {
@@ -230,9 +242,16 @@ struct AppRootView: View {
             }
 
             let summary = try environment.backupService.validateBackup(at: url)
-            backupAlert = .confirm(BackupImportRequest(url: url, summary: summary))
-        } catch let error as CocoaError where error.code == .userCancelled {
-            return
+            let existingMemories = try await environment.repository.fetchAll()
+            let existingIDs = Set(existingMemories.map(\.id))
+            let overwriteCount = Set(summary.memoryIDs).intersection(existingIDs).count
+            backupAlert = .confirm(BackupImportRequest(
+                url: url,
+                summary: summary,
+                overwriteCount: overwriteCount
+            ))
+        } catch let error as BackupPackageError {
+            backupAlert = .error(error.localizedDescription)
         } catch let error where isInvalidBackupImportError(error) {
             backupAlert = .message(
                 title: "settings.import.invalid.title",
@@ -246,16 +265,29 @@ struct AppRootView: View {
     private func importConfirmationMessage(for request: BackupImportRequest) -> Text {
         let summaryText = BackupImportConfirmationFormatter.summaryText(
             for: request.summary,
+            overwriteCount: request.overwriteCount,
             locale: language.locale
         )
 
-        return Text("settings.import.confirm.body")
+        var message = Text("settings.import.confirm.body")
             + Text(verbatim: "\n\n")
             + Text("settings.import.confirm.memoryCount")
             + Text(verbatim: " \(summaryText.memoryCount)")
             + Text(verbatim: "\n")
             + Text("settings.import.confirm.createdAt")
             + Text(verbatim: " \(summaryText.createdAt)")
+            + Text(verbatim: "\n")
+            + Text("settings.import.confirm.overwriteCount")
+            + Text(verbatim: " \(summaryText.overwriteCount)")
+
+        if summaryText.dateRange.isEmpty == false {
+            message = message
+                + Text(verbatim: "\n")
+                + Text("settings.import.confirm.dateRange")
+                + Text(verbatim: " \(summaryText.dateRange)")
+        }
+
+        return message
     }
 
     private func confirmBackupImport(_ request: BackupImportRequest, using environment: AppEnvironment) {
@@ -276,6 +308,8 @@ struct AppRootView: View {
                 title: "settings.import.restored.title",
                 message: "settings.import.restored.body"
             )
+        } catch let error as BackupPackageError {
+            backupAlert = .error(error.localizedDescription)
         } catch let error where isInvalidBackupImportError(error) {
             backupAlert = .message(
                 title: "settings.import.invalid.title",
@@ -296,11 +330,14 @@ struct AppRootView: View {
 struct BackupImportConfirmationSummaryText: Equatable {
     let memoryCount: String
     let createdAt: String
+    let overwriteCount: String
+    let dateRange: String
 }
 
 enum BackupImportConfirmationFormatter {
     static func summaryText(
         for summary: BackupSummary,
+        overwriteCount: Int = 0,
         locale: Locale,
         timeZone: TimeZone = .current
     ) -> BackupImportConfirmationSummaryText {
@@ -314,9 +351,27 @@ enum BackupImportConfirmationFormatter {
         dateFormatter.dateStyle = .medium
         dateFormatter.timeStyle = .short
 
+        let dateOnlyFormatter = DateFormatter()
+        dateOnlyFormatter.locale = locale
+        dateOnlyFormatter.timeZone = timeZone
+        dateOnlyFormatter.dateStyle = .medium
+        dateOnlyFormatter.timeStyle = .none
+
+        let dateRange: String
+        switch (summary.earliestMemoryDate, summary.latestMemoryDate) {
+        case let (earliest?, latest?) where earliest == latest:
+            dateRange = dateOnlyFormatter.string(from: earliest)
+        case let (earliest?, latest?):
+            dateRange = "\(dateOnlyFormatter.string(from: earliest)) - \(dateOnlyFormatter.string(from: latest))"
+        default:
+            dateRange = ""
+        }
+
         return BackupImportConfirmationSummaryText(
             memoryCount: numberFormatter.string(from: NSNumber(value: summary.memoryCount)) ?? "\(summary.memoryCount)",
-            createdAt: dateFormatter.string(from: summary.createdAt)
+            createdAt: dateFormatter.string(from: summary.createdAt),
+            overwriteCount: numberFormatter.string(from: NSNumber(value: overwriteCount)) ?? "\(overwriteCount)",
+            dateRange: dateRange
         )
     }
 }
@@ -330,9 +385,10 @@ private struct ExportedBackup: Identifiable {
 private struct BackupImportRequest: Identifiable {
     let url: URL
     let summary: BackupSummary
+    let overwriteCount: Int
 
     var id: String {
-        "\(url.absoluteString)-\(summary.createdAt.timeIntervalSince1970)-\(summary.memoryCount)"
+        "\(url.absoluteString)-\(summary.createdAt.timeIntervalSince1970)-\(summary.memoryCount)-\(overwriteCount)"
     }
 }
 

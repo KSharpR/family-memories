@@ -817,6 +817,22 @@
         }
       }
     },
+    "settings.import.confirm.dateRange": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory dates:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回忆日期："
+          }
+        }
+      }
+    },
     "settings.import.confirm.memoryCount": {
       "localizations": {
         "en": {
@@ -829,6 +845,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "回忆数量："
+          }
+        }
+      }
+    },
+    "settings.import.confirm.overwriteCount": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Same-ID matches:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同 ID 匹配："
           }
         }
       }

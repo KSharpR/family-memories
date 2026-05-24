@@ -35,6 +35,37 @@ final class BackupPackageServiceTests: XCTestCase {
         XCTAssertEqual(summary.localeIdentifier, "zh-Hans")
     }
 
+    func testValidateSummaryIncludesIDsDateRangeAndSchemaVersions() throws {
+        let firstPaths = try store.writeImageFiles(
+            memoryID: "memory-1",
+            originalFilename: "first.jpg",
+            originalData: Data([1]),
+            thumbnailData: Data([2])
+        )
+        let secondPaths = try store.writeImageFiles(
+            memoryID: "memory-2",
+            originalFilename: "second.jpg",
+            originalData: Data([3]),
+            thumbnailData: Data([4])
+        )
+        let firstDate = Date(timeIntervalSince1970: 100)
+        let secondDate = Date(timeIntervalSince1970: 200)
+        let memories = [
+            makeMemory(id: "memory-1", paths: firstPaths, date: firstDate),
+            makeMemory(id: "memory-2", paths: secondPaths, date: secondDate)
+        ]
+
+        let service = BackupPackageService(fileStore: store)
+        let backupURL = try service.exportBackup(memories: memories, localeIdentifier: "zh-Hans")
+        let summary = try service.validateBackup(at: backupURL)
+
+        XCTAssertEqual(summary.memoryIDs, ["memory-1", "memory-2"])
+        XCTAssertEqual(summary.earliestMemoryDate, firstDate)
+        XCTAssertEqual(summary.latestMemoryDate, secondDate)
+        XCTAssertEqual(summary.backupVersion, 1)
+        XCTAssertEqual(summary.dataSchemaVersion, AppDataSchema.currentVersion)
+    }
+
     func testExportRejectsUnsafeImagePaths() throws {
         let memory = FamilyMemory(
             id: "memory-1",
@@ -106,22 +137,59 @@ final class BackupPackageServiceTests: XCTestCase {
         XCTAssertThrowsError(try service.validateBackup(at: invalidURL))
     }
 
+    func testBackupPackageErrorsDescribeUnsupportedVersionAndMissingFiles() {
+        XCTAssertEqual(
+            BackupPackageError.unsupportedVersion(2).errorDescription,
+            "This backup uses unsupported format version 2."
+        )
+        XCTAssertEqual(
+            BackupPackageError.missingFile("Originals/memory-1.jpg").errorDescription,
+            "This backup is missing required file Originals/memory-1.jpg."
+        )
+    }
+
+    func testBackupManifestDecodesVersionOneWithoutSchemaVersion() throws {
+        let json = """
+        {
+          "appName": "Family Memories",
+          "backupVersion": 1,
+          "createdAt": "2026-05-24T00:00:00Z",
+          "memoryCount": 0,
+          "locale": "zh-Hans",
+          "minimumSupportedAppVersion": "0.1.0"
+        }
+        """.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let manifest = try decoder.decode(BackupManifest.self, from: json)
+
+        XCTAssertNil(manifest.dataSchemaVersion)
+        XCTAssertEqual(manifest.backupVersion, 1)
+    }
+
     func testImportConfirmationSummaryFormatsMemoryCountAndCreationDate() {
         let summary = BackupSummary(
             memoryCount: 3,
             localeIdentifier: "zh-Hans",
-            createdAt: Date(timeIntervalSince1970: 1_714_998_600)
+            createdAt: Date(timeIntervalSince1970: 1_714_998_600),
+            earliestMemoryDate: Date(timeIntervalSince1970: 100),
+            latestMemoryDate: Date(timeIntervalSince1970: 200)
         )
 
         let formatted = BackupImportConfirmationFormatter.summaryText(
             for: summary,
+            overwriteCount: 2,
             locale: Locale(identifier: "en_US"),
             timeZone: TimeZone(secondsFromGMT: 0)!
         )
 
         XCTAssertEqual(formatted.memoryCount, "3")
+        XCTAssertEqual(formatted.overwriteCount, "2")
         XCTAssertTrue(formatted.createdAt.contains("2024"))
+        XCTAssertTrue(formatted.dateRange.contains("1970"))
         XCTAssertFalse(formatted.createdAt.isEmpty)
+        XCTAssertFalse(formatted.dateRange.isEmpty)
     }
 
     func testRestoreBackupWritesImageFilesAndReturnsMemories() throws {
@@ -174,14 +242,18 @@ final class BackupPackageServiceTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: targetStore.url(forRelativePath: paths.thumbnailRelativePath)), Data([4, 5, 6]))
     }
 
-    private func makeMemory(paths: StoredImagePaths) -> FamilyMemory {
+    private func makeMemory(
+        id: String = "memory-1",
+        paths: StoredImagePaths,
+        date: Date = Date(timeIntervalSince1970: 100)
+    ) -> FamilyMemory {
         FamilyMemory(
-            id: "memory-1",
-            originalFilename: "memory.jpg",
+            id: id,
+            originalFilename: "\(id).jpg",
             originalPath: paths.originalRelativePath,
             thumbnailPath: paths.thumbnailRelativePath,
             story: "Dinner together",
-            date: Date(timeIntervalSince1970: 100),
+            date: date,
             people: ["Mom"],
             filter: "original",
             createdAt: Date(timeIntervalSince1970: 90),

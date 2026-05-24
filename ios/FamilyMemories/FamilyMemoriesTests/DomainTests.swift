@@ -2,6 +2,10 @@ import XCTest
 @testable import FamilyMemories
 
 final class DomainTests: XCTestCase {
+    func testCurrentAppDataSchemaVersionIsExplicit() {
+        XCTAssertEqual(AppDataSchema.currentVersion, 1)
+    }
+
     func testPeopleTagsAreTrimmedAndDeduplicated() {
         let normalized = PeopleTagNormalizer.normalize([
             " Mom ",

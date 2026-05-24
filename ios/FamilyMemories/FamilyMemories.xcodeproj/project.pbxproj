@@ -47,6 +47,7 @@
 		000000000000000000001238 /* StorageUsageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001139 /* StorageUsageServiceTests.swift */; };
 		000000000000000000001239 /* MemoryPhotoPagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001140 /* MemoryPhotoPagerView.swift */; };
 		000000000000000000001240 /* MemoryFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001141 /* MemoryFilterBar.swift */; };
+		000000000000000000001241 /* AppDataSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001142 /* AppDataSchema.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,6 +112,7 @@
 		000000000000000000001139 /* StorageUsageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageUsageServiceTests.swift; sourceTree = "<group>"; };
 		000000000000000000001140 /* MemoryPhotoPagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryPhotoPagerView.swift; sourceTree = "<group>"; };
 		000000000000000000001141 /* MemoryFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryFilterBar.swift; sourceTree = "<group>"; };
+		000000000000000000001142 /* AppDataSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataSchema.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -189,6 +191,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000001106 /* FamilyMemory.swift */,
+				000000000000000000001142 /* AppDataSchema.swift */,
 				000000000000000000001107 /* MemoryDraft.swift */,
 				000000000000000000001108 /* PeopleTagNormalizer.swift */,
 				000000000000000000001109 /* TimelineGrouping.swift */,
@@ -507,6 +510,7 @@
 				000000000000000000001237 /* StorageUsageService.swift in Sources */,
 				000000000000000000001239 /* MemoryPhotoPagerView.swift in Sources */,
 				000000000000000000001240 /* MemoryFilterBar.swift in Sources */,
+				000000000000000000001241 /* AppDataSchema.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

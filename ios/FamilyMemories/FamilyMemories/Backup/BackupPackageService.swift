@@ -1,11 +1,26 @@
 import Foundation
 
-enum BackupPackageError: Error, Equatable {
+enum BackupPackageError: LocalizedError, Equatable {
     case invalidArchive
     case missingManifest
     case missingMemories
     case missingFile(String)
     case unsupportedVersion(Int)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidArchive:
+            return "This backup file is damaged or not a Family Memories backup."
+        case .missingManifest:
+            return "This backup is missing manifest.json."
+        case .missingMemories:
+            return "This backup is missing memories.json."
+        case let .missingFile(path):
+            return "This backup is missing required file \(path)."
+        case let .unsupportedVersion(version):
+            return "This backup uses unsupported format version \(version)."
+        }
+    }
 }
 
 final class BackupPackageService {
@@ -36,6 +51,7 @@ final class BackupPackageService {
         let manifest = BackupManifest(
             appName: "Family Memories",
             backupVersion: 1,
+            dataSchemaVersion: AppDataSchema.currentVersion,
             createdAt: Date(),
             memoryCount: memories.count,
             locale: localeIdentifier,
@@ -106,6 +122,9 @@ final class BackupPackageService {
         guard memories.count == manifest.memoryCount else {
             throw BackupPackageError.invalidArchive
         }
+        guard Set(memories.map(\.id)).count == memories.count else {
+            throw BackupPackageError.invalidArchive
+        }
         for memory in memories {
             try validateRelativePath(memory.originalPath, expectedDirectory: "Originals")
             try validateRelativePath(memory.thumbnailPath, expectedDirectory: "Thumbnails")
@@ -120,7 +139,12 @@ final class BackupPackageService {
         let summary = BackupSummary(
             memoryCount: manifest.memoryCount,
             localeIdentifier: manifest.locale,
-            createdAt: manifest.createdAt
+            createdAt: manifest.createdAt,
+            memoryIDs: memories.map(\.id),
+            earliestMemoryDate: memories.map(\.date).min(),
+            latestMemoryDate: memories.map(\.date).max(),
+            backupVersion: manifest.backupVersion,
+            dataSchemaVersion: manifest.dataSchemaVersion ?? 1
         )
 
         return ParsedBackup(
