@@ -143,7 +143,7 @@ struct AppRootView: View {
                     case let .confirm(request):
                         Alert(
                             title: Text("settings.import.confirm.title"),
-                            message: Text("settings.import.confirm.body"),
+                            message: importConfirmationMessage(for: request),
                             primaryButton: .default(Text("settings.import.confirm.action")) {
                                 confirmBackupImport(request, using: environment)
                             },
@@ -241,6 +241,21 @@ struct AppRootView: View {
         }
     }
 
+    private func importConfirmationMessage(for request: BackupImportRequest) -> Text {
+        let summaryText = BackupImportConfirmationFormatter.summaryText(
+            for: request.summary,
+            locale: language.locale
+        )
+
+        return Text("settings.import.confirm.body")
+            + Text(verbatim: "\n\n")
+            + Text("settings.import.confirm.memoryCount")
+            + Text(verbatim: " \(summaryText.memoryCount)")
+            + Text(verbatim: "\n")
+            + Text("settings.import.confirm.createdAt")
+            + Text(verbatim: " \(summaryText.createdAt)")
+    }
+
     private func confirmBackupImport(_ request: BackupImportRequest, using environment: AppEnvironment) {
         do {
             let didStartAccessing = request.url.startAccessingSecurityScopedResource()
@@ -273,6 +288,34 @@ struct AppRootView: View {
         error is BackupPackageError
             || error is DecodingError
             || error is MemoryFileStoreError
+    }
+}
+
+struct BackupImportConfirmationSummaryText: Equatable {
+    let memoryCount: String
+    let createdAt: String
+}
+
+enum BackupImportConfirmationFormatter {
+    static func summaryText(
+        for summary: BackupSummary,
+        locale: Locale,
+        timeZone: TimeZone = .current
+    ) -> BackupImportConfirmationSummaryText {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.locale = locale
+        numberFormatter.numberStyle = .decimal
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = locale
+        dateFormatter.timeZone = timeZone
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+
+        return BackupImportConfirmationSummaryText(
+            memoryCount: numberFormatter.string(from: NSNumber(value: summary.memoryCount)) ?? "\(summary.memoryCount)",
+            createdAt: dateFormatter.string(from: summary.createdAt)
+        )
     }
 }
 

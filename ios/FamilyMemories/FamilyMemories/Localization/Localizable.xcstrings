@@ -657,6 +657,38 @@
         }
       }
     },
+    "settings.import.confirm.createdAt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Created:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建时间："
+          }
+        }
+      }
+    },
+    "settings.import.confirm.memoryCount": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memories:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回忆数量："
+          }
+        }
+      }
+    },
     "settings.import.confirm.title": {
       "localizations": {
         "en": {

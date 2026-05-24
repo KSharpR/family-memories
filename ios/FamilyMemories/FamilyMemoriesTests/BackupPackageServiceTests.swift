@@ -106,6 +106,24 @@ final class BackupPackageServiceTests: XCTestCase {
         XCTAssertThrowsError(try service.validateBackup(at: invalidURL))
     }
 
+    func testImportConfirmationSummaryFormatsMemoryCountAndCreationDate() {
+        let summary = BackupSummary(
+            memoryCount: 3,
+            localeIdentifier: "zh-Hans",
+            createdAt: Date(timeIntervalSince1970: 1_714_998_600)
+        )
+
+        let formatted = BackupImportConfirmationFormatter.summaryText(
+            for: summary,
+            locale: Locale(identifier: "en_US"),
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        XCTAssertEqual(formatted.memoryCount, "3")
+        XCTAssertTrue(formatted.createdAt.contains("2024"))
+        XCTAssertFalse(formatted.createdAt.isEmpty)
+    }
+
     func testRestoreBackupWritesImageFilesAndReturnsMemories() throws {
         let paths = try store.writeImageFiles(
             memoryID: "memory-1",
