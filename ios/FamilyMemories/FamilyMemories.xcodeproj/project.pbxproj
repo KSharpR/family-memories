@@ -48,6 +48,8 @@
 		000000000000000000001239 /* MemoryPhotoPagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001140 /* MemoryPhotoPagerView.swift */; };
 		000000000000000000001240 /* MemoryFilterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001141 /* MemoryFilterBar.swift */; };
 		000000000000000000001241 /* AppDataSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001142 /* AppDataSchema.swift */; };
+		000000000000000000001242 /* MemoryLibraryIntegrityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001143 /* MemoryLibraryIntegrityService.swift */; };
+		000000000000000000001243 /* MemoryLibraryIntegrityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001144 /* MemoryLibraryIntegrityServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +115,8 @@
 		000000000000000000001140 /* MemoryPhotoPagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryPhotoPagerView.swift; sourceTree = "<group>"; };
 		000000000000000000001141 /* MemoryFilterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryFilterBar.swift; sourceTree = "<group>"; };
 		000000000000000000001142 /* AppDataSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDataSchema.swift; sourceTree = "<group>"; };
+		000000000000000000001143 /* MemoryLibraryIntegrityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryLibraryIntegrityService.swift; sourceTree = "<group>"; };
+		000000000000000000001144 /* MemoryLibraryIntegrityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryLibraryIntegrityServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -213,6 +217,7 @@
 			children = (
 				000000000000000000001112 /* MemoryRecord.swift */,
 				000000000000000000001113 /* MemoryRepository.swift */,
+				000000000000000000001143 /* MemoryLibraryIntegrityService.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -335,6 +340,7 @@
 				000000000000000000001137 /* AlbumFilteringTests.swift */,
 				000000000000000000001105 /* DomainTests.swift */,
 				000000000000000000001111 /* MemoryFileStoreTests.swift */,
+				000000000000000000001144 /* MemoryLibraryIntegrityServiceTests.swift */,
 				000000000000000000001114 /* MemoryRepositoryTests.swift */,
 				000000000000000000001115 /* PhotoImportServiceTests.swift */,
 				000000000000000000001139 /* StorageUsageServiceTests.swift */,
@@ -511,6 +517,7 @@
 				000000000000000000001239 /* MemoryPhotoPagerView.swift in Sources */,
 				000000000000000000001240 /* MemoryFilterBar.swift in Sources */,
 				000000000000000000001241 /* AppDataSchema.swift in Sources */,
+				000000000000000000001242 /* MemoryLibraryIntegrityService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -527,6 +534,7 @@
 				000000000000000000001230 /* BackupPackageServiceTests.swift in Sources */,
 				000000000000000000001236 /* AlbumFilteringTests.swift in Sources */,
 				000000000000000000001238 /* StorageUsageServiceTests.swift in Sources */,
+				000000000000000000001243 /* MemoryLibraryIntegrityServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
