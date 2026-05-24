@@ -7,7 +7,7 @@ struct AppRootView: View {
     @AppStorage("app.language") private var languageID = AppLanguage.chinese.rawValue
     @State private var environment: AppEnvironment?
     @State private var selectedMemory: FamilyMemory?
-    @State private var presentedDrafts: [MemoryDraft] = []
+    @State private var presentedImportResult: PhotoImportResult?
     @State private var timelineReloadToken = UUID()
     @State private var environmentError: String?
     @State private var exportedBackup: ExportedBackup?
@@ -24,8 +24,8 @@ struct AppRootView: View {
                             fileStore: environment.fileStore,
                             importService: environment.importService,
                             reloadToken: timelineReloadToken,
-                            onImportedDrafts: { drafts in
-                                presentedDrafts = drafts
+                            onImportResult: { result in
+                                presentedImportResult = result
                             },
                             onOpenMemory: { selectedMemory = $0 }
                         )
@@ -38,14 +38,15 @@ struct AppRootView: View {
                             )
                         }
                         .sheet(isPresented: Binding(
-                            get: { presentedDrafts.isEmpty == false },
-                            set: { if $0 == false { presentedDrafts = [] } }
+                            get: { presentedImportResult != nil },
+                            set: { if $0 == false { presentedImportResult = nil } }
                         )) {
                             ImportReviewView(
-                                drafts: presentedDrafts,
+                                drafts: presentedImportResult?.drafts ?? [],
+                                failures: presentedImportResult?.failures ?? [],
                                 repository: environment.repository,
                                 onSave: {
-                                    presentedDrafts = []
+                                    presentedImportResult = nil
                                     reloadTimeline()
                                 }
                             )

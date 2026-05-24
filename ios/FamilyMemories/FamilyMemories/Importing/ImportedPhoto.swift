@@ -10,9 +10,17 @@ struct PickedPhotoData: Equatable {
 struct ImportFailure: Equatable {
     let filename: String
     let reason: String
+
+    var displayDescription: String {
+        "\(filename): \(reason)"
+    }
 }
 
 struct PhotoImportResult: Equatable {
     var drafts: [MemoryDraft]
     var failures: [ImportFailure]
+
+    var hasReviewContent: Bool {
+        drafts.isEmpty == false || failures.isEmpty == false
+    }
 }

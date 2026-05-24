@@ -51,6 +51,16 @@ final class PhotoImportServiceTests: XCTestCase {
         XCTAssertEqual(result.failures.first?.filename, "bad.txt")
     }
 
+    func testImportResultHasReviewContentWhenOnlyFailuresArePresent() throws {
+        let service = PhotoImportService(fileStore: store)
+        let result = try service.importPhotos([
+            PickedPhotoData(filename: "bad.txt", imageData: Data([0]), sourceCreatedAt: nil, sourceAssetIdentifier: nil)
+        ])
+
+        XCTAssertTrue(result.hasReviewContent)
+        XCTAssertEqual(result.failures.first?.displayDescription, "bad.txt: Invalid image data")
+    }
+
     func testReportsThumbnailFailureWithoutThrowingBatchAway() throws {
         var thumbnailCalls = 0
         let service = PhotoImportService(

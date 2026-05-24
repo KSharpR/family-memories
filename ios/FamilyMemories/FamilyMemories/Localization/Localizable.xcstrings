@@ -385,6 +385,54 @@
         }
       }
     },
+    "import.review.failed.section": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed imports"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入失败"
+          }
+        }
+      }
+    },
+    "import.review.partial.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can still save the photos that imported successfully. Failed photos were not copied into Family Memories."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你仍然可以保存已成功导入的照片。导入失败的照片不会复制到回忆录照相簿。"
+          }
+        }
+      }
+    },
+    "import.review.ready.section": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to save"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可保存"
+          }
+        }
+      }
+    },
     "import.review.title": {
       "localizations": {
         "en": {

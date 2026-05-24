@@ -9,7 +9,7 @@ struct TimelineView: View {
     let fileStore: MemoryFileStore
     let importService: PhotoImportService
     let reloadToken: UUID
-    let onImportedDrafts: ([MemoryDraft]) -> Void
+    let onImportResult: (PhotoImportResult) -> Void
     let onOpenMemory: (FamilyMemory) -> Void
 
     init(
@@ -17,14 +17,14 @@ struct TimelineView: View {
         fileStore: MemoryFileStore,
         importService: PhotoImportService,
         reloadToken: UUID,
-        onImportedDrafts: @escaping ([MemoryDraft]) -> Void,
+        onImportResult: @escaping (PhotoImportResult) -> Void,
         onOpenMemory: @escaping (FamilyMemory) -> Void
     ) {
         _viewModel = StateObject(wrappedValue: TimelineViewModel(repository: repository))
         self.fileStore = fileStore
         self.importService = importService
         self.reloadToken = reloadToken
-        self.onImportedDrafts = onImportedDrafts
+        self.onImportResult = onImportResult
         self.onOpenMemory = onOpenMemory
     }
 
@@ -140,10 +140,9 @@ struct TimelineView: View {
 
             do {
                 let result = try importService.importPhotos(pickedPhotos)
-                if result.drafts.isEmpty, result.failures.isEmpty == false {
-                    importErrorMessage = result.failures.map(\.reason).joined(separator: "\n")
+                if result.hasReviewContent {
+                    onImportResult(result)
                 }
-                onImportedDrafts(result.drafts)
             } catch {
                 importErrorMessage = error.localizedDescription
             }
