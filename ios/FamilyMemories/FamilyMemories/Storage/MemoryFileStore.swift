@@ -35,6 +35,18 @@ final class MemoryFileStore {
         self.thumbnailsDirectory = resolvedRoot.appendingPathComponent("Thumbnails", isDirectory: true)
         self.backupsDirectory = resolvedRoot.appendingPathComponent("Backups", isDirectory: true)
 
+        try createManagedDirectories()
+    }
+
+    func removeAllManagedData() throws {
+        if fileManager.fileExists(atPath: rootURL.path) {
+            try fileManager.removeItem(at: rootURL)
+        }
+
+        try createManagedDirectories()
+    }
+
+    private func createManagedDirectories() throws {
         try fileManager.createDirectory(at: originalsDirectory, withIntermediateDirectories: true)
         try fileManager.createDirectory(at: thumbnailsDirectory, withIntermediateDirectories: true)
         try fileManager.createDirectory(at: backupsDirectory, withIntermediateDirectories: true)

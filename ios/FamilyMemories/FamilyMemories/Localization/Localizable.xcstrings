@@ -1041,6 +1041,134 @@
         }
       }
     },
+    "settings.reset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local data"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地数据"
+          }
+        }
+      }
+    },
+    "settings.reset.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This removes memories, copied photos, thumbnails, and backups stored by this app on this device. Export a backup first if you want to keep them."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这会移除此设备上由本 App 保存的回忆、复制照片、缩略图和备份文件。如果需要保留，请先导出备份。"
+          }
+        }
+      }
+    },
+    "settings.reset.button": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear local data"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除本地数据"
+          }
+        }
+      }
+    },
+    "settings.reset.complete.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All local Family Memories data on this device has been cleared."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此设备上的 Family Memories 本地数据已清除。"
+          }
+        }
+      }
+    },
+    "settings.reset.complete.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local data cleared"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地数据已清除"
+          }
+        }
+      }
+    },
+    "settings.reset.confirm.action": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除"
+          }
+        }
+      }
+    },
+    "settings.reset.confirm.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This cannot be undone. Export a backup before continuing if you want to keep these memories."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此操作无法撤销。如果想保留这些回忆，请先导出备份。"
+          }
+        }
+      }
+    },
+    "settings.reset.confirm.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear all local data?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除所有本地数据？"
+          }
+        }
+      }
+    },
     "settings.storage": {
       "localizations": {
         "en": {

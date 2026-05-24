@@ -125,7 +125,13 @@ This clears only the simulator app data. It does not change project source files
 - [ ] Tap delete.
 - [ ] Confirm the app shows a destructive confirmation first.
 - [ ] Confirm selected memories and their local image files are removed.
-- [ ] For a full local reset during trial testing, delete the app from the simulator or real device and reinstall. A Settings-based reset control is a planned follow-up and should not be treated as present in the current build.
+- [ ] Open Settings.
+- [ ] Tap Clear local data / 清除本地数据.
+- [ ] Confirm the app shows a destructive confirmation first.
+- [ ] Cancel once and confirm existing memories remain.
+- [ ] Repeat and confirm the reset.
+- [ ] Confirm Timeline and Album return to the empty state.
+- [ ] Confirm Settings storage usage returns to 0 bytes or the platform's empty app baseline.
 
 ## Privacy Checks
 

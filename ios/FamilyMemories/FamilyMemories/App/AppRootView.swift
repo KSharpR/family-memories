@@ -81,11 +81,15 @@ struct AppRootView: View {
                         SettingsView(
                             language: languageBinding,
                             storageUsageService: environment.storageUsageService,
+                            storageReloadToken: timelineReloadToken,
                             onExportBackup: {
                                 exportBackup(using: environment)
                             },
                             onImportBackup: {
                                 isImportingBackup = true
+                            },
+                            onResetLocalData: {
+                                resetLocalData(using: environment)
                             }
                         )
                         .id(language.id)
@@ -317,6 +321,24 @@ struct AppRootView: View {
             )
         } catch {
             backupAlert = .error(error.localizedDescription)
+        }
+    }
+
+    private func resetLocalData(using environment: AppEnvironment) {
+        Task {
+            do {
+                _ = try await environment.localDataResetService.resetAllLocalData()
+                selectedMemory = nil
+                presentedImportResult = nil
+                exportedBackup = nil
+                reloadTimeline()
+                backupAlert = .message(
+                    title: "settings.reset.complete.title",
+                    message: "settings.reset.complete.body"
+                )
+            } catch {
+                backupAlert = .error(error.localizedDescription)
+            }
         }
     }
 

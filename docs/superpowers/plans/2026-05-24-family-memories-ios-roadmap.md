@@ -58,11 +58,11 @@ Not yet complete:
 
 **Tasks:**
 
-- [ ] Improve backup import confirmation summary.
-- [ ] Polish photo import review and partial-failure handling.
-- [ ] Add storage usage and privacy details to settings.
-- [ ] Add local data cleanup/reset flows with strong destructive confirmations.
-- [ ] Add a manual QA checklist for simulator and real-device testing.
+- [x] Improve backup import confirmation summary.
+- [x] Polish photo import review and partial-failure handling.
+- [x] Add storage usage and privacy details to settings.
+- [x] Add local data cleanup/reset flows with strong destructive confirmations.
+- [x] Add a manual QA checklist for simulator and real-device testing.
 
 **Recommended commit sequence:**
 
@@ -81,12 +81,12 @@ git commit -m "docs: add ios trial qa checklist"
 
 **Tasks:**
 
-- [ ] Add full-screen photo preview from the album and detail screen.
-- [ ] Add swipe navigation between previewed album photos.
-- [ ] Improve timeline cards with clearer date, people, and story hierarchy.
-- [ ] Add timeline filter/search entry for people and year.
-- [ ] Add batch tag entry point after batch selection, but keep batch editing simple.
-- [ ] Preserve current batch delete behavior and confirmation safeguards.
+- [x] Add full-screen photo preview from the album and detail screen.
+- [x] Add swipe navigation between previewed album photos.
+- [x] Improve timeline cards with clearer date, people, and story hierarchy.
+- [x] Add timeline filter/search entry for people and year.
+- [x] Add batch tag entry point after batch selection, but keep batch editing simple.
+- [x] Preserve current batch delete behavior and confirmation safeguards.
 
 **Deferred from this phase:**
 
@@ -102,12 +102,12 @@ git commit -m "docs: add ios trial qa checklist"
 
 **Tasks:**
 
-- [ ] Add explicit app data schema versioning.
-- [ ] Add backup format compatibility tests for current `.familymemories` packages.
-- [ ] Add import conflict reporting for same memory ID, missing files, and unsupported backup versions.
-- [ ] Add date-range and memory-count summary to backup validation.
-- [ ] Add recovery behavior for invalid local records that reference missing image files.
-- [ ] Document the backup package contract in `docs/`.
+- [x] Add explicit app data schema versioning.
+- [x] Add backup format compatibility tests for current `.familymemories` packages.
+- [x] Add import conflict reporting for same memory ID, missing files, and unsupported backup versions.
+- [x] Add date-range and memory-count summary to backup validation.
+- [x] Add recovery behavior for invalid local records that reference missing image files.
+- [x] Document the backup package contract in `docs/`.
 
 ### Phase 4: Real Device And TestFlight Preparation
 

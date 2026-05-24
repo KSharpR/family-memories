@@ -46,4 +46,20 @@ final class FamilyMemoriesUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["设置"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["导出备份"].exists)
     }
+
+    @MainActor
+    func testSettingsResetShowsDestructiveConfirmation() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing", "-reset-data"]
+        app.launch()
+
+        app.tabBars.buttons["设置"].tap()
+        app.swipeUp()
+        XCTAssertTrue(app.buttons["清除本地数据"].waitForExistence(timeout: 2))
+        app.buttons["清除本地数据"].tap()
+
+        XCTAssertTrue(app.alerts["清除所有本地数据？"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.alerts.buttons["清除"].exists)
+        XCTAssertTrue(app.alerts.buttons["取消"].exists)
+    }
 }

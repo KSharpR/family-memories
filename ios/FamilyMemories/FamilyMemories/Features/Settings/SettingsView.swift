@@ -4,10 +4,13 @@ struct SettingsView: View {
     @Binding var language: AppLanguage
     @State private var storageUsage: StorageUsage?
     @State private var storageUsageError: String?
+    @State private var isShowingResetConfirmation = false
 
     let storageUsageService: StorageUsageService
+    let storageReloadToken: UUID
     let onExportBackup: () -> Void
     let onImportBackup: () -> Void
+    let onResetLocalData: () -> Void
 
     var body: some View {
         Form {
@@ -72,10 +75,28 @@ struct SettingsView: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
             }
+
+            Section("settings.reset") {
+                Button(role: .destructive) {
+                    isShowingResetConfirmation = true
+                } label: {
+                    Label("settings.reset.button", systemImage: "trash")
+                }
+
+                Text("settings.reset.body")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .navigationTitle("settings.title")
-        .task {
+        .task(id: storageReloadToken) {
             loadStorageUsage()
+        }
+        .alert("settings.reset.confirm.title", isPresented: $isShowingResetConfirmation) {
+            Button("settings.reset.confirm.action", role: .destructive, action: onResetLocalData)
+            Button("common.cancel", role: .cancel) {}
+        } message: {
+            Text("settings.reset.confirm.body")
         }
     }
 
@@ -105,8 +126,10 @@ struct SettingsView: View {
         SettingsView(
             language: $language,
             storageUsageService: StorageUsageService(fileStore: previewStore),
+            storageReloadToken: UUID(),
             onExportBackup: {},
-            onImportBackup: {}
+            onImportBackup: {},
+            onResetLocalData: {}
         )
     }
 }
