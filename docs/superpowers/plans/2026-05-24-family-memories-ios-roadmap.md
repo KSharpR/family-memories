@@ -133,10 +133,10 @@ git commit -m "docs: add ios trial qa checklist"
 
 **Tasks:**
 
-- [ ] Compare iOS `.familymemories` package shape with the current web export shape.
-- [ ] Add adapter tests for compatible memory fields.
-- [ ] Decide whether thumbnails are required in cross-platform packages or can be regenerated.
-- [ ] Write a migration note for users moving between web and iOS.
+- [x] Compare iOS `.familymemories` package shape with the current web export shape.
+- [x] Add adapter tests for compatible memory fields.
+- [x] Decide whether thumbnails are required in cross-platform packages or can be regenerated.
+- [x] Write a migration note for users moving between web and iOS.
 - [ ] Keep web deployment stable as a preview/demo surface, without adding accounts or server storage.
 
 ### Phase 6: Future Enhancements Backlog

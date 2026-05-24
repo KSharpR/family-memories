@@ -85,6 +85,10 @@ Use `docs/ios-release-checklist.md` before creating a private TestFlight build. 
 
 The current `.familymemories` package contract is documented in `docs/backup-format.md`.
 
+### Web And iOS Migration
+
+The current web JSON export and iOS `.familymemories` compatibility path is documented in `docs/web-ios-migration.md`.
+
 ### Privacy Model
 
 The iOS app is local-first. It uses the system photo picker, copies only selected photos into app-private storage, and does not use app-owned servers or automatic cloud upload. Manual `.familymemories` backups are created only when the user exports them and can be imported back into the local library.
