@@ -8,17 +8,20 @@ final class AppEnvironment: ObservableObject {
     let repository: MemoryRepositoryProtocol
     let importService: PhotoImportService
     let backupService: BackupPackageService
+    let storageUsageService: StorageUsageService
 
     init(
         fileStore: MemoryFileStore,
         repository: MemoryRepositoryProtocol,
         importService: PhotoImportService,
-        backupService: BackupPackageService
+        backupService: BackupPackageService,
+        storageUsageService: StorageUsageService? = nil
     ) {
         self.fileStore = fileStore
         self.repository = repository
         self.importService = importService
         self.backupService = backupService
+        self.storageUsageService = storageUsageService ?? StorageUsageService(fileStore: fileStore)
     }
 
     init(
@@ -40,6 +43,7 @@ final class AppEnvironment: ObservableObject {
         self.repository = MemoryRepository(context: modelContext)
         self.importService = PhotoImportService(fileStore: fileStore)
         self.backupService = BackupPackageService(fileStore: fileStore)
+        self.storageUsageService = StorageUsageService(fileStore: fileStore, fileManager: fileManager)
     }
 
     private static func resetMetadata(in modelContext: ModelContext) throws {

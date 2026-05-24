@@ -43,6 +43,8 @@
 		000000000000000000001234 /* AlbumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001135 /* AlbumView.swift */; };
 		000000000000000000001235 /* AlbumFiltering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001136 /* AlbumFiltering.swift */; };
 		000000000000000000001236 /* AlbumFilteringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001137 /* AlbumFilteringTests.swift */; };
+		000000000000000000001237 /* StorageUsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001138 /* StorageUsageService.swift */; };
+		000000000000000000001238 /* StorageUsageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001139 /* StorageUsageServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,6 +105,8 @@
 		000000000000000000001135 /* AlbumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumView.swift; sourceTree = "<group>"; };
 		000000000000000000001136 /* AlbumFiltering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumFiltering.swift; sourceTree = "<group>"; };
 		000000000000000000001137 /* AlbumFilteringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumFilteringTests.swift; sourceTree = "<group>"; };
+		000000000000000000001138 /* StorageUsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageUsageService.swift; sourceTree = "<group>"; };
+		000000000000000000001139 /* StorageUsageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageUsageServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +196,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000001110 /* MemoryFileStore.swift */,
+				000000000000000000001138 /* StorageUsageService.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -307,6 +312,7 @@
 				000000000000000000001111 /* MemoryFileStoreTests.swift */,
 				000000000000000000001114 /* MemoryRepositoryTests.swift */,
 				000000000000000000001115 /* PhotoImportServiceTests.swift */,
+				000000000000000000001139 /* StorageUsageServiceTests.swift */,
 				000000000000000000001118 /* TimelineViewModelTests.swift */,
 			);
 			path = FamilyMemoriesTests;
@@ -476,6 +482,7 @@
 				000000000000000000001232 /* SettingsView.swift in Sources */,
 				000000000000000000001234 /* AlbumView.swift in Sources */,
 				000000000000000000001235 /* AlbumFiltering.swift in Sources */,
+				000000000000000000001237 /* StorageUsageService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,6 +498,7 @@
 				000000000000000000001218 /* TimelineViewModelTests.swift in Sources */,
 				000000000000000000001230 /* BackupPackageServiceTests.swift in Sources */,
 				000000000000000000001236 /* AlbumFilteringTests.swift in Sources */,
+				000000000000000000001238 /* StorageUsageServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

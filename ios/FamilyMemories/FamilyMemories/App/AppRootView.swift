@@ -80,6 +80,7 @@ struct AppRootView: View {
                     NavigationStack {
                         SettingsView(
                             language: languageBinding,
+                            storageUsageService: environment.storageUsageService,
                             onExportBackup: {
                                 exportBackup(using: environment)
                             },
