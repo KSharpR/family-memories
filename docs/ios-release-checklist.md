@@ -50,6 +50,7 @@ Known limitations:
 ## Archive Readiness
 
 - [ ] Run `docs/ios-trial-qa-checklist.md`.
+- [ ] Review the current AppIcon asset and replace it with the final brand artwork if needed.
 - [ ] Run unit tests for `FamilyMemoriesTests`.
 - [ ] Run UI smoke tests for `FamilyMemoriesUITests`.
 - [ ] Create an Archive build in Xcode after signing is configured.

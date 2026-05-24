@@ -53,6 +53,7 @@
 		000000000000000000001244 /* LocalDataResetServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001145 /* LocalDataResetServiceTests.swift */; };
 		000000000000000000001245 /* LocalDataResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001146 /* LocalDataResetService.swift */; };
 		000000000000000000001246 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001147 /* PrivacyInfo.xcprivacy */; };
+		000000000000000000001247 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000001148 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -123,6 +124,7 @@
 		000000000000000000001145 /* LocalDataResetServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDataResetServiceTests.swift; sourceTree = "<group>"; };
 		000000000000000000001146 /* LocalDataResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDataResetService.swift; sourceTree = "<group>"; };
 		000000000000000000001147 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		000000000000000000001148 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -293,6 +295,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000001129 /* FamilyMemoriesUTTypes.swift */,
+				000000000000000000001148 /* Assets.xcassets */,
 				000000000000000000001147 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Resources;
@@ -472,6 +475,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				000000000000000000001233 /* Localizable.xcstrings in Resources */,
+				000000000000000000001247 /* Assets.xcassets in Resources */,
 				000000000000000000001246 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -694,6 +698,8 @@
 		000000000000000000003103 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGNING_ALLOWED = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -721,6 +727,8 @@
 		000000000000000000003104 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGNING_ALLOWED = NO;
 				CURRENT_PROJECT_VERSION = 1;

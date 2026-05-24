@@ -118,7 +118,7 @@ git commit -m "docs: add ios trial qa checklist"
 **Tasks:**
 
 - [ ] Configure signing with the selected Apple Developer team.
-- [ ] Add app icon and launch screen polish.
+- [x] Add app icon and launch screen polish.
 - [x] Review `Info.plist` privacy strings and document actual photo/file behavior.
 - [ ] Run real-device import/export/restore testing.
 - [ ] Create an Archive build.
