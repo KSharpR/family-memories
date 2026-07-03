@@ -15,7 +15,7 @@
 Latest iOS worktree commit:
 
 ```text
-c8b080c feat: confirm backup imports and enhance album
+25319c2 feat: import web album json on ios
 ```
 
 Implemented:
@@ -28,17 +28,22 @@ Implemented:
 - Chinese/English UI switching.
 - Manual `.familymemories` backup export and import.
 - Backup import confirmation before restore.
+- Web JSON import into the iOS local library.
+- Storage usage in settings.
+- Local data reset with destructive confirmation.
+- Explicit data schema versioning and backup compatibility tests.
+- Local library integrity repair for missing image files.
+- App icon assets, privacy manifest, release checklist, and trial QA checklist.
 - Album grid, photo preview, year/person filters, batch selection, and batch delete.
 - Unit and UI test coverage for the current core loop.
 
 Not yet complete:
 
-- Trial-ready import polish.
-- Backup import summary details.
-- Storage usage and cleanup visibility.
 - Real-device QA pass.
 - TestFlight/archive setup.
-- Cross-platform backup compatibility verification against the web MVP.
+- Apple signing setup for free Personal Team or paid Developer Program team.
+- Routine web deployment stability checks while iOS work continues.
+- Optional pre-import confirmation summary for iOS Web JSON imports.
 
 ## Product Principles
 
@@ -137,6 +142,7 @@ git commit -m "docs: add ios trial qa checklist"
 - [x] Add adapter tests for compatible memory fields.
 - [x] Decide whether thumbnails are required in cross-platform packages or can be regenerated.
 - [x] Write a migration note for users moving between web and iOS.
+- [x] Add direct iOS import support for current and legacy web JSON exports.
 - [ ] Keep web deployment stable as a preview/demo surface, without adding accounts or server storage.
 
 ### Phase 6: Future Enhancements Backlog

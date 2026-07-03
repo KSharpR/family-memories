@@ -56,6 +56,10 @@ The earlier static prototype is preserved at `docs/legacy/index.html`.
 
 The native iOS app lives in `ios/FamilyMemories`.
 
+### Current Project Status
+
+Use `docs/project-status.md` as the restart handoff for the current branch, local environment, completed work, verification results, blockers, and next recommended tasks.
+
 ### Requirements
 
 - Xcode 26.5 or newer for the current local setup
