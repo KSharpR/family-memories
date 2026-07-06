@@ -1297,6 +1297,54 @@
         }
       }
     },
+    "settings.webImport.confirm.action": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入"
+          }
+        }
+      }
+    },
+    "settings.webImport.confirm.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This will merge the selected Web JSON album into the memories on this device. Existing memories are kept unless the Web album contains the same memory ID."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这会把所选 Web JSON 相册合并到这台设备上的回忆中。现有回忆会保留，除非 Web 相册中包含相同的回忆 ID。"
+          }
+        }
+      }
+    },
+    "settings.webImport.confirm.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import this web album?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入这个 Web 相册？"
+          }
+        }
+      }
+    },
     "settings.webImport.button": {
       "localizations": {
         "en": {

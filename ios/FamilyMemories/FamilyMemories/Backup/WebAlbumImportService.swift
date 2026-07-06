@@ -4,6 +4,13 @@ struct WebAlbumImportResult: Equatable {
     let importedCount: Int
 }
 
+struct WebAlbumImportSummary: Equatable {
+    let memoryCount: Int
+    let overwriteCount: Int
+    let earliestMemoryDate: Date?
+    let latestMemoryDate: Date?
+}
+
 @MainActor
 final class WebAlbumImportService {
     private let adapter: WebAlbumImportAdapter
@@ -21,6 +28,26 @@ final class WebAlbumImportService {
         self.fileStore = fileStore
         self.repository = repository
         self.thumbnailGenerator = thumbnailGenerator
+    }
+
+    /// Parses the web album JSON and returns a read-only preview summary
+    /// without writing files, generating thumbnails, or saving to the repository.
+    func previewAlbumJSON(_ data: Data, existingMemoryIDs: Set<String>) throws -> WebAlbumImportSummary {
+        let candidates = try adapter.importCandidates(from: data)
+
+        let candidateIDs = Set(candidates.map(\.id))
+        let overwriteCount = candidateIDs.intersection(existingMemoryIDs).count
+
+        let dates = candidates.map(\.date)
+        let earliestMemoryDate = dates.min()
+        let latestMemoryDate = dates.max()
+
+        return WebAlbumImportSummary(
+            memoryCount: candidates.count,
+            overwriteCount: overwriteCount,
+            earliestMemoryDate: earliestMemoryDate,
+            latestMemoryDate: latestMemoryDate
+        )
     }
 
     func importAlbumJSON(_ data: Data) async throws -> WebAlbumImportResult {

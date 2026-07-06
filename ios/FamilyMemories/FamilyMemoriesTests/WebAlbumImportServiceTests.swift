@@ -26,6 +26,56 @@ final class WebAlbumImportServiceTests: XCTestCase {
         }
     }
 
+    func testPreviewAlbumJSONReturnsSummaryWithoutSideEffects() async throws {
+        let json = """
+        {
+          "memories": [
+            {
+              "id": "web-1",
+              "photoDataUrl": "data:image/png;base64,AQID",
+              "story": "一起包饺子的下午",
+              "date": "2026-05-20",
+              "people": ["奶奶", "我"],
+              "filter": "none",
+              "createdAt": "2026-05-01T12:00:00.000Z",
+              "updatedAt": "2026-05-02T13:30:00.000Z"
+            },
+            {
+              "id": "web-2",
+              "photoDataUrl": "data:image/jpeg;base64,BAUG",
+              "story": "夏日野餐",
+              "date": "2026-07-15",
+              "people": [],
+              "filter": "sepia",
+              "createdAt": "2026-07-01T08:00:00.000Z",
+              "updatedAt": "2026-07-01T08:00:00.000Z"
+            }
+          ]
+        }
+        """.data(using: .utf8)!
+        let service = WebAlbumImportService(
+            fileStore: fileStore,
+            repository: repository,
+            thumbnailGenerator: { _ in Data([9, 8, 7]) }
+        )
+
+        let summary = try service.previewAlbumJSON(
+            json,
+            existingMemoryIDs: ["web-1"]
+        )
+
+        XCTAssertEqual(summary.memoryCount, 2)
+        XCTAssertEqual(summary.overwriteCount, 1)
+        XCTAssertEqual(summary.earliestMemoryDate, Date(timeIntervalSince1970: 1_779_235_200))
+        XCTAssertEqual(summary.latestMemoryDate, Date(timeIntervalSince1970: 1_784_073_600))
+
+        // Verify no side effects: no repository records written
+        let savedMemory1 = try await repository.fetch(id: "web-1")
+        XCTAssertNil(savedMemory1)
+        let savedMemory2 = try await repository.fetch(id: "web-2")
+        XCTAssertNil(savedMemory2)
+    }
+
     func testImportsWebAlbumCandidatesIntoLocalLibrary() async throws {
         let json = """
         {

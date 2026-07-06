@@ -166,6 +166,15 @@ struct AppRootView: View {
                             },
                             secondaryButton: .cancel(Text("common.cancel"))
                         )
+                    case let .confirmWebImport(request):
+                        Alert(
+                            title: Text("settings.webImport.confirm.title"),
+                            message: webImportConfirmationMessage(for: request),
+                            primaryButton: .default(Text("settings.webImport.confirm.action")) {
+                                confirmWebAlbumImport(request, using: environment)
+                            },
+                            secondaryButton: .cancel(Text("common.cancel"))
+                        )
                     }
                 }
             } else if let environmentError {
@@ -283,7 +292,7 @@ struct AppRootView: View {
             guard let url = urls.first else { return }
 
             Task {
-                await confirmWebAlbumImport(url, using: environment)
+                await prepareWebAlbumImport(url, using: environment)
             }
         } catch let error as CocoaError where error.code == .userCancelled {
             return
@@ -292,7 +301,7 @@ struct AppRootView: View {
         }
     }
 
-    private func confirmWebAlbumImport(_ url: URL, using environment: AppEnvironment) async {
+    private func prepareWebAlbumImport(_ url: URL, using environment: AppEnvironment) async {
         do {
             let didStartAccessing = url.startAccessingSecurityScopedResource()
             defer {
@@ -302,16 +311,45 @@ struct AppRootView: View {
             }
 
             let data = try Data(contentsOf: url)
-            _ = try await environment.webAlbumImportService.importAlbumJSON(data)
-            reloadTimeline()
-            backupAlert = .message(
-                title: "settings.webImport.imported.title",
-                message: "settings.webImport.imported.body"
+            let existingMemories = try await environment.repository.fetchAll()
+            let existingIDs = Set(existingMemories.map(\.id))
+            let summary = try environment.webAlbumImportService.previewAlbumJSON(
+                data,
+                existingMemoryIDs: existingIDs
             )
+            backupAlert = .confirmWebImport(WebAlbumImportRequest(
+                url: url,
+                summary: summary
+            ))
         } catch let error as WebAlbumImportError {
             backupAlert = .error(error.localizedDescription)
         } catch {
             backupAlert = .error(error.localizedDescription)
+        }
+    }
+
+    private func confirmWebAlbumImport(_ request: WebAlbumImportRequest, using environment: AppEnvironment) {
+        Task {
+            do {
+                let didStartAccessing = request.url.startAccessingSecurityScopedResource()
+                defer {
+                    if didStartAccessing {
+                        request.url.stopAccessingSecurityScopedResource()
+                    }
+                }
+
+                let data = try Data(contentsOf: request.url)
+                _ = try await environment.webAlbumImportService.importAlbumJSON(data)
+                reloadTimeline()
+                backupAlert = .message(
+                    title: "settings.webImport.imported.title",
+                    message: "settings.webImport.imported.body"
+                )
+            } catch let error as WebAlbumImportError {
+                backupAlert = .error(error.localizedDescription)
+            } catch {
+                backupAlert = .error(error.localizedDescription)
+            }
         }
     }
 
@@ -338,6 +376,46 @@ struct AppRootView: View {
                 + Text(verbatim: "\n")
                 + Text("settings.import.confirm.dateRange")
                 + Text(verbatim: " \(summaryText.dateRange)")
+        }
+
+        return message
+    }
+
+    private func webImportConfirmationMessage(for request: WebAlbumImportRequest) -> Text {
+        let locale = language.locale
+
+        let numberFormatter = NumberFormatter()
+        numberFormatter.locale = locale
+        numberFormatter.numberStyle = .decimal
+
+        let dateOnlyFormatter = DateFormatter()
+        dateOnlyFormatter.locale = locale
+        dateOnlyFormatter.dateStyle = .medium
+        dateOnlyFormatter.timeStyle = .none
+
+        let dateRange: String
+        switch (request.summary.earliestMemoryDate, request.summary.latestMemoryDate) {
+        case let (earliest?, latest?) where earliest == latest:
+            dateRange = dateOnlyFormatter.string(from: earliest)
+        case let (earliest?, latest?):
+            dateRange = "\(dateOnlyFormatter.string(from: earliest)) - \(dateOnlyFormatter.string(from: latest))"
+        default:
+            dateRange = ""
+        }
+
+        var message = Text("settings.webImport.confirm.body")
+            + Text(verbatim: "\n\n")
+            + Text("settings.import.confirm.memoryCount")
+            + Text(verbatim: " \(numberFormatter.string(from: NSNumber(value: request.summary.memoryCount)) ?? "\(request.summary.memoryCount)")")
+            + Text(verbatim: "\n")
+            + Text("settings.import.confirm.overwriteCount")
+            + Text(verbatim: " \(numberFormatter.string(from: NSNumber(value: request.summary.overwriteCount)) ?? "\(request.summary.overwriteCount)")")
+
+        if dateRange.isEmpty == false {
+            message = message
+                + Text(verbatim: "\n")
+                + Text("settings.import.confirm.dateRange")
+                + Text(verbatim: " \(dateRange)")
         }
 
         return message
@@ -463,10 +541,20 @@ private struct BackupImportRequest: Identifiable {
     }
 }
 
+private struct WebAlbumImportRequest: Identifiable {
+    let url: URL
+    let summary: WebAlbumImportSummary
+
+    var id: String {
+        "\(url.absoluteString)-\(summary.memoryCount)-\(summary.overwriteCount)"
+    }
+}
+
 private enum BackupAlert: Identifiable {
     case message(title: LocalizedStringKey, message: LocalizedStringKey)
     case error(String)
     case confirm(BackupImportRequest)
+    case confirmWebImport(WebAlbumImportRequest)
 
     var id: String {
         switch self {
@@ -475,6 +563,8 @@ private enum BackupAlert: Identifiable {
         case let .error(message):
             return message
         case let .confirm(request):
+            return request.id
+        case let .confirmWebImport(request):
             return request.id
         }
     }
