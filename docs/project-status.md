@@ -1,16 +1,26 @@
 # Project Status Handoff
 
-Last updated: 2026-07-03
+Last updated: 2026-07-07
 
-This file is the restart point for the Family Memories project after the current chat closes. Read it first, then continue from the worktree below.
+This file is the restart point for the Family Memories project after the current chat closes. Read it first, then continue from the main repo below.
 
 ## Repository State
 
 - Repository: `/Volumes/p310/Codex/projects/family-memories`
-- Active worktree: `/Volumes/p310/Codex/projects/family-memories/.worktrees/ios-native-app`
-- Branch: `ios/native-app`
-- Latest implementation commit before this handoff: `25319c2 feat: import web album json on ios`
+- Active workspace: `/Volumes/p310/Codex/projects/family-memories` (main repo root)
+- Branch: `main`
+- Latest implementation commit before this handoff: `c9fa230 feat: confirm web json imports on ios`
 - Current product direction: local-first family memoir photo album, web first for preview, native iOS first for mobile, no account/server/cloud sync in the initial product.
+
+> The previous iOS work was tracked on branch `ios/native-app` (worktree `.worktrees/ios-native-app`). That branch and worktree are **no longer active**. All current iOS work lives on `main` at this repository root. Do not `cd` into `.worktrees/ios-native-app` or `../family-memories-ios-app`.
+
+**Current worktree inventory:**
+
+| Path | Branch | HEAD |
+|------|--------|------|
+| `main repo root` | `main` | `c9fa230` |
+| `.worktrees/web-familymemories-import` | `feature/web-familymemories-import` | `c9fa230` |
+| `.worktrees/web-redesign-implementation` | `web-redesign-implementation` | `5e67ff3` |
 
 ## Local Tooling
 
@@ -47,7 +57,7 @@ iOS app:
 - Timeline, memory detail, import review, album, and settings tabs.
 - Chinese/English UI switching for functional UI copy. User-entered stories, names, tags, and notes are preserved as written.
 - Manual `.familymemories` backup export/import with validation, schema versioning, import summary, same-ID conflict reporting, and confirmation before restore.
-- Web JSON import path from current/legacy web exports into the iOS local library.
+- Web JSON import path from current/legacy web exports into the iOS local library, with pre-import confirmation summary showing memory count, same-ID overwrite count, and date range.
 - Storage usage visibility in settings.
 - Local data reset flow with destructive confirmation.
 - Album enhancements: full-screen photo preview, swipe navigation, year/person filters, batch select/delete, and batch tag entry.
@@ -64,19 +74,19 @@ iOS app:
   - Done: app icon, privacy strings/review notes, release checklist.
   - Not done: signing team setup, real-device QA, Archive build, TestFlight.
 - Phase 5, Web Compatibility And Migration: mostly complete.
-  - Done: web/iOS format comparison, adapter tests, migration note, direct iOS import for web JSON exports.
+  - Done: web/iOS format comparison, adapter tests, migration note, direct iOS import for web JSON exports, pre-import confirmation summary dialog.
   - Not done: routine web deployment stability checks as the iOS work continues.
 
 Current release blockers:
 
-- The user is not in front of the Mac, so Xcode Apple Account login and real iPhone connection are not currently available.
+- The user confirmed on 2026-07-07 that they are not in front of the Mac, so Xcode Apple Account login and real iPhone connection cannot be done for now.
 - Paid Apple Developer Program membership is not planned right now because of cost.
 - Without a paid Apple Developer Program team, TestFlight/App Store distribution is blocked.
 - Free Apple Account Personal Team signing should still be enough later for own-device testing from Xcode, but it requires the user to log into Xcode and connect an iPhone locally.
 
 ## Verification Snapshot
 
-Commands run from the active worktree on 2026-07-03:
+Commands run from the main repo on 2026-07-07:
 
 ```bash
 npm test -- --run
@@ -96,7 +106,7 @@ Result: passed.
 ```bash
 plutil -lint \
   ios/FamilyMemories/FamilyMemories.xcodeproj/project.pbxproj \
-  ios/FamilyMemories/FamilyMemories/Info.plist \
+  ios/FamilyMemories/FamilyMemories/App/Info.plist \
   ios/FamilyMemories/FamilyMemories/Resources/PrivacyInfo.xcprivacy
 ```
 
@@ -112,7 +122,7 @@ xcodebuild \
   test
 ```
 
-Result: passed, 53 iOS unit tests.
+Result: passed, 54 iOS unit tests.
 
 ```bash
 xcodebuild -quiet \
@@ -140,7 +150,7 @@ Use that recovery only for the test simulator. It erases simulator app data.
 Start here:
 
 ```bash
-cd /Volumes/p310/Codex/projects/family-memories/.worktrees/ios-native-app
+cd /Volumes/p310/Codex/projects/family-memories
 git status --short --branch
 git log --oneline -10
 ```
@@ -156,7 +166,7 @@ jq empty \
   ios/FamilyMemories/FamilyMemories/Localization/Localizable.xcstrings
 plutil -lint \
   ios/FamilyMemories/FamilyMemories.xcodeproj/project.pbxproj \
-  ios/FamilyMemories/FamilyMemories/Info.plist \
+  ios/FamilyMemories/FamilyMemories/App/Info.plist \
   ios/FamilyMemories/FamilyMemories/Resources/PrivacyInfo.xcprivacy
 ```
 
@@ -173,11 +183,10 @@ xcodebuild \
 
 ## Recommended Next Work
 
-1. Add a pre-import confirmation summary for iOS Web JSON imports, matching the `.familymemories` backup import safety model.
-2. Keep web preview/deployment stable: run `npm run build`, check GitHub Pages assumptions, and avoid adding server storage.
-3. When the user is back at the Mac, configure Xcode with a free Apple Account Personal Team and run the app on a personal iPhone.
-4. After real-device testing, decide whether to stay with direct Xcode install for private use or pay for Apple Developer Program only when TestFlight/App Store distribution is truly needed.
-5. Later enhancements to keep in backlog: pinch zoom, richer metadata, iCloud Drive opt-in backup/sync, hybrid photo storage, Android, desktop, and cross-platform strategy.
+1. Keep web preview/deployment stable: run `npm run build`, check GitHub Pages assumptions, and avoid adding server storage.
+2. When the user is back at the Mac, configure Xcode with a free Apple Account Personal Team and run the app on a personal iPhone.
+3. After real-device testing, decide whether to stay with direct Xcode install for private use or pay for Apple Developer Program only when TestFlight/App Store distribution is truly needed.
+4. Later enhancements to keep in backlog: pinch zoom, richer metadata, iCloud Drive opt-in backup/sync, hybrid photo storage, Android, desktop, and cross-platform strategy.
 
 ## Product Constraints To Preserve
 

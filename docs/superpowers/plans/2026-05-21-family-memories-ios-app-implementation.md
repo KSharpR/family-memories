@@ -1,6 +1,17 @@
 # Family Memories iOS App Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **⚠ ARCHIVAL / HISTORICAL — This plan is complete. Do not follow its worktree or branch instructions below.**
+>
+> All iOS implementation work has been completed and merged into `main` at `/Volumes/p310/Codex/projects/family-memories`. The current baseline is commit `c9fa230 feat: confirm web json imports on ios`.
+>
+> **Do NOT create or use:**
+> - Branch `ios/native-app`
+> - Worktree `../family-memories-ios-app`
+> - Worktree `.worktrees/ios-native-app`
+>
+> The worktree and branch instructions below are left in place as a historical record of how this plan was originally executed. Future agents should start from `main` in the repository root and follow `docs/project-status.md` for current state.
+
+> **For agentic workers (historical):** This plan originally required subagent-driven-development or executing-plans to implement task-by-task. Since this plan is now complete, these instructions are preserved for reference only.
 
 **Goal:** Build a native SwiftUI iOS first version that imports selected photos, stores them locally, enriches them with memoir metadata, browses them by timeline and album, and supports manual backup import/export without accounts or servers.
 

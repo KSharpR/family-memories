@@ -91,12 +91,18 @@ It parses Web JSON into import candidates and validates:
 - Web date strings are valid.
 - Legacy `photo` and `text` fields are accepted.
 
-The user-facing Settings import action uses `WebAlbumImportService` to convert these candidates into saved iOS memories by:
+The user-facing Settings import action uses `WebAlbumImportService` to convert these candidates into saved iOS memories. The current flow is:
 
-1. Writing decoded original image data through `MemoryFileStore`.
-2. Generating iOS JPEG thumbnails.
-3. Saving resulting `FamilyMemory` records through `MemoryRepository`.
-4. Showing completion feedback after import.
+1. User selects a JSON file via the system document picker.
+2. `WebAlbumImportService` calls `previewAlbumJSON(data:)` to parse the JSON and return a read-only summary: total memory count, count of memories whose IDs already exist in the local library (potential overwrites), and the date range of the imported memories.
+3. A native confirmation alert displays this summary to the user.
+4. If the user taps Cancel, the import stops — no files are written and no records are saved. The local library is unchanged.
+5. If the user taps Confirm, the service calls `importAlbumJSON(data:)` which:
+   - Decodes base64 image payloads from each memory's `photoDataUrl` (or legacy `photo` field).
+   - Writes decoded original image data through `MemoryFileStore`.
+   - Generates iOS JPEG thumbnails.
+   - Saves resulting `FamilyMemory` records through `MemoryRepository`.
+6. Completion feedback is shown after import.
 
 This import merges into the current iOS library. If a Web memory has the same ID as an existing iOS memory, the current repository behavior updates that memory record.
 
@@ -120,7 +126,8 @@ For users moving from web to iOS:
 2. Export the album JSON.
 3. Move the JSON file to the iPhone through Files, AirDrop, or another user-controlled location.
 4. Open iOS Settings and use Import web JSON.
-5. Export a `.familymemories` backup from iOS after import.
+5. Review the pre-import confirmation summary (memory count, overwrite count, date range) and tap confirm.
+6. After import completes, export a `.familymemories` backup from iOS for future restore.
 
 For users moving from iOS to web:
 

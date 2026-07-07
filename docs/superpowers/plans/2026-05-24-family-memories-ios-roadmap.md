@@ -6,19 +6,19 @@
 
 **Architecture:** Keep the app local-first, with SwiftUI screens backed by small services for photo import, metadata persistence, file storage, and manual backup packages. Do not introduce accounts, app-owned servers, or automatic cloud sync in this roadmap; future sync/storage optimizations should be opt-in and built after the local data loop is stable.
 
-**Tech Stack:** SwiftUI, SwiftData, PhotosUI, FileManager/Application Support storage, ZIPFoundation backup packages, XCTest, XcodeBuildMCP or `xcodebuild`, Git worktree on `ios/native-app`.
+**Tech Stack:** SwiftUI, SwiftData, PhotosUI, FileManager/Application Support storage, ZIPFoundation backup packages, XCTest, XcodeBuildMCP or `xcodebuild`.
 
 ---
 
 ## Current Baseline
 
-Latest iOS worktree commit:
+Latest commit (current baseline):
 
 ```text
-25319c2 feat: import web album json on ios
+c9fa230 feat: confirm web json imports on ios
 ```
 
-Implemented:
+Implemented (all work is on `main` at `/Volumes/p310/Codex/projects/family-memories`):
 
 - Native SwiftUI iOS app under `ios/FamilyMemories`.
 - Local photo import through the system picker.
@@ -28,7 +28,7 @@ Implemented:
 - Chinese/English UI switching.
 - Manual `.familymemories` backup export and import.
 - Backup import confirmation before restore.
-- Web JSON import into the iOS local library.
+- Web JSON import into the iOS local library, with pre-import confirmation summary (memory count, overwrite count, date range).
 - Storage usage in settings.
 - Local data reset with destructive confirmation.
 - Explicit data schema versioning and backup compatibility tests.
@@ -43,7 +43,6 @@ Not yet complete:
 - TestFlight/archive setup.
 - Apple signing setup for free Personal Team or paid Developer Program team.
 - Routine web deployment stability checks while iOS work continues.
-- Optional pre-import confirmation summary for iOS Web JSON imports.
 
 ## Product Principles
 

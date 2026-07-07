@@ -4,7 +4,7 @@ Use this checklist before handing the native iOS app to a small trial user group
 
 ## Environment
 
-- [ ] Open the worktree at `/Volumes/p310/Codex/projects/family-memories/.worktrees/ios-native-app`.
+- [ ] Open the main repository at `/Volumes/p310/Codex/projects/family-memories`.
 - [ ] Confirm Xcode 26.5 is selected:
 
 ```bash
@@ -114,6 +114,12 @@ This clears only the simulator app data. It does not change project source files
 - [ ] Open Settings in the iOS app.
 - [ ] Tap Import web JSON / 导入 Web JSON.
 - [ ] Select the exported `.json` file.
+- [ ] Confirm a pre-import confirmation summary dialog appears.
+- [ ] Confirm the dialog includes memory count.
+- [ ] Confirm the dialog includes same-ID overwrite count when applicable.
+- [ ] Confirm the dialog includes the date range of imported memories when applicable.
+- [ ] Tap cancel; confirm no memories were imported and the local library is unchanged.
+- [ ] Repeat the import and tap confirm.
 - [ ] Confirm import completion feedback appears.
 - [ ] Confirm imported memories appear in Timeline and Album.
 - [ ] Confirm story text and people tags keep the user's original language.
