@@ -79,10 +79,11 @@ iOS app:
 
 Current release blockers:
 
-- The user confirmed on 2026-07-07 that they are not in front of the Mac, so Xcode Apple Account login and real iPhone connection cannot be done for now.
+- The user confirmed on 2026-07-07 that they are not in front of the Mac, so Xcode Apple Account login and real iOS/iPadOS device connection cannot be done for now.
 - Paid Apple Developer Program membership is not planned right now because of cost.
 - Without a paid Apple Developer Program team, TestFlight/App Store distribution is blocked.
-- Free Apple Account Personal Team signing should still be enough later for own-device testing from Xcode, but it requires the user to log into Xcode and connect an iPhone locally.
+- Free Apple Account Personal Team signing should still be enough later for own-device testing from Xcode, but it requires the user to log into Xcode and connect a personal iPhone or iPad locally.
+- An iPad running iPadOS 17.0+ can be used for the first real-device QA pass, but iPhone-specific small-screen/layout smoke testing remains a separate follow-up when an iPhone is available.
 
 ## Verification Snapshot
 
@@ -184,7 +185,7 @@ xcodebuild \
 ## Recommended Next Work
 
 1. Keep web preview/deployment stable: run `npm run build`, check GitHub Pages assumptions, and avoid adding server storage.
-2. When the user is back at the Mac, configure Xcode with a free Apple Account Personal Team and run the app on a personal iPhone.
+2. When the user is back at the Mac, configure Xcode with a free Apple Account Personal Team and run the app on a personal iPhone or iPad.
 3. After real-device testing, decide whether to stay with direct Xcode install for private use or pay for Apple Developer Program only when TestFlight/App Store distribution is truly needed.
 4. Later enhancements to keep in backlog: pinch zoom, richer metadata, iCloud Drive opt-in backup/sync, hybrid photo storage, Android, desktop, and cross-platform strategy.
 

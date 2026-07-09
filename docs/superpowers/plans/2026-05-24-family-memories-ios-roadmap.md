@@ -56,7 +56,7 @@ Not yet complete:
 
 ### Phase 1: Trial-Ready Local MVP Hardening
 
-**Goal:** Make the current iOS app safe enough for hands-on trial use on simulator and at least one real iPhone.
+**Goal:** Make the current iOS app safe enough for hands-on trial use on simulator and at least one real iPhone or iPad.
 
 **Primary outcome:** A user can import photos, review/edit metadata, browse timeline/album, export a backup, delete app data, and restore from backup with clear confirmations.
 

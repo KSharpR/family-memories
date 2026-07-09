@@ -55,4 +55,5 @@ Known limitations:
 - [ ] Run UI smoke tests for `FamilyMemoriesUITests`.
 - [ ] Create an Archive build in Xcode after signing is configured.
 - [ ] Generate and review Xcode's privacy report from the archive.
-- [ ] Install the TestFlight build on at least one real iPhone and repeat backup export/import.
+- [ ] Install the TestFlight build on at least one real iPhone or iPad and repeat backup export/import.
+  - **Caveat:** iPad qualifies for real-device QA, but iPhone-specific small-screen/layout testing must still be completed before claiming iPhone-ready distribution.

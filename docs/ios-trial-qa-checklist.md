@@ -59,7 +59,7 @@ xcrun simctl shutdown 7FD29A7D-AA28-4BB9-91F7-C3A0FD014F50 >/dev/null 2>&1 || tr
 xcrun simctl erase 7FD29A7D-AA28-4BB9-91F7-C3A0FD014F50
 ```
 
-This clears only the simulator app data. It does not change project source files or real iPhone data.
+This clears only the simulator app data. It does not change project source files or real device (iPhone or iPad) data.
 
 ## Simulator App Flow
 
@@ -83,9 +83,11 @@ This clears only the simulator app data. It does not change project source files
 - [ ] Select one memory.
 - [ ] Cancel selection without deleting.
 
-## Real iPhone Flow
+## Real iPhone Or iPad Flow
 
-- [ ] Install a debug or TestFlight build on a real iPhone.
+> **Note:** iPad (iPadOS 17.0+) can be used for the first real-device QA pass. However, iPhone-specific layout and small-screen smoke testing should still be repeated later if iPhone users are a target. The app targets both device families (`TARGETED_DEVICE_FAMILY = "1,2"`), so layout differences between iPad and iPhone must be validated separately.
+
+- [ ] Install a debug or TestFlight build on a real iPhone or iPad.
 - [ ] Import 5-10 real photos through the system photo picker.
 - [ ] Include at least one photo with a known capture date.
 - [ ] Confirm imported photos are copied into the app and remain visible after relaunch.
@@ -110,7 +112,7 @@ This clears only the simulator app data. It does not change project source files
 ## Web JSON Migration
 
 - [ ] Export a JSON album from the web app.
-- [ ] Move the JSON file to the simulator or real iPhone through Files, AirDrop, or another user-controlled location.
+- [ ] Move the JSON file to the simulator or a real device (iPhone or iPad) through Files, AirDrop, or another user-controlled location.
 - [ ] Open Settings in the iOS app.
 - [ ] Tap Import web JSON / 导入 Web JSON.
 - [ ] Select the exported `.json` file.

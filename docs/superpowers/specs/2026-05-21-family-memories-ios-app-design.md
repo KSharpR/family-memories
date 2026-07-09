@@ -355,7 +355,7 @@ Permissions and system cancellation:
 
 ### Manual Device Testing
 
-- Import 20 to 50 real photos on an iPhone.
+- Import 20 to 50 real photos on a real iPhone or iPad. If the first pass is on iPad, repeat iPhone small-screen/layout smoke testing before claiming iPhone-ready distribution.
 - Relaunch app and verify data persists.
 - Use Airplane Mode and verify the app remains usable.
 - Delete source photos from Apple Photos and verify imported memories still display.

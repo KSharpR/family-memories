@@ -124,7 +124,7 @@ For users moving from web to iOS:
 
 1. Open the web app.
 2. Export the album JSON.
-3. Move the JSON file to the iPhone through Files, AirDrop, or another user-controlled location.
+3. Move the JSON file to the iPhone or iPad through Files, AirDrop, or another user-controlled location.
 4. Open iOS Settings and use Import web JSON.
 5. Review the pre-import confirmation summary (memory count, overwrite count, date range) and tap confirm.
 6. After import completes, export a `.familymemories` backup from iOS for future restore.
