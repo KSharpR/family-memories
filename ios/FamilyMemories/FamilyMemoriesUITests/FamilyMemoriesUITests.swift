@@ -20,6 +20,15 @@ final class FamilyMemoriesUITests: XCTestCase {
         ).firstMatch
     }
 
+    /// Takes a screenshot and attaches it with `.deleteOnSuccess` lifetime.
+    private func attachScreenshot(named name: String) {
+        let screenshot = XCUIScreen.main.screenshot()
+        let attachment = XCTAttachment(screenshot: screenshot)
+        attachment.name = name
+        attachment.lifetime = .deleteOnSuccess
+        add(attachment)
+    }
+
     @MainActor
     func testEmptyTimelineShowsImportAction() throws {
         let app = XCUIApplication()
@@ -87,5 +96,72 @@ final class FamilyMemoriesUITests: XCTestCase {
         XCTAssertTrue(app.alerts["清除所有本地数据？"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.alerts.buttons["清除"].exists)
         XCTAssertTrue(app.alerts.buttons["取消"].exists)
+    }
+
+    // MARK: - Orientation smoke test
+
+    @MainActor
+    func testOrientationSmoke() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing", "-reset-data"]
+        app.launch()
+
+        // Restore portrait during teardown so we never leak orientation state.
+        addTeardownBlock {
+            XCUIDevice.shared.orientation = .portrait
+        }
+
+        // --- Portrait ---
+        XCUIDevice.shared.orientation = .portrait
+        XCTAssertTrue(app.staticTexts["开始整理家族回忆"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["导入照片"].exists)
+        attachScreenshot(named: "Portrait - Timeline")
+
+        // --- Landscape ---
+        XCUIDevice.shared.orientation = .landscapeRight
+        // Use an observable orientation predicate rather than an arbitrary sleep.
+        let landscapePredicate = NSPredicate { _, _ in
+            XCUIDevice.shared.orientation == .landscapeRight
+        }
+        let landscapeExpectation = XCTNSPredicateExpectation(
+            predicate: landscapePredicate, object: nil
+        )
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [landscapeExpectation], timeout: 3),
+            .completed,
+            "Device should have rotated to landscape"
+        )
+        // Confirm the UI has settled by verifying the empty state again.
+        XCTAssertTrue(app.staticTexts["开始整理家族回忆"].waitForExistence(timeout: 5))
+        attachScreenshot(named: "Landscape - Timeline")
+
+        // Tab navigation in landscape.
+        tabButton("相册", in: app).tap()
+        XCTAssertTrue(app.staticTexts["还没有回忆"].waitForExistence(timeout: 2))
+
+        tabButton("设置", in: app).tap()
+        XCTAssertTrue(app.staticTexts["设置"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["导出备份"].exists)
+        attachScreenshot(named: "Landscape - Settings")
+
+        // --- Rotate back to portrait ---
+        XCUIDevice.shared.orientation = .portrait
+        let portraitPredicate = NSPredicate { _, _ in
+            XCUIDevice.shared.orientation == .portrait
+        }
+        let portraitExpectation = XCTNSPredicateExpectation(
+            predicate: portraitPredicate, object: nil
+        )
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [portraitExpectation], timeout: 3),
+            .completed,
+            "Device should have rotated back to portrait"
+        )
+        // Verify a representative element remains reachable.
+        XCTAssertTrue(app.staticTexts["设置"].waitForExistence(timeout: 5))
+        // Navigate back to Timeline.
+        tabButton("时间线", in: app).tap()
+        XCTAssertTrue(app.staticTexts["开始整理家族回忆"].waitForExistence(timeout: 2))
+        attachScreenshot(named: "Portrait - Timeline after rotation")
     }
 }
